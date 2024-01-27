@@ -6,14 +6,6 @@ import datetime
 import subprocess
 import requests
 
-LLM_WEBSITES = {
-    "chatgpt": "https://chat.openai.com/",
-    "perplexity": "https://www.perplexity.ai/",
-    "bard": "https://bard.google.com/chat",
-    "claude": "https://claude.ai/chats",
-    "pi": "https://pi.ai/talk",
-    "together": "https://api.together.xyz/signin"
-}
 
 # hard coded config values
 MULI_LINE_MODE_TEXT = "~!"
@@ -60,14 +52,13 @@ def get_ollama_models():
     return models
 
 def list_models():
-    global LLM_WEBSITES
     try:
         response = openai.Model.list()
         if not response['data']:
             raise ValueError('No models available')
         openai_models = [(model['id'], model['created']) for model in response['data'] if "gpt" in model['id'] and "instruct" not in model['id']]
         ollama_models = get_ollama_models()
-        return openai_models, ollama_models, LLM_WEBSITES.keys()
+        return openai_models, ollama_models
     except Exception as e:
         print(red(f"Error fetching models: {e}"))
         sys.exit(1)
@@ -152,8 +143,6 @@ def simple_date(epoch_time):
     return formatted_date
 
 def main():
-    global LLM_WEBSITES
-
     parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
     parser.add_argument('-m', '--model', help='Model to use for chatting', required=False)
     parser.add_argument('-c', '--cost', action='store_true', help="open the OpenAI cost dashboard")
@@ -164,7 +153,7 @@ def main():
         open_dashboard()
         sys.exit(0)
 
-    openai_models, ollama_models, llm_websites = list_models()
+    openai_models, ollama_models = list_models()
 
     if args.model and any(model[0] == args.model for model in openai_models):
         selected_model = args.model
@@ -182,15 +171,10 @@ def main():
             print(yellow(f"   > {model}"))
         print()
 
-        print(yellow("Available Website-Based Models:"))
-        for model in llm_websites:
-            print(yellow(f"   > {model}"))
-        print()
-
         selected_model = input("Which model do you want to use? ")
         print()
 
-    if selected_model not in [model[0] for model in openai_models] and selected_model not in ollama_models and selected_model not in llm_websites:
+    if selected_model not in [model[0] for model in openai_models] and selected_model not in ollama_models:
         print(red("Invalid model selected. Exiting."))
         return
 
@@ -199,10 +183,6 @@ def main():
         if ollama_state == False:
             raise Exception("Ollama is not running")
         os.system(f"ollama run {selected_model}")
-    elif selected_model in llm_websites:
-        url = LLM_WEBSITES[selected_model]
-        os.system(f"open {url}")
-        print(red(f"\nExisting & Opening {url}"))
     else:
         chatbot(selected_model)
 
