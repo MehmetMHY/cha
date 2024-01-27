@@ -6,7 +6,6 @@ import datetime
 import subprocess
 import requests
 
-
 # hard coded config values
 MULI_LINE_MODE_TEXT = "~!"
 
