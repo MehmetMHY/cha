@@ -38,6 +38,21 @@ A simple chat CLI tool I made to talk with OpenAI LLM models
     ```
     python3 main.py
     ```
+8. (optional) If you want to make this into a command, do the following:
+   1. Add the following to your .bashrc or .zshrc file:
+        ```
+        # NOTE: you set the <root_path> value
+        cha () {
+            source <root_path>/cha/.env
+            <root_path>/cha/env/bin/python3 <root_path>/cha/main.py $1 $2
+            unset OPENAI_API_KEY
+        }
+        ```
+    2. Start a new terminal or re-source your .bashrc or .zshrc file
+    3. Use the command:
+        ```
+        cha
+        ```
 
 ## Credits
 
