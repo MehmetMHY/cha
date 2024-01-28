@@ -4,10 +4,10 @@ import sys
 import argparse
 import datetime
 import subprocess
-import requests
 
 # hard coded config values
 MULI_LINE_MODE_TEXT = "~!"
+OPENAI_DASHBOARD_URL = "https://platform.openai.com/usage"
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -22,33 +22,9 @@ def execute(cmd):
     return output.split("\n")
 
 def open_dashboard():
-    url = "https://platform.openai.com/usage"
-    cmd = f"open {url}"
-    execute(cmd)
+    global OPENAI_DASHBOARD_URL
+    execute(f"open {OPENAI_DASHBOARD_URL}")
     return
-
-# https://ollama.ai/
-def ollama_running():
-    url = 'http://127.0.0.1:11434/'
-    try:
-        response = requests.get(url, timeout=5)
-        response = response.text
-        if response != "Ollama is running":
-            raise Exception("Ollama is not running!")
-        return True
-    except Exception as err:
-        return False
-
-def get_ollama_models():
-    data = execute("ollama list")
-    models = []
-    for i in range(len(data)):
-        if i == 0:
-            continue
-        tmp = data[i].split("\t")[0].replace(" ", "")
-        if tmp != "":
-            models.append(tmp)
-    return models
 
 def list_models():
     try:
@@ -56,8 +32,7 @@ def list_models():
         if not response['data']:
             raise ValueError('No models available')
         openai_models = [(model['id'], model['created']) for model in response['data'] if "gpt" in model['id'] and "instruct" not in model['id']]
-        ollama_models = get_ollama_models()
-        return openai_models, ollama_models
+        return openai_models
     except Exception as e:
         print(red(f"Error fetching models: {e}"))
         sys.exit(1)
@@ -152,7 +127,7 @@ def main():
         open_dashboard()
         sys.exit(0)
 
-    openai_models, ollama_models = list_models()
+    openai_models = list_models()
 
     if args.model and any(model[0] == args.model for model in openai_models):
         selected_model = args.model
@@ -165,25 +140,14 @@ def main():
             print(yellow(f"   > {formatted_model_id}   {simple_date(created)}"))
         print()
 
-        print(yellow("Available Ollama Models:"))
-        for model in ollama_models:
-            print(yellow(f"   > {model}"))
-        print()
-
         selected_model = input("Which model do you want to use? ")
         print()
 
-    if selected_model not in [model[0] for model in openai_models] and selected_model not in ollama_models:
+    if selected_model not in [model[0] for model in openai_models]:
         print(red("Invalid model selected. Exiting."))
         return
 
-    if selected_model in ollama_models:
-        ollama_state = ollama_running()
-        if ollama_state == False:
-            raise Exception("Ollama is not running")
-        os.system(f"ollama run {selected_model}")
-    else:
-        chatbot(selected_model)
+    chatbot(selected_model)
 
 def cli():
     try:
