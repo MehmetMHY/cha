@@ -185,9 +185,12 @@ def main():
     else:
         chatbot(selected_model)
 
-if __name__ == "__main__":
+def cli():
     try:
         main()
     except KeyboardInterrupt:
         print(red("\n\nExiting..."))
+
+if __name__ == "__main__":
+    cli()
 
