@@ -11,7 +11,7 @@ setup(
     install_requires=[
         'openai==0.28.0'
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.10',
     entry_points={
         'console_scripts': [
             'cha = cha.main:cli',
