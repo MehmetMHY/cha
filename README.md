@@ -10,7 +10,7 @@ A simple chat CLI tool I made to talk with OpenAI LLM models
     ```
     pip3 install .
     ```
-2. Get and add your OpenAI key to the .env file, then source it:
+2. Create a .env file, get your OpenAI API key, and add the key to the .env file:
     ```
     # the key should look like this:
     #   export OPENAI_API_KEY=""
