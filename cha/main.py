@@ -7,7 +7,6 @@ import subprocess
 
 # hard coded config values
 MULI_LINE_MODE_TEXT = "~!"
-OPENAI_DASHBOARD_URL = "https://platform.openai.com/usage"
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -20,11 +19,6 @@ def execute(cmd):
     proc = subprocess.Popen(str(cmd), shell=True, stdout=subprocess.PIPE,)
     output = proc.communicate()[0].decode("utf-8")
     return output.split("\n")
-
-def open_dashboard():
-    global OPENAI_DASHBOARD_URL
-    execute(f"open {OPENAI_DASHBOARD_URL}")
-    return
 
 def list_models():
     try:
@@ -119,13 +113,8 @@ def simple_date(epoch_time):
 def main():
     parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
     parser.add_argument('-m', '--model', help='Model to use for chatting', required=False)
-    parser.add_argument('-c', '--cost', action='store_true', help="open the OpenAI cost dashboard")
 
     args = parser.parse_args()
-
-    if args.cost and args.cost == True:
-        open_dashboard()
-        sys.exit(0)
 
     openai_models = list_models()
 
