@@ -9,8 +9,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     install_requires=[
-        'openai==0.28.0',
-        'requests==2.31.0'
+        'openai==0.28.0'
     ],
     python_requires='>=3.6',
     entry_points={
