@@ -129,7 +129,10 @@ def main():
             print(yellow(f"   > {formatted_model_id}   {simple_date(created)}"))
         print()
 
-        selected_model = input("Which model do you want to use? ")
+        try:
+            selected_model = input("Which model do you want to use? ")
+        except KeyboardInterrupt:
+            return
         print()
 
     if selected_model not in [model[0] for model in openai_models]:
@@ -141,8 +144,9 @@ def main():
 def cli():
     try:
         main()
-    except KeyboardInterrupt:
-        print(red("\n\nExiting..."))
+    except:
+        pass
+    print(red("\n\nExiting..."))
 
 if __name__ == "__main__":
     cli()
