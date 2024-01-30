@@ -3,7 +3,6 @@ import os
 import sys
 import argparse
 import datetime
-import subprocess
 
 # hard coded config values
 MULI_LINE_MODE_TEXT = "~!"
@@ -14,11 +13,6 @@ def red(text): return f"\033[91m{text}\033[0m"
 def green(text): return f"\033[92m{text}\033[0m"
 def yellow(text): return f"\033[93m{text}\033[0m"
 def blue(text): return f"\033[94m{text}\033[0m"
-
-def execute(cmd):
-    proc = subprocess.Popen(str(cmd), shell=True, stdout=subprocess.PIPE,)
-    output = proc.communicate()[0].decode("utf-8")
-    return output.split("\n")
 
 def list_models():
     try:
@@ -147,7 +141,3 @@ def cli():
     except:
         pass
     print(red("\n\nExiting..."))
-
-if __name__ == "__main__":
-    cli()
-
