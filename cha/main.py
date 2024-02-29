@@ -7,6 +7,7 @@ import datetime
 # hard coded config values
 MULI_LINE_MODE_TEXT = "~!"
 CLEAR_HISTORY_TEXT = "!CLEAR"
+INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and to the point."
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -27,7 +28,7 @@ def list_models():
         sys.exit(1)
 
 def chatbot(selected_model):
-    messages = [{"role": "system", "content": "You are a helpful assistant."}]
+    messages = [{"role": "system", "content": INITIAL_PROMPT}]
     multi_line_input = False
 
     print(blue(f"Start chatting with the {selected_model} model (type 'quit' to stop)! Type '{MULI_LINE_MODE_TEXT}' to switch input mode."))
@@ -56,7 +57,7 @@ def chatbot(selected_model):
             elif message.lower() == "quit":
                 break
             elif message.upper() == CLEAR_HISTORY_TEXT:
-                messages = [{"role": "system", "content": "You are a helpful assistant."}]
+                messages = [{"role": "system", "content": INITIAL_PROMPT}]
                 print(green("\nChat history cleared."))
                 first_loop = True
                 continue
@@ -74,7 +75,7 @@ def chatbot(selected_model):
                 message_lines.append(line)
             message = '\n'.join(message_lines)
             if message.upper() == CLEAR_HISTORY_TEXT:
-                messages = [{"role": "system", "content": "You are a helpful assistant."}]
+                messages = [{"role": "system", "content": INITIAL_PROMPT}]
                 print(green("\nChat history cleared."))
                 first_loop = True
                 continue
