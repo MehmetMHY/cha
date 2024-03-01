@@ -82,8 +82,18 @@ def get_all_htmls(text):
     
     return output
 
-# main function calls
-url = "Summarize this page: https://pub.towardsai.net/advanced-rag-techniques-an-illustrated-overview-04d193d8fec6 and https://en.wikipedia.org/wiki/Atom and this page: https://simple.wikipedia.org/wiki/Meme"
-obj = get_all_htmls(url)
-print(json.dumps(obj, indent=4))
+def scrapped_prompt(prompt):
+    htmls = get_all_htmls(prompt)
+    if htmls == {}:
+        return prompt
 
+    new_prompt = """
+Here is the content from the following url(s) in the form of a JSON:
+```
+{0}
+```
+
+Knowing this, can you answer the following prompt: {1}
+""".format(json.dumps(htmls), prompt)
+    
+    return new_prompt
