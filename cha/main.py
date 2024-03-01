@@ -9,6 +9,9 @@ MULI_LINE_MODE_TEXT = "~!"
 CLEAR_HISTORY_TEXT = "!CLEAR"
 INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and to the point."
 
+# keep track of states
+flushing = False
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def red(text): return f"\033[91m{text}\033[0m"
@@ -97,12 +100,16 @@ def chatbot(selected_model):
                 stream=True
             )
 
+            flushing = True
+
             for chunk in response:
                 chunk_message = chunk.choices[0].delta.get("content")
                 if chunk_message:
                     last_line = chunk_message
                     sys.stdout.write(green(chunk_message))
                     sys.stdout.flush()
+
+            flushing = False
 
             chat_message = chunk.choices[0].delta.get("content", "")
             if chat_message:
@@ -152,4 +159,8 @@ def cli():
         main()
     except:
         pass
-    print(red("\n\nExiting..."))
+
+    if flushing == False:
+        print()
+    print(red("\nExiting..."))
+
