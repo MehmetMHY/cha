@@ -1,16 +1,16 @@
-import openai
 import os
 import sys
 import argparse
 import datetime
 
+# 3rd party packages
+import openai
+from cha import scrapper
+
 # hard coded config values
 MULI_LINE_MODE_TEXT = "~!"
 CLEAR_HISTORY_TEXT = "!CLEAR"
 INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and to the point."
-
-# keep track of states
-flushing = False
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -84,8 +84,12 @@ def chatbot(selected_model):
                 continue
             if not multi_line_input:
                 continue
-        
+
         print()
+        
+        if len(scrapper.extract_urls(message)) > 0:
+            print(f"🌐 Browsing The Web 🤖\n")
+            message = scrapper.scrapped_prompt(message)
 
         # exit if no prompt is provided
         if len(message) == 0:
@@ -100,16 +104,12 @@ def chatbot(selected_model):
                 stream=True
             )
 
-            flushing = True
-
             for chunk in response:
                 chunk_message = chunk.choices[0].delta.get("content")
                 if chunk_message:
                     last_line = chunk_message
                     sys.stdout.write(green(chunk_message))
                     sys.stdout.flush()
-
-            flushing = False
 
             chat_message = chunk.choices[0].delta.get("content", "")
             if chat_message:
@@ -159,8 +159,5 @@ def cli():
         main()
     except:
         pass
-
-    if flushing == False:
-        print()
-    print(red("\nExiting..."))
+    print(red("\n\nExiting..."))
 
