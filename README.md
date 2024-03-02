@@ -41,6 +41,28 @@ Execute the main script by running:
 cha
 ```
 
+### 5. Optional, setup alias/command for cha
+
+You can make a cool alias/command to make the use of `cha` easier. You can add this to your `.zshrc` or `.bashrc`. As an example, here is a command I have in my `.zshrc`:
+
+```bash
+chatgpt () {
+    DEFAULT_MODEL="gpt-4-turbo-preview"
+
+    # source OpenAI API key; the "OPENAI_API_KEY" env variable
+    source /Users/mehmet/.custom/.env
+    
+    # install cha: https://github.com/MehmetMHY/cha
+    if [ -n "$1" ]; then
+        cha
+    else
+        cha --model $DEFAULT_MODEL
+    fi
+
+    unset OPENAI_API_KEY
+}
+```
+
 Now you should be all set!
 
 ## Credits

@@ -19,6 +19,11 @@ def green(text): return f"\033[92m{text}\033[0m"
 def yellow(text): return f"\033[93m{text}\033[0m"
 def blue(text): return f"\033[94m{text}\033[0m"
 
+def simple_date(epoch_time):
+    date_time = datetime.datetime.fromtimestamp(epoch_time)
+    formatted_date = date_time.strftime("%B %d, %Y")
+    return formatted_date
+
 def list_models():
     try:
         response = openai.Model.list()
@@ -118,46 +123,39 @@ def chatbot(selected_model):
             print(red(f"Error during chat: {e}"))
             break
 
-def simple_date(epoch_time):
-    date_time = datetime.datetime.fromtimestamp(epoch_time)
-    formatted_date = date_time.strftime("%B %d, %Y")
-    return formatted_date
-
-def main():
-    parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
-    parser.add_argument('-m', '--model', help='Model to use for chatting', required=False)
-
-    args = parser.parse_args()
-
-    openai_models = list_models()
-
-    if args.model and any(model[0] == args.model for model in openai_models):
-        selected_model = args.model
-    else:
-        print(yellow("Available OpenAI Models:"))
-        max_length = max(len(model_id) for model_id, _ in openai_models)
-        openai_models = sorted(openai_models, key=lambda x: x[1])
-        for model_id, created in openai_models:
-            formatted_model_id = model_id.ljust(max_length)
-            print(yellow(f"   > {formatted_model_id}   {simple_date(created)}"))
-        print()
-
-        try:
-            selected_model = input("Which model do you want to use? ")
-        except KeyboardInterrupt:
-            return
-        print()
-
-    if selected_model not in [model[0] for model in openai_models]:
-        print(red("Invalid model selected. Exiting."))
-        return
-
-    chatbot(selected_model)
-
 def cli():
     try:
-        main()
+        parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
+        parser.add_argument('-m', '--model', help='Model to use for chatting', required=False)
+
+        args = parser.parse_args()
+
+        openai_models = list_models()
+
+        if args.model and any(model[0] == args.model for model in openai_models):
+            selected_model = args.model
+        else:
+            print(yellow("Available OpenAI Models:"))
+            max_length = max(len(model_id) for model_id, _ in openai_models)
+            openai_models = sorted(openai_models, key=lambda x: x[1])
+            for model_id, created in openai_models:
+                formatted_model_id = model_id.ljust(max_length)
+                print(yellow(f"   > {formatted_model_id}   {simple_date(created)}"))
+            print()
+
+            try:
+                selected_model = input("Which model do you want to use? ")
+            except KeyboardInterrupt:
+                return
+            print()
+
+        if selected_model not in [model[0] for model in openai_models]:
+            print(red("Invalid model selected. Exiting."))
+            return
+
+        chatbot(selected_model)
     except:
         pass
+
     print(red("\n\nExiting..."))
 
