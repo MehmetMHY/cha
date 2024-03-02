@@ -1,16 +1,16 @@
-import openai
 import os
 import sys
 import argparse
 import datetime
 
+# 3rd party packages
+import openai
+from cha import scrapper
+
 # hard coded config values
 MULI_LINE_MODE_TEXT = "~!"
 CLEAR_HISTORY_TEXT = "!CLEAR"
 INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and to the point."
-
-# keep track of states
-flushing = False
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -18,6 +18,11 @@ def red(text): return f"\033[91m{text}\033[0m"
 def green(text): return f"\033[92m{text}\033[0m"
 def yellow(text): return f"\033[93m{text}\033[0m"
 def blue(text): return f"\033[94m{text}\033[0m"
+
+def simple_date(epoch_time):
+    date_time = datetime.datetime.fromtimestamp(epoch_time)
+    formatted_date = date_time.strftime("%B %d, %Y")
+    return formatted_date
 
 def list_models():
     try:
@@ -84,8 +89,12 @@ def chatbot(selected_model):
                 continue
             if not multi_line_input:
                 continue
-        
+
         print()
+        
+        if len(scrapper.extract_urls(message)) > 0:
+            print(f"--- BROWSING THE WEB ---\n")
+            message = scrapper.scrapped_prompt(message)
 
         # exit if no prompt is provided
         if len(message) == 0:
@@ -100,16 +109,12 @@ def chatbot(selected_model):
                 stream=True
             )
 
-            flushing = True
-
             for chunk in response:
                 chunk_message = chunk.choices[0].delta.get("content")
                 if chunk_message:
                     last_line = chunk_message
                     sys.stdout.write(green(chunk_message))
                     sys.stdout.flush()
-
-            flushing = False
 
             chat_message = chunk.choices[0].delta.get("content", "")
             if chat_message:
@@ -118,49 +123,39 @@ def chatbot(selected_model):
             print(red(f"Error during chat: {e}"))
             break
 
-def simple_date(epoch_time):
-    date_time = datetime.datetime.fromtimestamp(epoch_time)
-    formatted_date = date_time.strftime("%B %d, %Y")
-    return formatted_date
-
-def main():
-    parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
-    parser.add_argument('-m', '--model', help='Model to use for chatting', required=False)
-
-    args = parser.parse_args()
-
-    openai_models = list_models()
-
-    if args.model and any(model[0] == args.model for model in openai_models):
-        selected_model = args.model
-    else:
-        print(yellow("Available OpenAI Models:"))
-        max_length = max(len(model_id) for model_id, _ in openai_models)
-        openai_models = sorted(openai_models, key=lambda x: x[1])
-        for model_id, created in openai_models:
-            formatted_model_id = model_id.ljust(max_length)
-            print(yellow(f"   > {formatted_model_id}   {simple_date(created)}"))
-        print()
-
-        try:
-            selected_model = input("Which model do you want to use? ")
-        except KeyboardInterrupt:
-            return
-        print()
-
-    if selected_model not in [model[0] for model in openai_models]:
-        print(red("Invalid model selected. Exiting."))
-        return
-
-    chatbot(selected_model)
-
 def cli():
     try:
-        main()
+        parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
+        parser.add_argument('-m', '--model', help='Model to use for chatting', required=False)
+
+        args = parser.parse_args()
+
+        openai_models = list_models()
+
+        if args.model and any(model[0] == args.model for model in openai_models):
+            selected_model = args.model
+        else:
+            print(yellow("Available OpenAI Models:"))
+            max_length = max(len(model_id) for model_id, _ in openai_models)
+            openai_models = sorted(openai_models, key=lambda x: x[1])
+            for model_id, created in openai_models:
+                formatted_model_id = model_id.ljust(max_length)
+                print(yellow(f"   > {formatted_model_id}   {simple_date(created)}"))
+            print()
+
+            try:
+                selected_model = input("Which model do you want to use? ")
+            except KeyboardInterrupt:
+                return
+            print()
+
+        if selected_model not in [model[0] for model in openai_models]:
+            print(red("Invalid model selected. Exiting."))
+            return
+
+        chatbot(selected_model)
     except:
         pass
 
-    if flushing == False:
-        print()
-    print(red("\nExiting..."))
+    print(red("\n\nExiting..."))
 
