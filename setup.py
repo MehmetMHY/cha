@@ -13,6 +13,7 @@ setup(
         'beautifulsoup4==4.12.3',
         'selenium==4.18.1',
         'webdriver-manager==4.0.1',
+        'yt-dlp==2023.12.30'
     ],
     python_requires='>=3.10',
     entry_points={
