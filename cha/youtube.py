@@ -1,11 +1,5 @@
-"""
-March 2, 2024
-
-This script is still in beta, run at your own risk!
-"""
-
 import subprocess
-import json
+import uuid
 import time
 import os
 import re
@@ -20,19 +14,6 @@ def write_file(path, data):
     file = open(str(path), "w")
     for line in data:
         file.write(str(line) + "\n")
-    file.close()
-
-def read_json(path):
-    with open(str(path)) as file:
-        content = json.load(file)
-    return content
-
-def write_json(path, data):
-    with open(str(path), "w") as file:
-        json.dump(data, file, indent=4)
-
-def create_file(path):
-    file = open(str(path), "a+")
     file.close()
 
 def execute(cmd):
@@ -65,35 +46,40 @@ def parse_transcript(transcript_lines):
     
     return transcript_dict
 
-# MAIN FUNCTION CALLS
+def extract_yt_transcript(url):
+    try:
+        if "www.youtube.com" not in url:
+            raise Exception(f"URL {url} it NOT a valid YouTube url/link")
 
-url = "https://www.youtube.com/watch?v=-Am0vMW3fA0"
+        filename = f"yt_sub_{int(time.time())}_{str(uuid.uuid4())}"
 
-filename = f"yt_sub_{int(time.time())}_{url.split('=')[1]}"
+        # NOTE: make sure to install yt-dlp (https://github.com/yt-dlp/yt-dlp)
+        # NOTE: the command was from https://www.reddit.com/r/youtubedl/comments/15fcrmd/transcript_extract_from_youtube_videos_ytdlp/
+        execute(f"yt-dlp --write-auto-sub --convert-subs=srt --skip-download {url} -o {filename}")
 
-# NOTE: make sure to install yt-dlp (https://github.com/yt-dlp/yt-dlp)
-# NOTE: the command was from https://www.reddit.com/r/youtubedl/comments/15fcrmd/transcript_extract_from_youtube_videos_ytdlp/
-cmd = f"yt-dlp --write-auto-sub --convert-subs=srt --skip-download {url} -o {filename}"
-execute(cmd)
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+        output_file = ""
+        for file in os.listdir(root_dir):
+            if filename in file:
+                output_file = os.path.join(root_dir, file)
+                break
 
-root_dir = os.path.dirname(os.path.abspath(__file__))
-output_file = ""
-for file in os.listdir(root_dir):
-    if filename in file:
-        output_file = os.path.join(root_dir, file)
-        break
+        content = parse_transcript(
+            rm_repeated_empty_strs(
+                read_file(
+                    output_file
+                )
+            )
+        )
 
-content = rm_repeated_empty_strs( read_file(output_file) )
-content = parse_transcript(content)
+        full_content = ""
+        for key in content:
+            full_content = full_content + " " + content[key]
+        full_content = re.sub(r'\s+', ' ', full_content.replace("[Music]", ""))
 
-full_content = ""
-for key in content:
-    full_content = full_content + " " + content[key]
-full_content = full_content.replace("[Music]", "")
-full_content = re.sub(r'\s+', ' ', full_content)
+        if ".srt" in output_file:
+            os.remove(output_file)
 
-if ".srt" in output_file:
-    os.remove(output_file)
-
-print(full_content)
-
+        return full_content
+    except:
+        return None
