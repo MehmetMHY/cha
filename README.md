@@ -4,7 +4,17 @@
 
 ## About
 
-A simple chat CLI tool I made to talk with OpenAI LLM models
+A simple CLI chat tool to easily interface with OpenAI's LLM models
+
+## Demo:
+
+<div align="center">
+
+[![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=qOOzjTdmg7w)
+
+*click the image to view the YouTube video or click here: https://www.youtube.com/watch?v=qOOzjTdmg7w*
+
+</div>
 
 ## How To Set Up?
 
@@ -19,7 +29,9 @@ pip3 install --upgrade .
 ### 2. Configure API Key
 
 1. Create a `.env` file in the root directory.
+
 2. Get your OpenAI API key [HERE](https://platform.openai.com/api-keys).
+
 3. Add your OpenAI API key to the `.env` file, following this format:
 
 ```env
@@ -43,7 +55,7 @@ cha
 
 ### 5. Optional, setup alias/command for cha
 
-You can make a cool alias/command to make the use of `cha` easier. You can add this to your `.zshrc` or `.bashrc`. As an example, here is a command I have in my `.zshrc`:
+You can create a useful alias/command to simplify the use of `cha`. Add this to your `.zshrc` or `.bashrc`. For example, here is a command I have in my `.zshrc`:
 
 ```bash
 chatgpt () {
@@ -67,6 +79,7 @@ Now you should be all set!
 
 ## Credits
 
-- OpenAI Documentations
+- OpenAI Documentation
 - ChatGPT (GPT-4)
+- Ollama's CLI tool
 
