@@ -66,7 +66,7 @@ def chatbot(selected_model):
                 break
             elif message.upper() == CLEAR_HISTORY_TEXT:
                 messages = [{"role": "system", "content": INITIAL_PROMPT}]
-                print(green("\nChat history cleared."))
+                print(blue("\n\nChat history cleared.\n"))
                 first_loop = True
                 continue
         else:
@@ -84,7 +84,7 @@ def chatbot(selected_model):
             message = '\n'.join(message_lines)
             if message.upper() == CLEAR_HISTORY_TEXT:
                 messages = [{"role": "system", "content": INITIAL_PROMPT}]
-                print(green("\nChat history cleared."))
+                print(blue("\n\nChat history cleared.\n"))
                 first_loop = True
                 continue
             if not multi_line_input:
