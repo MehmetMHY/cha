@@ -8,13 +8,14 @@ import time
 import json
 import re
 
+from cha import youtube
+
 def extract_urls(text):
     urls = []
     for word in text.split(" "):
         if len(word) <= 6:
             continue
-        word = word.lower()
-        if "http" in word and "//" in word:
+        if "http" in word.lower() and "//" in word.lower():
             urls.append(word)
     return urls
 
@@ -31,7 +32,7 @@ def remove_html(content):
 class TimeoutException(Exception):
     pass
 
-def timeout(seconds=10, error_message="Function call timed out"):
+def timeout(seconds=10, error_message="function call timed out"):
     def decorator(func):
         def _handle_timeout(signum, frame):
             raise TimeoutException(error_message)
@@ -75,7 +76,10 @@ def get_all_htmls(text):
     for url in urls:
         content = None
         try:
-            content = remove_html(scrape_html(url))
+            if youtube.valid_yt_link(url):
+                content = youtube.extract_yt_transcript(url)
+            else:
+                content = remove_html(scrape_html(url))
         except:
             content = None
         output[url] = content

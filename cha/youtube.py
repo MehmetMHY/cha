@@ -46,18 +46,32 @@ def parse_transcript(transcript_lines):
     
     return transcript_dict
 
+def valid_yt_link(link):
+    if "www.youtube.com" not in link:
+        return False
+    if "//" not in link:
+        return False
+    if "v=" not in link:
+        return False
+    if "http" not in link:
+        return False
+    return True
+
 def extract_yt_transcript(url):
     try:
-        if "www.youtube.com" not in url:
+        if valid_yt_link(url) == False:
             raise Exception(f"URL {url} it NOT a valid YouTube url/link")
 
         filename = f"yt_sub_{int(time.time())}_{str(uuid.uuid4())}"
 
         # NOTE: make sure to install yt-dlp (https://github.com/yt-dlp/yt-dlp)
         # NOTE: the command was from https://www.reddit.com/r/youtubedl/comments/15fcrmd/transcript_extract_from_youtube_videos_ytdlp/
-        execute(f"yt-dlp --write-auto-sub --convert-subs=srt --skip-download {url} -o {filename}")
+        cmd = f"yt-dlp --write-auto-sub --convert-subs=srt --skip-download {url} -o {filename}"
+        execute(cmd)
 
-        root_dir = os.path.dirname(os.path.abspath(__file__))
+        # root_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.getcwd()
+
         output_file = ""
         for file in os.listdir(root_dir):
             if filename in file:
@@ -83,3 +97,4 @@ def extract_yt_transcript(url):
         return full_content
     except:
         return None
+
