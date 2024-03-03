@@ -60,15 +60,14 @@ You can create a useful alias/command to simplify the use of `cha`. Add this to 
 ```bash
 chatgpt () {
     DEFAULT_MODEL="gpt-4-turbo-preview"
-
-    # source OpenAI API key; the "OPENAI_API_KEY" env variable
-    source /Users/mehmet/.custom/.env
     
-    # install cha: https://github.com/MehmetMHY/cha
-    if [ -n "$1" ]; then
-        cha
-    else
+    # source OpenAI API key env variable
+    source /Users/mehmet/.custom/.env
+
+    if [ $# -eq 0 ]; then
         cha --model $DEFAULT_MODEL
+    else
+        cha "$@"
     fi
 
     unset OPENAI_API_KEY

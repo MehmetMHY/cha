@@ -69,7 +69,8 @@ def chatbot(selected_model):
                 print(blue("\n\nChat history cleared.\n"))
                 first_loop = True
                 continue
-        else:
+        
+        if multi_line_input:
             message_lines = []
             while True:
                 line = sys.stdin.readline().rstrip('\n')
@@ -155,8 +156,8 @@ def cli():
             return
 
         chatbot(selected_model)
+
+        print(red("\n\nExiting..."))
     except:
         pass
-
-    print(red("\n\nExiting..."))
 
