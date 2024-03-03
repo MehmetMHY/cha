@@ -6,18 +6,14 @@ import datetime
 # 3rd party packages
 import openai
 from cha import scrapper
+from cha import colors
 
-# hard coded config values
+# hard coded config variables
 MULI_LINE_MODE_TEXT = "~!"
 CLEAR_HISTORY_TEXT = "!CLEAR"
 INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and to the point."
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
-
-def red(text): return f"\033[91m{text}\033[0m"
-def green(text): return f"\033[92m{text}\033[0m"
-def yellow(text): return f"\033[93m{text}\033[0m"
-def blue(text): return f"\033[94m{text}\033[0m"
 
 def simple_date(epoch_time):
     date_time = datetime.datetime.fromtimestamp(epoch_time)
@@ -32,16 +28,16 @@ def list_models():
         openai_models = [(model['id'], model['created']) for model in response['data'] if "gpt" in model['id'] and "instruct" not in model['id']]
         return openai_models
     except Exception as e:
-        print(red(f"Error fetching models: {e}"))
+        print(colors.red(f"Error fetching models: {e}"))
         sys.exit(1)
 
 def chatbot(selected_model):
     messages = [{"role": "system", "content": INITIAL_PROMPT}]
     multi_line_input = False
 
-    print(blue(f"Start chatting with the {selected_model} model (type 'quit' to stop)! Type '{MULI_LINE_MODE_TEXT}' to switch input mode."))
-    print(green("Tip: During the chat, you can switch between single-line and multi-line input modes."))
-    print(yellow(f"Type '{MULI_LINE_MODE_TEXT}' to toggle between these modes. In multi-line mode, type 'END' to send your message. Or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history."))
+    print(colors.blue(f"Start chatting with the {selected_model} model (type 'quit' to stop)! Type '{MULI_LINE_MODE_TEXT}' to switch input mode."))
+    print(colors.green("Tip: During the chat, you can switch between single-line and multi-line input modes."))
+    print(colors.yellow(f"Type '{MULI_LINE_MODE_TEXT}' to toggle between these modes. In multi-line mode, type 'END' to send your message. Or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history."))
 
     first_loop = True
     last_line = ""
@@ -60,13 +56,13 @@ def chatbot(selected_model):
             message = sys.stdin.readline().rstrip('\n')
             if message == MULI_LINE_MODE_TEXT:
                 multi_line_input = True
-                print(blue("\n\nSwitched to multi-line input mode. Type 'END' to send message."))
+                print(colors.blue("\n\nSwitched to multi-line input mode. Type 'END' to send message."))
                 continue
             elif message.lower() == "quit":
                 break
             elif message.upper() == CLEAR_HISTORY_TEXT:
                 messages = [{"role": "system", "content": INITIAL_PROMPT}]
-                print(blue("\n\nChat history cleared.\n"))
+                print(colors.blue("\n\nChat history cleared.\n"))
                 first_loop = True
                 continue
         
@@ -76,7 +72,7 @@ def chatbot(selected_model):
                 line = sys.stdin.readline().rstrip('\n')
                 if line == MULI_LINE_MODE_TEXT:
                     multi_line_input = False
-                    print(blue("\n\nSwitched to single-line input mode."))
+                    print(colors.blue("\n\nSwitched to single-line input mode."))
                     break
                 elif line.lower() == "end":
                     print()
@@ -85,7 +81,7 @@ def chatbot(selected_model):
             message = '\n'.join(message_lines)
             if message.upper() == CLEAR_HISTORY_TEXT:
                 messages = [{"role": "system", "content": INITIAL_PROMPT}]
-                print(blue("\n\nChat history cleared.\n"))
+                print(colors.blue("\n\nChat history cleared.\n"))
                 first_loop = True
                 continue
             if not multi_line_input:
@@ -94,7 +90,7 @@ def chatbot(selected_model):
         print()
         
         if len(scrapper.extract_urls(message)) > 0:
-            print(f"\n--- BROWSING THE WEB ---\n")
+            print(colors.magenta("\n--- BROWSING THE WEB ---\n"))
             message = scrapper.scrapped_prompt(message)
             print()
 
@@ -115,14 +111,14 @@ def chatbot(selected_model):
                 chunk_message = chunk.choices[0].delta.get("content")
                 if chunk_message:
                     last_line = chunk_message
-                    sys.stdout.write(green(chunk_message))
+                    sys.stdout.write(colors.green(chunk_message))
                     sys.stdout.flush()
 
             chat_message = chunk.choices[0].delta.get("content", "")
             if chat_message:
                 messages.append({"role": "assistant", "content": chat_message})
         except Exception as e:
-            print(red(f"Error during chat: {e}"))
+            print(colors.red(f"Error during chat: {e}"))
             break
 
 def cli():
@@ -137,12 +133,12 @@ def cli():
         if args.model and any(model[0] == args.model for model in openai_models):
             selected_model = args.model
         else:
-            print(yellow("Available OpenAI Models:"))
+            print(colors.yellow("Available OpenAI Models:"))
             max_length = max(len(model_id) for model_id, _ in openai_models)
             openai_models = sorted(openai_models, key=lambda x: x[1])
             for model_id, created in openai_models:
                 formatted_model_id = model_id.ljust(max_length)
-                print(yellow(f"   > {formatted_model_id}   {simple_date(created)}"))
+                print(colors.yellow(f"   > {formatted_model_id}   {simple_date(created)}"))
             print()
 
             try:
@@ -152,12 +148,10 @@ def cli():
             print()
 
         if selected_model not in [model[0] for model in openai_models]:
-            print(red("Invalid model selected. Exiting."))
+            print(colors.red("Invalid model selected. Exiting."))
             return
 
         chatbot(selected_model)
-
-        print(red("\n\nExiting..."))
     except:
         pass
 
