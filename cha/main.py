@@ -93,8 +93,9 @@ def chatbot(selected_model):
         print()
         
         if len(scrapper.extract_urls(message)) > 0:
-            print(f"--- BROWSING THE WEB ---\n")
+            print(f"\n--- BROWSING THE WEB ---\n")
             message = scrapper.scrapped_prompt(message)
+            print()
 
         # exit if no prompt is provided
         if len(message) == 0:
