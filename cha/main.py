@@ -6,6 +6,7 @@ import datetime
 # 3rd party packages
 import openai
 from cha import scrapper
+from cha import youtube
 from cha import colors
 
 # hard coded config variables
@@ -121,10 +122,43 @@ def chatbot(selected_model):
             print(colors.red(f"Error during chat: {e}"))
             break
 
+def file_only(filepath, model):
+    try:
+        if "/" not in filepath:
+            filepath = os.path.join(os.getcwd(), filepath)
+        
+        if os.path.exists(filepath) == False:
+            print(colors.red(f"The following file does not exist: {filepath}"))
+            return
+
+        print(colors.blue(f"Feeding the following file content to {model}:\n{filepath}\n"))
+
+        content = "\n".join(
+            youtube.read_file(filepath)
+        )
+
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": INITIAL_PROMPT},
+                {"role": "system", "content": content},
+            ],
+            stream=True
+        )
+
+        for chunk in response:
+            chunk_message = chunk.choices[0].delta.get("content")
+            if chunk_message:
+                sys.stdout.write(colors.green(chunk_message))
+                sys.stdout.flush()
+    except Exception as e:
+        print(colors.red(f"Error during chat: {e}"))
+
 def cli():
     try:
         parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
         parser.add_argument('-m', '--model', help='Model to use for chatting', required=False)
+        parser.add_argument('-f', '--file', help='Filepath to file that will be sent to the model (text only)', required=False)
 
         args = parser.parse_args()
 
@@ -149,6 +183,10 @@ def cli():
 
         if selected_model not in [model[0] for model in openai_models]:
             print(colors.red("Invalid model selected. Exiting."))
+            return
+        
+        if args.file:
+            file_only(args.file, selected_model)
             return
 
         chatbot(selected_model)
