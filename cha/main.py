@@ -4,7 +4,7 @@ import argparse
 import datetime
 
 # 3rd party packages
-import openai
+from openai import OpenAI
 from cha import scrapper
 from cha import youtube
 from cha import colors
@@ -14,7 +14,9 @@ MULI_LINE_MODE_TEXT = "~!"
 CLEAR_HISTORY_TEXT = "!CLEAR"
 INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and to the point."
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
 
 def simple_date(epoch_time):
     date_time = datetime.datetime.fromtimestamp(epoch_time)
@@ -23,10 +25,16 @@ def simple_date(epoch_time):
 
 def list_models():
     try:
-        response = openai.Model.list()
-        if not response['data']:
+        response = client.models.list()
+        if not response.data:
             raise ValueError('No models available')
-        openai_models = [(model['id'], model['created']) for model in response['data'] if "gpt" in model['id'] and "instruct" not in model['id']]
+
+        openai_models = [
+            (model.id, model.created) 
+            for model in response.data 
+            if "gpt" in model.id and "instruct" not in model.id
+        ]
+
         return openai_models
     except Exception as e:
         print(colors.red(f"Error fetching models: {e}"))
@@ -102,20 +110,20 @@ def chatbot(selected_model):
         messages.append({"role": "user", "content": message})
 
         try:
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model=selected_model,
                 messages=messages,
                 stream=True
             )
 
             for chunk in response:
-                chunk_message = chunk.choices[0].delta.get("content")
+                chunk_message = chunk.choices[0].delta.content
                 if chunk_message:
                     last_line = chunk_message
                     sys.stdout.write(colors.green(chunk_message))
                     sys.stdout.flush()
 
-            chat_message = chunk.choices[0].delta.get("content", "")
+            chat_message = chunk.choices[0].delta.content
             if chat_message:
                 messages.append({"role": "assistant", "content": chat_message})
         except Exception as e:
@@ -137,7 +145,7 @@ def file_only(filepath, model):
             youtube.read_file(filepath)
         )
 
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": INITIAL_PROMPT},
@@ -147,7 +155,7 @@ def file_only(filepath, model):
         )
 
         for chunk in response:
-            chunk_message = chunk.choices[0].delta.get("content")
+            chunk_message = chunk.choices[0].delta.content
             if chunk_message:
                 sys.stdout.write(colors.green(chunk_message))
                 sys.stdout.flush()
@@ -190,6 +198,5 @@ def cli():
             return
 
         chatbot(selected_model)
-    except:
+    except Exception as err:
         pass
-
