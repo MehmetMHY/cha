@@ -197,6 +197,9 @@ def cli():
             file_only(args.file, selected_model)
             return
 
-        chatbot(selected_model)
-    except Exception as err:
+        try:
+            chatbot(selected_model)
+        except:
+            pass
+    except:
         pass
