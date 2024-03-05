@@ -9,7 +9,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     install_requires=[
-        'openai==0.28.0',
+        'openai==1.13.3',
         'beautifulsoup4==4.12.3',
         'selenium==4.18.1',
         'webdriver-manager==4.0.1',
@@ -22,3 +22,4 @@ setup(
         ],
     },
 )
+
