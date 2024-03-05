@@ -42,7 +42,7 @@ def pick_img_model():
         print()
 
         while True:
-            picked_model = input("Model: ").strip()
+            picked_model = input(colors.blue("Model: ")).strip()
             if picked_model in [model[0] for model in openai_models]:
                 return picked_model
             else:
@@ -68,13 +68,13 @@ def save_url_img(filepath, url):
     except Exception as e:
         print(colors.red(f"Failed to grab image: {e}"))
 
-def main():
+def gen_image():
     try:
         model = pick_img_model()
-        prompt = get_user_input("Prompt: ")
-        quality = get_user_input("Quality (standard/hd): ", lambda x: x.lower() in ["standard", "hd"], colors.red("\nPlease enter 'standard' or 'hd' for quality\n"))
-        n = get_user_input("N (number of images): ", lambda x: x.isdigit() and int(x) > 0, colors.red("\nPlease enter a positive integer\n"))
-        size = get_user_input("Size (WidthxHeight): ", lambda x: 'x' in x and all(num.isdigit() for num in x.split('x')), colors.red("\nPlease enter size in format WidthxHeight (e.g., 1024x1024)\n"))
+        prompt = get_user_input(colors.blue("Prompt: "))
+        quality = get_user_input(colors.blue("Quality (standard/hd): "), lambda x: x.lower() in ["standard", "hd"], colors.red("\nPlease enter 'standard' or 'hd' for quality\n"))
+        n = get_user_input(colors.blue("N (number of images): "), lambda x: x.isdigit() and int(x) > 0, colors.red("\nPlease enter a positive integer\n"))
+        size = get_user_input(colors.blue("Size (WidthxHeight): "), lambda x: 'x' in x and all(num.isdigit() for num in x.split('x')), colors.red("\nPlease enter size in format WidthxHeight (e.g., 1024x1024)\n"))
     except:
         print(colors.red(f"\nError occurred well getting user input for image generation"))
         sys.exit(1)
@@ -85,10 +85,6 @@ def main():
             url = data.url
             filename = img_filename(model, prompt)
             save_url_img(filename, url)
-            print(colors.blue(f"\nCreated Image: {filename}"))
+            print(colors.green(f"\nCreated Image: {filename}"))
     except Exception as e:
         print(colors.red(f"Failed to generate image: {e}"))
-
-if __name__ == "__main__":
-    main()
-
