@@ -6,6 +6,14 @@
 
 A simple CLI chat tool to easily interface with OpenAI's LLM models
 
+## Features
+
+- Basic CLI chat interface to OpenAI’s LLM models
+- Web scraping for a provided link (supports JavaScript scraping)
+- YouTube scraping; scraping the transcript from a video
+- Multi-line support; easily copy+paste new lines into the CLI
+- Generate image(s) using OpenAI's image model(s)
+
 ## Demo:
 
 <div align="center">

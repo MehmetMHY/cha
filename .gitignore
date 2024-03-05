@@ -161,4 +161,7 @@ cython_debug/
 
 # custom
 .DS_Store
+*.jpg
+*.png
+*.jpeg
 
