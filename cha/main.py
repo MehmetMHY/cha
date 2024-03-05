@@ -5,14 +5,13 @@ import datetime
 
 # 3rd party packages
 from openai import OpenAI
-from cha import scrapper
-from cha import youtube
-from cha import colors
+from cha import scrapper, youtube, colors, image
 
 # hard coded config variables
 MULI_LINE_MODE_TEXT = "~!"
 CLEAR_HISTORY_TEXT = "!CLEAR"
 INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and to the point."
+IMG_GEN_MODE = "!IMG"
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -45,8 +44,9 @@ def chatbot(selected_model):
     multi_line_input = False
 
     print(colors.blue(f"Start chatting with the {selected_model} model (type 'quit' to stop)! Type '{MULI_LINE_MODE_TEXT}' to switch input mode."))
-    print(colors.green("Tip: During the chat, you can switch between single-line and multi-line input modes."))
-    print(colors.yellow(f"Type '{MULI_LINE_MODE_TEXT}' to toggle between these modes. In multi-line mode, type 'END' to send your message. Or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history."))
+    print(colors.yellow("\nTip: During the chat, you can switch between single-line and multi-line input modes."))
+    print(colors.yellow(f"\nType '{MULI_LINE_MODE_TEXT}' to toggle between these modes. In multi-line mode, type 'END' to send your message. Or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history."))
+    print(colors.yellow(f"\nEnter '{IMG_GEN_MODE}' to generate image(s)"))
 
     first_loop = True
     last_line = ""
@@ -63,9 +63,14 @@ def chatbot(selected_model):
 
         if not multi_line_input:
             message = sys.stdin.readline().rstrip('\n')
+            
             if message == MULI_LINE_MODE_TEXT:
                 multi_line_input = True
                 print(colors.blue("\n\nSwitched to multi-line input mode. Type 'END' to send message."))
+                continue
+            elif message.replace(" ", "") == IMG_GEN_MODE:
+                print("\n")
+                image.gen_image()
                 continue
             elif message.lower() == "quit":
                 break
