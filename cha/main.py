@@ -135,20 +135,29 @@ def chatbot(selected_model):
             print(colors.red(f"Error during chat: {e}"))
             break
 
-def file_only(filepath, model):
+def basic_chat(filepath, model, justString=None):
     try:
-        if "/" not in filepath:
-            filepath = os.path.join(os.getcwd(), filepath)
-        
-        if os.path.exists(filepath) == False:
-            print(colors.red(f"The following file does not exist: {filepath}"))
-            return
+        print_padding = False
 
-        print(colors.blue(f"Feeding the following file content to {model}:\n{filepath}\n"))
+        if justString == None:
+            if "/" not in filepath:
+                filepath = os.path.join(os.getcwd(), filepath)
+            
+            if os.path.exists(filepath) == False:
+                print(colors.red(f"The following file does not exist: {filepath}"))
+                return
 
-        content = "\n".join(
-            youtube.read_file(filepath)
-        )
+            print(colors.blue(f"Feeding the following file content to {model}:\n{filepath}\n"))
+
+            content = "\n".join(
+                youtube.read_file(filepath)
+            )
+        else:
+            content = justString
+            print_padding = True
+
+        if print_padding:
+            print()
 
         response = client.chat.completions.create(
             model=model,
@@ -159,11 +168,19 @@ def file_only(filepath, model):
             stream=True
         )
 
+        last_line = ""
         for chunk in response:
             chunk_message = chunk.choices[0].delta.content
             if chunk_message:
+                last_line = chunk_message
                 sys.stdout.write(colors.green(chunk_message))
                 sys.stdout.flush()
+
+        if last_line.startswith("\n") == False:
+            print()
+
+        if print_padding:
+            print()
     except Exception as e:
         print(colors.red(f"Error during chat: {e}"))
 
@@ -172,6 +189,7 @@ def cli():
         parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
         parser.add_argument('-m', '--model', help='Model to use for chatting', required=False)
         parser.add_argument('-f', '--file', help='Filepath to file that will be sent to the model (text only)', required=False)
+        parser.add_argument('-s', '--string', help='None interactive mode, just feed a string into the model')
 
         args = parser.parse_args()
 
@@ -198,8 +216,16 @@ def cli():
             print(colors.red("Invalid model selected. Exiting."))
             return
         
+        if args.string and args.file:
+            print(colors.red(f"You can't use the string and file option at the same time!"))
+            return
+        
+        if args.string:
+            basic_chat(None, selected_model, str(args.string))
+            return
+
         if args.file:
-            file_only(args.file, selected_model)
+            basic_chat(args.file, selected_model)
             return
 
         try:
