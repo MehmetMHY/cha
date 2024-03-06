@@ -3,6 +3,10 @@ import sys
 import argparse
 import datetime
 
+if 'OPENAI_API_KEY' not in os.environ:
+    print("The OPENAI_API_KEY environment variable is not defined. Grab your API key at: https://platform.openai.com/api-keys")
+    sys.exit(1)
+
 # 3rd party packages
 from openai import OpenAI
 from cha import scrapper, youtube, colors, image
