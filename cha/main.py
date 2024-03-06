@@ -4,7 +4,7 @@ import argparse
 import datetime
 
 if 'OPENAI_API_KEY' not in os.environ:
-    print("The OPENAI_API_KEY environment variable is not defined. Grab your API key at: https://platform.openai.com/api-keys")
+    print("The OPENAI_API_KEY env variable is not defined. Grab your API key at: https://platform.openai.com/api-keys")
     sys.exit(1)
 
 # 3rd party packages
@@ -12,10 +12,10 @@ from openai import OpenAI
 from cha import scrapper, youtube, colors, image
 
 # hard coded config variables
-MULI_LINE_MODE_TEXT = "~!"
-CLEAR_HISTORY_TEXT = "!CLEAR"
 INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and to the point."
-IMG_GEN_MODE = "!IMG"
+MULI_LINE_MODE_TEXT = "!m"
+CLEAR_HISTORY_TEXT = "!c"
+IMG_GEN_MODE = "!i"
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -47,10 +47,7 @@ def chatbot(selected_model):
     messages = [{"role": "system", "content": INITIAL_PROMPT}]
     multi_line_input = False
 
-    print(colors.blue(f"Start chatting with the {selected_model} model (type 'quit' to stop)! Type '{MULI_LINE_MODE_TEXT}' to switch input mode."))
-    print(colors.yellow("\nTip: During the chat, you can switch between single-line and multi-line input modes."))
-    print(colors.yellow(f"\nType '{MULI_LINE_MODE_TEXT}' to toggle between these modes. In multi-line mode, type 'END' to send your message. Or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history."))
-    print(colors.yellow(f"\nEnter '{IMG_GEN_MODE}' to generate image(s)"))
+    print(colors.blue(f"Starting chat with OpenAI's {selected_model} model. Type 'quit' to exit the chat, or type '{MULI_LINE_MODE_TEXT}' to toggle between single-line and multi-line input modes. In multi-line mode, type 'END' to send your message, or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history, or '{IMG_GEN_MODE}' to generate image(s)."))
 
     first_loop = True
     last_line = ""
@@ -76,9 +73,9 @@ def chatbot(selected_model):
                 print("\n")
                 image.gen_image()
                 continue
-            elif message.lower() == "quit":
+            elif message.replace(" ", "") == "quit":
                 break
-            elif message.upper() == CLEAR_HISTORY_TEXT:
+            elif message.replace(" ", "") == CLEAR_HISTORY_TEXT:
                 messages = [{"role": "system", "content": INITIAL_PROMPT}]
                 print(colors.blue("\n\nChat history cleared.\n"))
                 first_loop = True
