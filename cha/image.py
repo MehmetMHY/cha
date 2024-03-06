@@ -1,10 +1,12 @@
 import requests
-from openai import OpenAI
+import subprocess
 import sys
 import json
 import datetime
 import time
 
+# 3rd party packages
+from openai import OpenAI
 from cha import colors
 
 client = OpenAI()
@@ -68,6 +70,35 @@ def save_url_img(filepath, url):
     except Exception as e:
         print(colors.red(f"Failed to grab image: {e}"))
 
+def open_file_default_app(filepath):
+    try:
+        if sys.platform.startswith('linux'):
+            subprocess.run(['xdg-open', filepath], check=True)
+        elif sys.platform == 'darwin':
+            subprocess.run(['open', filepath], check=True)
+        elif sys.platform == 'win32':
+            subprocess.run(['start', filepath], shell=True, check=True)
+        else:
+            print(colors.red("Unsupported OS"))
+    except Exception as e:
+        print(colors.red(f"Failed to open file: {e}"))
+
+def get_user_open(filepath):
+    option = None
+    while True:
+        user_input = input(colors.yellow("Open The Image (y/n)? ")).lower()
+        if user_input in ['yes', 'y']:
+            option = True
+            break
+        elif user_input in ['no', 'n']:
+            option = False
+            break
+        else:
+            print(colors.red("\nInvalid input. Please enter yes, no, y, or n.\n"))
+    
+    if option == True:
+        open_file_default_app(filepath)
+
 def gen_image():
     try:
         model = pick_img_model()
@@ -81,10 +112,14 @@ def gen_image():
 
     try:
         response = client.images.generate(model=model, prompt=prompt, size=size, quality=quality, n=int(n))
-        for i, data in enumerate(response.data):
-            url = data.url
-            filename = img_filename(model, prompt)
-            save_url_img(filename, url)
-            print(colors.green(f"\nCreated Image: {filename}"))
+        url = response.data[0].url
+        filename = img_filename(model, prompt)
+        save_url_img(filename, url)
+        
+        print(colors.green(f"\nCreated Image:"))
+        print(f"{filename}\n")
+
+        get_user_open(filename)
     except Exception as e:
         print(colors.red(f"Failed to generate image: {e}"))
+
