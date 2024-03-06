@@ -13,6 +13,7 @@ A simple CLI chat tool to easily interface with OpenAI's LLM models
 - YouTube scraping; scraping the transcript from a video
 - Multi-line support; easily copy+paste new lines into the CLI
 - Generate image(s) using OpenAI's image model(s)
+- Supports interactive and non-interactive mode for chatting
 
 ## Demo:
 
@@ -66,16 +67,23 @@ cha
 You can create a useful alias/command to simplify the use of `cha`. Add this to your `.zshrc` or `.bashrc`. For example, here is a command I have in my `.zshrc`:
 
 ```bash
+"""
+For this function/code:
+- If no arguments are provided, it will run Cha in interactive mode (chat interface)
+- If an argument is provided, it will run Cha in non-interactive mode (sends one string, your argument)
+"""
+
 chatgpt () {
     DEFAULT_MODEL="gpt-4-turbo-preview"
     
-    # source OpenAI API key env variable
     source /Users/mehmet/.custom/.env
 
-    if [ $# -eq 0 ]; then
+    if [[ "$1" == "-f" && -n "$2" ]]; then
+        cha -m $DEFAULT_MODEL -f "$2"
+    elif [ $# -eq 0 ]; then
         cha --model $DEFAULT_MODEL
     else
-        cha "$@"
+        cha -m $DEFAULT_MODEL -s "$1"
     fi
 
     unset OPENAI_API_KEY
