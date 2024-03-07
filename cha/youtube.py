@@ -1,3 +1,9 @@
+"""
+March 7, 2024
+
+The YouTube Scrapper uses yt-dlp (https://github.com/yt-dlp/yt-dlp)
+"""
+
 import subprocess
 import uuid
 import time

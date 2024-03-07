@@ -1,27 +1,27 @@
 <p align="center">
-  <img width="300" src="./assets/logo.png">
+    <img width="300" src="./assets/logo.png">
 </p>
 
 ## About
 
-A simple CLI chat tool to easily interface with OpenAI's LLM models
+A simple CLI chat tool to easily interface with OpenAI's LLM models.
 
 ## Features
 
-- Basic CLI chat interface to OpenAI’s LLM models
-- Web scraping for a provided link (supports JavaScript scraping)
-- YouTube scraping; scraping the transcript from a video
-- Multi-line support; easily copy+paste new lines into the CLI
-- Generate image(s) using OpenAI's image model(s)
-- Supports interactive and non-interactive mode for chatting
+- Basic CLI chat interface to OpenAI’s LLM models.
+- Web scraping for a provided link (supports JavaScript scraping).
+- YouTube scraping; scraping the transcript from a video.
+- Multi-line support; easily copy and paste new lines into the CLI.
+- Generate images using OpenAI's image models.
+- Supports interactive and non-interactive mode for chatting.
 
-## Demo:
+## Demo
 
 <div align="center">
 
-[![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=qOOzjTdmg7w)
+[![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=YcfFC1IU_SA)
 
-*click the image to view the YouTube video or click here: https://www.youtube.com/watch?v=qOOzjTdmg7w*
+*Click the image to view the YouTube video or click here: https://www.youtube.com/watch?v=qOOzjTdmg7w.*
 
 </div>
 
@@ -62,20 +62,20 @@ Execute the main script by running:
 cha
 ```
 
-### 5. Optional, setup alias/command for cha
+### 5. Optionally, setup an alias/command for cha
 
 You can create a useful alias/command to simplify the use of `cha`. Add this to your `.zshrc` or `.bashrc`. For example, here is a command I have in my `.zshrc`:
 
 ```bash
 """
 For this function/code:
-- If no arguments are provided, it will run Cha in interactive mode (chat interface)
-- If an argument is provided, it will run Cha in non-interactive mode (sends one string, your argument)
+- If no arguments are provided, it will run Cha in interactive mode (chat interface).
+- If an argument is provided, it will run Cha in non-interactive mode (sends one string, your argument).
 """
 
 chatgpt () {
     DEFAULT_MODEL="gpt-4-turbo-preview"
-    
+
     source /Users/mehmet/.custom/.env
 
     if [[ "$1" == "-f" && -n "$2" ]]; then

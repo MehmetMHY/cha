@@ -164,4 +164,5 @@ cython_debug/
 *.jpg
 *.png
 *.jpeg
+.sandbox/
 
