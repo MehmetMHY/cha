@@ -1,9 +1,9 @@
-import requests
 import subprocess
-import sys
-import json
+import requests
 import datetime
+import json
 import time
+import sys
 
 # 3rd party packages
 from openai import OpenAI
@@ -79,7 +79,7 @@ def open_file_default_app(filepath):
         elif sys.platform == 'win32':
             subprocess.run(['start', filepath], shell=True, check=True)
         else:
-            print(colors.red("Unsupported OS"))
+            print(colors.red("OS is not supported"))
     except Exception as e:
         print(colors.red(f"Failed to open file: {e}"))
 

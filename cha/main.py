@@ -1,8 +1,9 @@
-import os
-import sys
 import argparse
 import datetime
+import sys
+import os
 
+# NOTE: make sure environment variable is defined before doing anything
 if 'OPENAI_API_KEY' not in os.environ:
     print("The OPENAI_API_KEY env variable is not defined. Grab your API key at: https://platform.openai.com/api-keys")
     sys.exit(1)
@@ -47,7 +48,7 @@ def chatbot(selected_model):
     messages = [{"role": "system", "content": INITIAL_PROMPT}]
     multi_line_input = False
 
-    print(colors.blue(f"Starting chat with OpenAI's {selected_model} model. Type 'quit' to exit the chat, or type '{MULI_LINE_MODE_TEXT}' to toggle between single-line and multi-line input modes. In multi-line mode, type 'END' to send your message, or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history, or '{IMG_GEN_MODE}' to generate image(s)."))
+    print(colors.yellow(f"Starting chat with OpenAI's {selected_model} model. Type 'quit' to exit the chat, or type '{MULI_LINE_MODE_TEXT}' to toggle between single-line and multi-line input modes. In multi-line mode, type 'END' to send your message, or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history, or '{IMG_GEN_MODE}' to generate image(s)."))
 
     first_loop = True
     last_line = ""
@@ -235,3 +236,4 @@ def cli():
             pass
     except:
         pass
+
