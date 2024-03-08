@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='cha',
-    version='0.2.0',
+    version='0.2.5',
     packages=find_packages(),
     license='MIT',
     description="A simple CLI chat tool to easily interface with OpenAI's LLM models",

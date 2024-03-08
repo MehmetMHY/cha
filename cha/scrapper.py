@@ -1,13 +1,14 @@
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
-from selenium import webdriver
-from bs4 import BeautifulSoup
 import signal
 import string
 import time
 import json
 import re
 
+# 3rd party packages
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+from selenium import webdriver
+from bs4 import BeautifulSoup
 from cha import youtube
 
 def extract_urls(text):
