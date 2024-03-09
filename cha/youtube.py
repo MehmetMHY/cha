@@ -7,8 +7,18 @@ The YouTube Scrapper uses yt-dlp (https://github.com/yt-dlp/yt-dlp)
 import subprocess
 import uuid
 import time
+import json
 import os
 import re
+
+def read_json(path):
+    with open(str(path)) as file:
+        content = json.load(file)
+    return content
+
+def write_json(path, data):
+    with open(str(path), "w") as file:
+        json.dump(data, file, indent=4)
 
 def read_file(path):
     with open(str(path)) as file:
