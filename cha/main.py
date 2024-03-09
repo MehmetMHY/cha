@@ -15,10 +15,12 @@ from cha import scrapper, youtube, colors, image
 
 # hard coded config variables
 INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and to the point."
+MULTI_LINE_SEND = "END"
 MULI_LINE_MODE_TEXT = "!m"
 CLEAR_HISTORY_TEXT = "!c"
 IMG_GEN_MODE = "!i"
 SAVE_CHAT_HISTORY = "!s"
+EXIT_STRING_KEY = "!e"
 
 # important global variables
 CURRENT_CHAT_HISTORY = []
@@ -49,11 +51,22 @@ def list_models():
         print(colors.red(f"Error fetching models: {e}"))
         sys.exit(1)
 
+def title_print(selected_model):
+    # last updated: 3-9-2024
+    print(colors.yellow(f"""Chatting With OpenAI's '{selected_model}' Model
+ - '{EXIT_STRING_KEY}' or enter CTRL-C to exit the chat
+ - '{MULI_LINE_MODE_TEXT}' to toggle between single & multi-line mode
+ - '{MULTI_LINE_SEND}' in multi-line mode to send message
+ - '{CLEAR_HISTORY_TEXT}' to clear chat history
+ - '{IMG_GEN_MODE}' for image generation
+ - '{SAVE_CHAT_HISTORY}' to save chat history""").strip())
+
 def chatbot(selected_model):
     messages = [{"role": "system", "content": INITIAL_PROMPT}]
     multi_line_input = False
 
-    print(colors.yellow(f"Starting chat with OpenAI's {selected_model} model. Type 'quit' to exit the chat, or type '{MULI_LINE_MODE_TEXT}' to toggle between single-line and multi-line input modes. In multi-line mode, type 'END' to send your message, or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history, or '{IMG_GEN_MODE}' to generate image(s). Enter '{SAVE_CHAT_HISTORY}' to save your current chat history to your current directory."))
+    # print the initial title
+    title_print(selected_model)
 
     first_loop = True
     last_line = ""
@@ -73,13 +86,13 @@ def chatbot(selected_model):
             
             if message == MULI_LINE_MODE_TEXT:
                 multi_line_input = True
-                print(colors.blue("\n\nSwitched to multi-line input mode. Type 'END' to send message."))
+                print(colors.blue(f"\n\nSwitched to multi-line input mode. Type '{MULTI_LINE_SEND}' to send message."))
                 continue
             elif message.replace(" ", "") == IMG_GEN_MODE:
                 print("\n")
                 image.gen_image()
                 continue
-            elif message.replace(" ", "") == "quit":
+            elif message.replace(" ", "") == EXIT_STRING_KEY.lower():
                 break
             elif message.replace(" ", "") == CLEAR_HISTORY_TEXT:
                 messages = [{"role": "system", "content": INITIAL_PROMPT}]
@@ -95,7 +108,7 @@ def chatbot(selected_model):
                     multi_line_input = False
                     print(colors.blue("\n\nSwitched to single-line input mode."))
                     break
-                elif line.lower() == "end":
+                elif line.lower() == MULTI_LINE_SEND.lower():
                     print()
                     break
                 message_lines.append(line)
@@ -127,7 +140,7 @@ def chatbot(selected_model):
 
         messages.append({"role": "user", "content": message})
 
-        obj_chat_history = { "user": message, "bot": "" }
+        obj_chat_history = { "time": time.time(), "user": message, "bot": "" }
         try:
             response = client.chat.completions.create(
                 model=selected_model,
