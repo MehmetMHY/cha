@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import time
 import sys
 import os
 
@@ -17,6 +18,10 @@ INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and 
 MULI_LINE_MODE_TEXT = "!m"
 CLEAR_HISTORY_TEXT = "!c"
 IMG_GEN_MODE = "!i"
+SAVE_CHAT_HISTORY = "!s"
+
+# important global variables
+CURRENT_CHAT_HISTORY = []
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -48,7 +53,7 @@ def chatbot(selected_model):
     messages = [{"role": "system", "content": INITIAL_PROMPT}]
     multi_line_input = False
 
-    print(colors.yellow(f"Starting chat with OpenAI's {selected_model} model. Type 'quit' to exit the chat, or type '{MULI_LINE_MODE_TEXT}' to toggle between single-line and multi-line input modes. In multi-line mode, type 'END' to send your message, or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history, or '{IMG_GEN_MODE}' to generate image(s)."))
+    print(colors.yellow(f"Starting chat with OpenAI's {selected_model} model. Type 'quit' to exit the chat, or type '{MULI_LINE_MODE_TEXT}' to toggle between single-line and multi-line input modes. In multi-line mode, type 'END' to send your message, or type '{CLEAR_HISTORY_TEXT}' to clear the current chat history, or '{IMG_GEN_MODE}' to generate image(s). Enter '{SAVE_CHAT_HISTORY}' to save your current chat history to your current directory."))
 
     first_loop = True
     last_line = ""
@@ -104,6 +109,12 @@ def chatbot(selected_model):
                 continue
 
         print()
+
+        if message == SAVE_CHAT_HISTORY:
+            cha_filepath = f"cha_{int(time.time())}.txt"
+            youtube.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
+            print(colors.red(f"\nSaved current saved history to {cha_filepath}"))
+            continue
         
         if len(scrapper.extract_urls(message)) > 0:
             print(colors.magenta("\n--- BROWSING THE WEB ---\n"))
@@ -116,6 +127,7 @@ def chatbot(selected_model):
 
         messages.append({"role": "user", "content": message})
 
+        obj_chat_history = { "user": message, "bot": "" }
         try:
             response = client.chat.completions.create(
                 model=selected_model,
@@ -128,6 +140,7 @@ def chatbot(selected_model):
                 if chunk_message:
                     last_line = chunk_message
                     sys.stdout.write(colors.green(chunk_message))
+                    obj_chat_history["bot"] += chunk_message
                     sys.stdout.flush()
 
             chat_message = chunk.choices[0].delta.content
@@ -136,6 +149,8 @@ def chatbot(selected_model):
         except Exception as e:
             print(colors.red(f"Error during chat: {e}"))
             break
+
+        CURRENT_CHAT_HISTORY.append(obj_chat_history)
 
 def basic_chat(filepath, model, justString=None):
     try:
