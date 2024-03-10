@@ -1,17 +1,17 @@
 import concurrent.futures
 import requests
-import openai
 import json
-import ast
 import time
-import os
+import ast
 import sys
+import os
 import re
 
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium import webdriver
 import tiktoken
+import openai
 
 from cha import scrapper
 
@@ -257,7 +257,7 @@ def research_prompt(url_data, question):
         "ids": source_ids
     }
 
-# main function
+# main function calls
 def answer_search(user_question, print_mode=False):
     output = {
         "all_urls": [],
@@ -373,8 +373,3 @@ def answer_search(user_question, print_mode=False):
     output["output"]["answer"] = response
 
     return output
-
-# TODO: remove this code after testing
-q = "What is the goal of life? I'm 25 I have no idea what I am doing with my life. How can I move forward?"
-x = answer_search(q, True)
-print(json.dumps(x, indent=4))
