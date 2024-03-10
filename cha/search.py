@@ -284,6 +284,10 @@ def answer_search(user_question, print_mode=False):
         }
     }
 
+    if print_mode:
+        print(f"Question: {user_question}")
+        print()
+    
     start_time = time.time()
 
     # gather search browser results/data
@@ -294,6 +298,14 @@ def answer_search(user_question, print_mode=False):
     output["models"]["small"]["tokens"] += token_count(raw_search_results["prompt"], main_embedding_model)
     output["search_results"] = search_results
     output["search_queries"] = list(search_results.keys())
+
+    if print_mode:
+        print(f"Sub-Questions:")
+        for i in output["search_queries"]:
+            print(f"- {i}")
+        print()
+        print(f"Started web scrapping...")
+        print()
 
     # scrape all webpages rathered from the browser
     all_urls = convert_all_urls(search_results)
@@ -306,22 +318,55 @@ def answer_search(user_question, print_mode=False):
     output["all_urls"] = all_urls
     output["scrapped_urls"] = scrapped_url_data
 
+    if print_mode:
+        print(f"Total Websites/URLs: {len(output['all_urls'])}")
+        print(f"Total Processed URLs: {len(list(output['scrapped_urls'].keys()))}")
+        print()
+
     # reduce token count by summarizing a lot of the results
     output["models"]["small"]["tokens"] += token_count(str(scrapped_url_data), main_embedding_model)
     scrapped_url_data = summarize_urls_data(scrapped_url_data)
     output["models"]["small"]["tokens"] += token_count(str(scrapped_url_data), main_embedding_model)
+
+    if print_mode:
+        print("Finished summarizing scarpped content")
+        print()
 
     # create main prompt for big model
     prompt_data = research_prompt(scrapped_url_data, user_question)
     prompt = prompt_data["prompt"]
     source_ids = prompt_data["ids"]
 
-    # send final prompt to the big model
-    response = client.chat.completions.create(
-        model=big_model,
-        messages=[{ "role": "system", "content": prompt }]
-    ).choices[0].message.content
+    # (print mode) send final prompt to the big model
+    final_response = ""
+    if print_mode:
+        print("---SOURCES---")
+        for i in source_ids:
+            print(f"{i}) {source_ids[i]}")
+        
+        print("\n---CONCLUSION---\n")
 
+        response = client.chat.completions.create(
+            model=big_model,
+            messages=[{ "role": "system", "content": prompt }],
+            stream=True
+        )
+
+        for chunk in response:
+            chunk_message = chunk.choices[0].delta.content
+            final_response += final_response
+            if chunk_message:
+                sys.stdout.write(chunk_message)
+                sys.stdout.flush()
+    
+    # (none print mode) send final prompt to the big model
+    if print_mode == False:
+        final_response = client.chat.completions.create(
+            model=big_model,
+            messages=[{ "role": "system", "content": prompt }]
+        ).choices[0].message.content
+
+    response = final_response
     output["models"]["large"]["tokens"] = token_count(prompt, main_embedding_model) + token_count(response, main_embedding_model)
     output["runtime"] = time.time() - start_time
     output["output"]["sources"] = source_ids
@@ -331,5 +376,5 @@ def answer_search(user_question, print_mode=False):
 
 # TODO: remove this code after testing
 q = "What is the goal of life? I'm 25 I have no idea what I am doing with my life. How can I move forward?"
-x = answer_search(q)
+x = answer_search(q, True)
 print(json.dumps(x, indent=4))
