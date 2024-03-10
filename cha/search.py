@@ -263,47 +263,43 @@ def research_prompt(url_data, question):
         "ids": source_ids
     }
 
-#############################################################
-#################### MAIN FUNCTION CALLS ####################
-#############################################################
+def answer_search(user_question):
+    start_time = time.time()
 
-user_question = input("QUESTION: ")
+    # gather search browser results/data
+    search_results = get_sources(user_question)
+    search_results = convert_search_results(search_results)
 
-# time starts AFTER user inputs their question
-start_time = time.time()
+    # scrape all webpages rathered from the browser
+    all_urls = convert_all_urls(search_results)
+    scrapped_url_data = scrape_urls_in_parallel(all_urls, len(all_urls))
+    for url in scrapped_url_data:
+        scrapped_url_data[url] = scrapper.remove_html(scrapped_url_data[url])
 
-# gather search browser results/data
-search_results = get_sources(user_question)
-search_results = convert_search_results(search_results)
+    # reduce token count by summarizing a lot of the results
+    scrapped_url_data = summarize_urls_data(scrapped_url_data)
 
-# scrape all webpages rathered from the browser
-all_urls = convert_all_urls(search_results)
-scrapped_url_data = scrape_urls_in_parallel(all_urls, len(all_urls))
-for url in scrapped_url_data:
-    scrapped_url_data[url] = scrapper.remove_html(scrapped_url_data[url])
+    # create main prompt for big model
+    prompt_data = research_prompt(scrapped_url_data, user_question)
+    prompt = prompt_data["prompt"]
+    source_ids = prompt_data["ids"]
 
-# reduce token count by summarizing a lot of the results
-scrapped_url_data = summarize_urls_data(scrapped_url_data)
+    # send final prompt to the big model
+    response = client.chat.completions.create(
+        model=big_model,
+        messages=[{ "role": "system", "content": prompt }]
+    ).choices[0].message.content
 
-# create main prompt for big model
-prompt_data = research_prompt(scrapped_url_data, user_question)
+    runtime = time.time() - start_time
 
-# --- below this line, we make the final conclusion and print result(s) ---
-prompt = prompt_data["prompt"]
-source_ids = prompt_data["ids"]
+    return {
+        "runtime": runtime,
+        "answer": response,
+        "sources": source_ids
+    }
 
-response = client.chat.completions.create(
-    model=big_model,
-    messages=[{ "role": "system", "content": prompt }]
-).choices[0].message.content
-
-print(f"\n-----CONCLUSION-----\n")
-print(response)
-print(f"\n------CITATION------\n")
-for key in source_ids:
-    print(f"{key}) {source_ids[key]}")
-print()
-
-runtime = time.time() - start_time
-
-print(f"\nRUNTIME: {runtime} seconds")
+# TODO: remove this after testing
+i = input("QUESTION: ")
+x = answer_search(i)
+print("\n")
+print(json.dumps(x, indent=4))
