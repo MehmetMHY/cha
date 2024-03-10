@@ -2,7 +2,10 @@ import requests
 import openai
 import json
 import ast
+import time
 import os
+
+client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 def brave_search(search_input):
     # (March 9, 2024) Setup Brave API key here:
@@ -53,43 +56,46 @@ def brave_search(search_input):
 
     return response.json()
 
-# MAIN FUNCTION CALLS
+def generate_search_results(question, model, time_delay=1.5):
+    prompt = f"Response to the following question as a JSON (array of strings). Question: Given a complex prompt, decompose it into multiple simpler search engine queries. Complex Prompt: {question}"
 
-client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": prompt}
+        ]
+    )
 
-question = input("Question: ")
+    queries = ast.literal_eval(response.choices[0].message.content)
+    queries.append(prompt)
 
-prompt = "Response to the following question as a JSON (array of strings). Question: Given a complex prompt, demopose it into muliple simpler search engine quries. Complex Prompt: {}".format(question)
+    results = {}
+    for query in list(set(queries)):
+        time.sleep(time_delay)
 
-response = client.chat.completions.create(
-    model="gpt-3.5-turbo-1106",
-    messages=[
-        {
-            "role": "system", 
-            "content": prompt
+        search = brave_search(query)
+
+        results[query] = {
+            "query": search["query"]["original"],
+            "pages": []
         }
-    ]
-)
 
-queries = ast.literal_eval(response.choices[0].message.content)
-queries.append(prompt)
-queries = list(set(queries))
+        for page in search["web"]["results"]:
+            results[query]["pages"].append({
+                "title": page["title"],
+                "url": page["url"],
+                "age": page.get("page_age")
+            })
 
-results = {}
-for query in queries:
-    search = brave_search(query)
+    return results
 
-    results[query] = {
-        "query": search["query"]["original"],
-        "pages": []
-    }
-
-    for page in search["web"]["results"]:
-        results[query]["pages"].append({
-            "title": page["title"],
-            "url": page["url"],
-            "age": page.get("page_age")
-        })
-
-print(json.dumps(results, indent=4))
-
+def get_sources(query):
+    try:
+        response = generate_search_results(
+            query,
+            "gpt-3.5-turbo-1106",
+            1.5
+        )
+        return response
+    except:
+        return None
