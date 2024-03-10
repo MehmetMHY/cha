@@ -165,4 +165,7 @@ cython_debug/
 *.png
 *.jpeg
 .sandbox/
+bd.json
+ms.json
+sd.json
 
