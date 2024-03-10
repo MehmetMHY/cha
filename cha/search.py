@@ -15,9 +15,10 @@ import tiktoken
 
 from cha import scrapper
 
+# hard coded config variables
 main_embedding_model ="cl100k_base"
 cheap_model = "gpt-3.5-turbo-1106"
-cheap_model_max_token = ( 16385 ) - 100 # TODO: an offset is made for safety
+cheap_model_max_token = ( 16385 ) - 100
 big_model = "gpt-4-turbo-preview"
 
 client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
@@ -263,6 +264,7 @@ def research_prompt(url_data, question):
         "ids": source_ids
     }
 
+# main function
 def answer_search(user_question):
     start_time = time.time()
 
@@ -297,9 +299,3 @@ def answer_search(user_question):
         "answer": response,
         "sources": source_ids
     }
-
-# TODO: remove this after testing
-i = input("QUESTION: ")
-x = answer_search(i)
-print("\n")
-print(json.dumps(x, indent=4))
