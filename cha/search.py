@@ -6,6 +6,7 @@ import ast
 import time
 import os
 import sys
+import re
 
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
@@ -14,11 +15,12 @@ import tiktoken
 
 from cha import scrapper
 
-client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-cheap_model = "gpt-3.5-turbo-1106"
-cheap_model_max_token = 16385 - 100
 main_embedding_model ="cl100k_base"
+cheap_model = "gpt-3.5-turbo-1106"
+cheap_model_max_token = ( 16385 ) - 100 # TODO: an offset is made for safety
 big_model = "gpt-4-turbo-preview"
+
+client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 def brave_search(search_input):
     # (March 9, 2024) Setup Brave API key here:
@@ -145,11 +147,51 @@ def convert_search_results(search_results):
         search_results[key]["pages"] = url_dict
     return search_results
 
+def is_valid_url(url):
+    # LAST UPDATED: March 10, 2024
+
+    # Expanded list of file extensions to exclude
+    excluded_extensions = [
+        '.pdf', '.xml', '.css', '.docx', '.xlsx', '.pptx', '.zip', '.rar',
+        '.exe', '.dmg', '.tar.gz', '.mp3', '.mp4', '.avi', '.mov', '.jpg',
+        '.jpeg', '.png', '.gif', '.bmp', '.csv', '.json', '.txt', '.ppt',
+        '.pptx', '.doc', '.xls', '.rtf', '.7z', '.iso', '.wav', '.mkv'
+    ]
+
+    # Optional: Make a HEAD request to check the Content-Type (not included in this snippet)
+    # You would need to use requests.head(url).headers['Content-Type'] and check if it starts with 'text/html'
+
+    # Check if the URL ends with any of the excluded extensions
+    if any(url.lower().endswith(ext) for ext in excluded_extensions):
+        return False
+
+    # Additional patterns to exclude URLs that are likely non-HTML content
+    # These patterns match common file naming conventions on the web
+    patterns = [
+        r"/[^/?#]+\.[^/?#]+($|\?|#)",  # Paths with a file extension
+        r"/[^/?#]+/download($|\?|#)",  # URLs with "download" in the last path segment
+        r"/api/",                      # URLs that likely point to an API endpoint
+        r"/[^/?#]+\.php($|\?|#)"       # PHP files (often dynamic but can be used for downloads)
+    ]
+
+    if any(re.search(pattern, url, re.IGNORECASE) for pattern in patterns):
+        return False
+
+    return True
+
 def convert_all_urls(search_results):
+    # merge all url lists into one list
     all_urls = []
     for key in search_results:
         all_urls += search_results[key]["pages"].keys()
-    return list(set(all_urls))
+
+    # filter by only valid urls
+    final_urls = []
+    for url in all_urls:
+        if is_valid_url(url):
+            final_urls.append(url)
+
+    return list(set(final_urls))
 
 def scrape_html(url, headless=True, time_delay=10):
     options = webdriver.ChromeOptions()
@@ -221,30 +263,32 @@ def research_prompt(url_data, question):
         "ids": source_ids
     }
 
-####################---MAIN---FUNCTION---CALLS---####################
+#############################################################
+#################### MAIN FUNCTION CALLS ####################
+#############################################################
 
 user_question = input("QUESTION: ")
 
 # time starts AFTER user inputs their question
 start_time = time.time()
 
-print("---> Starting grabbing search results") # TODO: remove later
+# gather search browser results/data
 search_results = get_sources(user_question)
 search_results = convert_search_results(search_results)
 
-print("---> Scrapping search results (urls)") # TODO: remove later
+# scrape all webpages rathered from the browser
 all_urls = convert_all_urls(search_results)
 scrapped_url_data = scrape_urls_in_parallel(all_urls, len(all_urls))
 for url in scrapped_url_data:
     scrapped_url_data[url] = scrapper.remove_html(scrapped_url_data[url])
 
-print("---> Summarizing all scrapped data") # TODO: remove later
+# reduce token count by summarizing a lot of the results
 scrapped_url_data = summarize_urls_data(scrapped_url_data)
 
+# create main prompt for big model
 prompt_data = research_prompt(scrapped_url_data, user_question)
 
-# below this line, we make the final conclusion and print result(s)
-
+# --- below this line, we make the final conclusion and print result(s) ---
 prompt = prompt_data["prompt"]
 source_ids = prompt_data["ids"]
 
