@@ -5,6 +5,7 @@ import json
 import ast
 import time
 import os
+import sys
 
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
@@ -83,21 +84,24 @@ def generate_search_results(question, model, time_delay=1.5):
 
     results = {}
     for query in list(set(queries)):
-        time.sleep(time_delay)
+        try:
+            time.sleep(time_delay)
 
-        search = brave_search(query)
+            search = brave_search(query)
 
-        results[query] = {
-            "query": search["query"]["original"],
-            "pages": []
-        }
+            results[query] = {
+                "query": search["query"]["original"],
+                "pages": []
+            }
 
-        for page in search["web"]["results"]:
-            results[query]["pages"].append({
-                "title": page["title"],
-                "url": page["url"],
-                "age": page.get("page_age")
-            })
+            for page in search["web"]["results"]:
+                results[query]["pages"].append({
+                    "title": page["title"],
+                    "url": page["url"],
+                    "age": page.get("page_age")
+                })
+        except:
+            pass
 
     return results
 
@@ -106,15 +110,12 @@ def get_sources(query):
         response = generate_search_results(
             query,
             cheap_model,
-            1.5
+            2.0
         )
         return response
-    except:
+    except Exception as err:
+        print(err)
         return None
-
-######################################################################
-################ LOCAL TESTING - REMOVE AFTER TESTING ################
-######################################################################
 
 def token_count(string: str, encoding_name: str) -> int:
     encoding = tiktoken.get_encoding(encoding_name)
@@ -130,11 +131,6 @@ def adjust_prompt_to_token_limit(model, prompt: str, token_limit: int) -> str:
         prompt = prompt[:-(diff)]
         num_tokens = token_count(prompt, model)
     return prompt
-
-def read_json(path):
-    with open(str(path)) as file:
-        content = json.load(file)
-    return content
     
 def convert_search_results(search_results):
     for key in search_results:
@@ -224,23 +220,30 @@ def research_prompt(url_data, question):
         "prompt": prompt,
         "ids": source_ids
     }
-    
 
+####################---MAIN---FUNCTION---CALLS---####################
 
-####################-MAIN-FUNCTION-CALLS-####################
+user_question = input("QUESTION: ")
 
-# search_results = convert_search_results(read_json("bd.json"))
+# time starts AFTER user inputs their question
+start_time = time.time()
 
-# all_urls = convert_all_urls(search_results)
+print("---> Starting grabbing search results") # TODO: remove later
+search_results = get_sources(user_question)
+search_results = convert_search_results(search_results)
 
-# scrapped_url_data = scrape_urls_in_parallel(all_urls, len(all_urls))
-# for url in scrapped_url_data:
-#     scrapped_url_data[url] = scrapper.remove_html(scrapped_url_data[url])
+print("---> Scrapping search results (urls)") # TODO: remove later
+all_urls = convert_all_urls(search_results)
+scrapped_url_data = scrape_urls_in_parallel(all_urls, len(all_urls))
+for url in scrapped_url_data:
+    scrapped_url_data[url] = scrapper.remove_html(scrapped_url_data[url])
 
-# scrapped_url_data = summarize_urls_data(scrapped_url_data)
+print("---> Summarizing all scrapped data") # TODO: remove later
+scrapped_url_data = summarize_urls_data(scrapped_url_data)
 
-scrapped_url_data = read_json("ms.json")
-prompt_data = research_prompt(scrapped_url_data, "What is the goal of life?")
+prompt_data = research_prompt(scrapped_url_data, user_question)
+
+# below this line, we make the final conclusion and print result(s)
 
 prompt = prompt_data["prompt"]
 source_ids = prompt_data["ids"]
@@ -256,3 +259,7 @@ print(f"\n------CITATION------\n")
 for key in source_ids:
     print(f"{key}) {source_ids[key]}")
 print()
+
+runtime = time.time() - start_time
+
+print(f"\nRUNTIME: {runtime} seconds")
