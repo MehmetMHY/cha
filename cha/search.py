@@ -30,34 +30,24 @@ def brave_search(search_input):
     params = {
         # required: The user's search query term
         "q": search_input,
-
         # optional: The search query country
         "country": "us",
-
         # optional: The search language preference
         "search_lang": "en",
-
         # optional: User interface language preferred in response
         "ui_lang": "en-US",
-
         # optional: The number of search results returned in response
         "count": 5,
-
         # optional: The zero-based offset for pagination
         "offset": 0,
-
         # optional: Filters search results for adult content
         "safesearch": "moderate",
-
         # optional: Filters search results by when they were discovered
         "freshness": "none",
-
         # optional: Specifies if text decorations should be applied
         "text_decorations": 1,
-
         # optional: Specifies if spellcheck should be applied
         "spellcheck": 1,
-
         # optional: A comma-delimited string of result types to include
         "result_filter": "web,news",
     }
@@ -72,7 +62,7 @@ def brave_search(search_input):
 
     return response.json()
 
-def generate_search_results(question, model, time_delay=1.5):
+def generate_search_results(question, model, time_delay=1.5):    
     prompt = f"Response to the following question as a JSON (array of strings). Question: Given a complex prompt, decompose it into multiple simpler search engine queries. Complex Prompt: {question}"
 
     response = client.chat.completions.create(
@@ -106,7 +96,10 @@ def generate_search_results(question, model, time_delay=1.5):
         except:
             pass
 
-    return results
+    return {
+        "prompt": prompt,
+        "results": results
+    }
 
 def get_sources(query):
     try:
@@ -265,21 +258,58 @@ def research_prompt(url_data, question):
     }
 
 # main function
-def answer_search(user_question):
+def answer_search(user_question, print_mode=False):
+    output = {
+        "all_urls": [],
+        "scrapped_urls": [],
+        "runtime": 0,
+        "search_queries": [],
+        "models": {
+            "small": {
+                "name": cheap_model,
+                "tokens": 0,
+                "embedding": main_embedding_model
+            },
+            "large": {
+                "name": big_model,
+                "tokens": 0,
+                "embedding": main_embedding_model
+            }
+        },
+        "search_results": {},
+        "output": {
+            "question": user_question,
+            "sources": {},
+            "answer": ""
+        }
+    }
+
     start_time = time.time()
 
     # gather search browser results/data
-    search_results = get_sources(user_question)
+    raw_search_results = get_sources(user_question)
+    search_results = raw_search_results["results"]
     search_results = convert_search_results(search_results)
+
+    output["models"]["small"]["tokens"] += token_count(raw_search_results["prompt"], main_embedding_model)
+    output["search_results"] = search_results
+    output["search_queries"] = list(search_results.keys())
 
     # scrape all webpages rathered from the browser
     all_urls = convert_all_urls(search_results)
-    scrapped_url_data = scrape_urls_in_parallel(all_urls, len(all_urls))
-    for url in scrapped_url_data:
-        scrapped_url_data[url] = scrapper.remove_html(scrapped_url_data[url])
+    raw_scrapped_url_data = scrape_urls_in_parallel(all_urls, len(all_urls))
+    scrapped_url_data = {}
+    for url in raw_scrapped_url_data:
+        if raw_scrapped_url_data[url] != None:
+            scrapped_url_data[url] = scrapper.remove_html(raw_scrapped_url_data[url])
+    
+    output["all_urls"] = all_urls
+    output["scrapped_urls"] = scrapped_url_data
 
     # reduce token count by summarizing a lot of the results
+    output["models"]["small"]["tokens"] += token_count(str(scrapped_url_data), main_embedding_model)
     scrapped_url_data = summarize_urls_data(scrapped_url_data)
+    output["models"]["small"]["tokens"] += token_count(str(scrapped_url_data), main_embedding_model)
 
     # create main prompt for big model
     prompt_data = research_prompt(scrapped_url_data, user_question)
@@ -292,10 +322,14 @@ def answer_search(user_question):
         messages=[{ "role": "system", "content": prompt }]
     ).choices[0].message.content
 
-    runtime = time.time() - start_time
+    output["models"]["large"]["tokens"] = token_count(prompt, main_embedding_model) + token_count(response, main_embedding_model)
+    output["runtime"] = time.time() - start_time
+    output["output"]["sources"] = source_ids
+    output["output"]["answer"] = response
 
-    return {
-        "runtime": runtime,
-        "answer": response,
-        "sources": source_ids
-    }
+    return output
+
+# TODO: remove this code after testing
+q = "What is the goal of life? I'm 25 I have no idea what I am doing with my life. How can I move forward?"
+x = answer_search(q)
+print(json.dumps(x, indent=4))
