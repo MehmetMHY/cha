@@ -13,7 +13,7 @@ from selenium import webdriver
 import tiktoken
 import openai
 
-from cha import scrapper
+from cha import scrapper, colors
 
 # hard coded config variables
 main_embedding_model ="cl100k_base"
@@ -110,7 +110,6 @@ def get_sources(query):
         )
         return response
     except Exception as err:
-        print(err)
         return None
 
 def token_count(string: str, encoding_name: str) -> int:
@@ -215,7 +214,7 @@ def scrape_urls_in_parallel(urls, max_workers=20):
                 html_content = future.result()
                 results[url] = html_content
             except Exception as exc:
-                print(f"Error for {url}: {exc}")
+                # print(f"Error for {url}: {exc}")
                 results[url] = None
     return results
 
@@ -285,7 +284,7 @@ def answer_search(user_question, print_mode=False):
     }
 
     if print_mode:
-        print(f"Question: {user_question}")
+        print(colors.green("Question: ") + str(user_question))
         print()
     
     start_time = time.time()
@@ -300,11 +299,11 @@ def answer_search(user_question, print_mode=False):
     output["search_queries"] = list(search_results.keys())
 
     if print_mode:
-        print(f"Sub-Questions:")
+        print(colors.blue(f"Sub-Questions:"))
         for i in output["search_queries"]:
-            print(f"- {i}")
+            print(colors.blue(f"- {i}"))
         print()
-        print(f"Started web scrapping...")
+        print(colors.yellow(f"Started web scrapping..."))
         print()
 
     # scrape all webpages rathered from the browser
@@ -319,8 +318,8 @@ def answer_search(user_question, print_mode=False):
     output["scrapped_urls"] = scrapped_url_data
 
     if print_mode:
-        print(f"Total Websites/URLs: {len(output['all_urls'])}")
-        print(f"Total Processed URLs: {len(list(output['scrapped_urls'].keys()))}")
+        print(colors.blue(f"Total Websites/URLs: {len(output['all_urls'])}"))
+        print(colors.blue(f"Total Processed URLs: {len(list(output['scrapped_urls'].keys()))}"))
         print()
 
     # reduce token count by summarizing a lot of the results
@@ -329,7 +328,7 @@ def answer_search(user_question, print_mode=False):
     output["models"]["small"]["tokens"] += token_count(str(scrapped_url_data), main_embedding_model)
 
     if print_mode:
-        print("Finished summarizing scarpped content")
+        print(colors.yellow("Finished summarizing scarpped content"))
         print()
 
     # create main prompt for big model
@@ -340,11 +339,11 @@ def answer_search(user_question, print_mode=False):
     # (print mode) send final prompt to the big model
     final_response = ""
     if print_mode:
-        print("---SOURCES---")
+        print(colors.yellow("---SOURCES---\n"))
         for i in source_ids:
-            print(f"{i}) {source_ids[i]}")
+            print(colors.yellow(f"{i}) {source_ids[i]}"))
         
-        print("\n---CONCLUSION---\n")
+        print(colors.green("\n---CONCLUSION---\n"))
 
         response = client.chat.completions.create(
             model=big_model,
@@ -356,7 +355,7 @@ def answer_search(user_question, print_mode=False):
             chunk_message = chunk.choices[0].delta.content
             final_response += final_response
             if chunk_message:
-                sys.stdout.write(chunk_message)
+                sys.stdout.write( colors.green(chunk_message) )
                 sys.stdout.flush()
     
     # (none print mode) send final prompt to the big model
