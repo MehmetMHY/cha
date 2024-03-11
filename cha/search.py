@@ -28,27 +28,27 @@ def brave_search(search_input):
     #       https://api.search.brave.com/app/dashboard
     
     params = {
-        # required: The user's search query term
+        # (required) the user's search query term
         "q": search_input,
-        # optional: The search query country
+        # (optional) the search query country
         "country": "us",
-        # optional: The search language preference
+        # (optional) the search language preference
         "search_lang": "en",
-        # optional: User interface language preferred in response
+        # (optional) user interface language preferred in response
         "ui_lang": "en-US",
-        # optional: The number of search results returned in response
+        # (optional) the number of search results returned in response
         "count": 5,
-        # optional: The zero-based offset for pagination
+        # (optional) the zero-based offset for pagination
         "offset": 0,
-        # optional: Filters search results for adult content
+        # (optional) filters search results for adult content
         "safesearch": "moderate",
-        # optional: Filters search results by when they were discovered
+        # (optional) filters search results by when they were discovered
         "freshness": "none",
-        # optional: Specifies if text decorations should be applied
+        # (optional) specifies if text decorations should be applied
         "text_decorations": 1,
-        # optional: Specifies if spellcheck should be applied
+        # (optional) specifies if spellcheck should be applied
         "spellcheck": 1,
-        # optional: A comma-delimited string of result types to include
+        # (optional) a comma-delimited string of result types to include
         "result_filter": "web,news",
     }
 
@@ -143,7 +143,6 @@ def convert_search_results(search_results):
 def is_valid_url(url):
     # LAST UPDATED: March 10, 2024
 
-    # Expanded list of file extensions to exclude
     excluded_extensions = [
         '.pdf', '.xml', '.css', '.docx', '.xlsx', '.pptx', '.zip', '.rar',
         '.exe', '.dmg', '.tar.gz', '.mp3', '.mp4', '.avi', '.mov', '.jpg',
@@ -151,20 +150,16 @@ def is_valid_url(url):
         '.pptx', '.doc', '.xls', '.rtf', '.7z', '.iso', '.wav', '.mkv'
     ]
 
-    # Optional: Make a HEAD request to check the Content-Type (not included in this snippet)
-    # You would need to use requests.head(url).headers['Content-Type'] and check if it starts with 'text/html'
-
-    # Check if the URL ends with any of the excluded extensions
+    # check if the URL ends with any of the excluded extensions
     if any(url.lower().endswith(ext) for ext in excluded_extensions):
         return False
 
-    # Additional patterns to exclude URLs that are likely non-HTML content
-    # These patterns match common file naming conventions on the web
+    # match common file naming conventions on the web; likely non-HTML content
     patterns = [
-        r"/[^/?#]+\.[^/?#]+($|\?|#)",  # Paths with a file extension
-        r"/[^/?#]+/download($|\?|#)",  # URLs with "download" in the last path segment
-        r"/api/",                      # URLs that likely point to an API endpoint
-        r"/[^/?#]+\.php($|\?|#)"       # PHP files (often dynamic but can be used for downloads)
+        r"/[^/?#]+\.[^/?#]+($|\?|#)",  # paths with a file extension
+        r"/[^/?#]+/download($|\?|#)",  # urls with "download" in the last path segment
+        r"/api/",                      # urls that likely point to an API endpoint
+        r"/[^/?#]+\.php($|\?|#)"       # php files (often dynamic but can be used for downloads)
     ]
 
     if any(re.search(pattern, url, re.IGNORECASE) for pattern in patterns):
