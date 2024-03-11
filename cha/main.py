@@ -61,7 +61,7 @@ def title_print(selected_model):
  - '{CLEAR_HISTORY_TEXT}' to clear chat history
  - '{IMG_GEN_MODE}' for image generation
  - '{SAVE_CHAT_HISTORY}' to save chat history
- - '{ADVANCE_SEARCH_KEY}' and a question to run an advance-search""").strip())
+ - '{ADVANCE_SEARCH_KEY}' and a question to run an answer-search""").strip())
 
 def chatbot(selected_model):
     messages = [{"role": "system", "content": INITIAL_PROMPT}]

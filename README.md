@@ -14,7 +14,8 @@ A simple CLI chat tool to easily interface with OpenAI's LLM models.
 - Multi-line support; easily copy and paste new lines into the CLI.
 - Generate images using OpenAI's image models.
 - Supports interactive and non-interactive mode for chatting.
-- Advance-Search, using the Brave API, similar to Perplexity AI's search engine.
+- Answer-Search, using the Brave API, similar to Perplexity AI's search engine.
+  - Click [HERE](https://www.youtube.com/watch?v=pTHk5G6TzH4) to see a demo of Answer-Search
 
 ## Demo
 
@@ -22,7 +23,7 @@ A simple CLI chat tool to easily interface with OpenAI's LLM models.
 
 [![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=YcfFC1IU_SA)
 
-*Click the image to view the YouTube video or click here: https://www.youtube.com/watch?v=qOOzjTdmg7w.*
+*Click the image or go to https://www.youtube.com/watch?v=qOOzjTdmg7w*
 
 </div>
 
@@ -30,7 +31,7 @@ A simple CLI chat tool to easily interface with OpenAI's LLM models.
 
 ### 1. Install cha
 
-Run the following command to install or upgrade `cha`:
+Clone this repo, cd into it's directory, and run the following command to install or upgrade `cha`:
 
 ```bash
 pip3 install --upgrade .
@@ -44,14 +45,14 @@ pip3 install --upgrade .
 
 3. Add your keys to the `.env` file, following this format:
 
-- You can get your OpenAI API key [HERE](https://platform.openai.com/api-keys)
-- If you want to use Advance-Search, you need to grab a Brave API key which you can [HERE](https://brave.com/search/api/)
+   - You can get your OpenAI API key [HERE](https://platform.openai.com/api-keys)
+   - If you want to use Answer-Search, you need to grab a Brave API key which you can [HERE](https://brave.com/search/api/)
 
 ```env
 # Replace YOUR_KEY_HERE with your OpenAI API key
 export OPENAI_API_KEY="YOUR_KEY_HERE"
 
-# (optional) replace YOUR_KEY_HERE with your Brave API key for advance-search
+# (optional) replace YOUR_KEY_HERE with your Brave API key for Answer-Search
 export BRAVE_API_KEY="YOUR_KEY_HERE"
 ```
 
