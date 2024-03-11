@@ -69,9 +69,9 @@ Execute the main script by running:
 cha
 ```
 
-### 5. Optional, setup an alias/command for cha
+### 4. Optional, setup an alias/command for cha
 
-You can create a useful alias/command to simplify the use of `cha`. Add this to your `.zshrc` or `.bashrc`. For example, here is a command I have in my `.zshrc`:
+You can create a useful alias/command to simplify the use of `cha`. Add this to your `.zshrc` or `.bashrc`. For example, here is an alias/command I have in my `.zshrc`:
 
 ```bash
 """
