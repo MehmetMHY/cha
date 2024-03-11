@@ -73,7 +73,7 @@ def generate_search_results(question, model, time_delay=1.5):
     )
 
     queries = ast.literal_eval(response.choices[0].message.content)
-    queries.append(prompt)
+    queries.append(question)
 
     results = {}
     for query in list(set(queries)):
@@ -304,11 +304,11 @@ def answer_search(user_question, print_mode=False):
     output["search_queries"] = list(search_results.keys())
 
     if print_mode:
-        print(colors.blue(f"Sub-Questions:"))
+        print(colors.green(f"Sub-Questions:"))
         for i in output["search_queries"]:
-            print(colors.blue(f"- {i}"))
+            print(f"- {i}")
         print()
-        print(colors.yellow(f"Started web scrapping..."))
+        print(colors.green(f"Started web scrapping..."))
         print()
 
     # scrape all webpages rathered from the browser
@@ -323,8 +323,8 @@ def answer_search(user_question, print_mode=False):
     output["scrapped_urls"] = scrapped_url_data
 
     if print_mode:
-        print(colors.blue(f"Total Websites/URLs: {len(output['all_urls'])}"))
-        print(colors.blue(f"Total Processed URLs: {len(list(output['scrapped_urls'].keys()))}"))
+        print(colors.green(f"Total Websites/URLs: ") + str(len(output['all_urls'])))
+        print(colors.green(f"Total Processed URLs: ") + str(len(list(output['scrapped_urls'].keys()))))
         print()
 
     # reduce token count by summarizing a lot of the results
@@ -333,7 +333,7 @@ def answer_search(user_question, print_mode=False):
     output["models"]["small"]["tokens"] += token_count(str(scrapped_url_data), main_embedding_model)
 
     if print_mode:
-        print(colors.yellow("Finished summarizing scarpped content"))
+        print(colors.green("Finished summarizing scarpped content"))
         print()
 
     # create main prompt for big model
@@ -344,11 +344,11 @@ def answer_search(user_question, print_mode=False):
     # (print mode) send final prompt to the big model
     final_response = ""
     if print_mode:
-        print(colors.yellow("---SOURCES---\n"))
+        print(colors.blue("=======Bibliography=======\n"))
         for i in source_ids:
             print(colors.yellow(f"{i}) {source_ids[i]}"))
         
-        print(colors.green("\n---CONCLUSION---\n"))
+        print(colors.blue("\n========CONCLUSION========\n"))
 
         response = client.chat.completions.create(
             model=big_model,
@@ -375,5 +375,18 @@ def answer_search(user_question, print_mode=False):
     output["runtime"] = time.time() - start_time
     output["output"]["sources"] = source_ids
     output["output"]["answer"] = response
+
+    if print_mode:
+        print("\n\n")
+        print(colors.green(f'SM Small Model: ') + str(output["models"]["small"]["name"]))
+        print(colors.green(f'SM Embedding:   ') + str(output["models"]["small"]["embedding"]))
+        print(colors.green(f'SM Tokens:      ') + str(output["models"]["small"]["tokens"]))
+        print()
+        print(colors.green(f'LM Large Model: ') + str(output["models"]["large"]["name"]))
+        print(colors.green(f'LM Embedding:   ') + str(output["models"]["large"]["embedding"]))
+        print(colors.green(f'LM Tokens:      ') + str(output["models"]["large"]["tokens"]))
+        print()
+        print(colors.green(f'Total Tokens:   ') + str(output["models"]["small"]["tokens"] + output["models"]["large"]["tokens"]))
+        print(colors.green(f'Total Runtime:  ') + f'{round(output["runtime"], 2)} seconds ({round(output["runtime"] / 60, 2)} minutes)')
 
     return output
