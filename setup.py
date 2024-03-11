@@ -10,10 +10,11 @@ setup(
     long_description_content_type='text/markdown',
     install_requires=[
         'openai==1.13.3',
+        'tiktoken==0.5.1',
         'beautifulsoup4==4.12.3',
         'selenium==4.18.1',
         'webdriver-manager==4.0.1',
-        'yt-dlp==2023.12.30'
+        'yt-dlp==2024.03.10'
     ],
     python_requires='>=3.10',
     entry_points={

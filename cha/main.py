@@ -11,7 +11,7 @@ if 'OPENAI_API_KEY' not in os.environ:
 
 # 3rd party packages
 from openai import OpenAI
-from cha import scrapper, youtube, colors, image
+from cha import scrapper, youtube, colors, image, search
 
 # hard coded config variables
 INITIAL_PROMPT = "You are a helpful assistant who keeps your response short and to the point."
@@ -21,6 +21,7 @@ CLEAR_HISTORY_TEXT = "!c"
 IMG_GEN_MODE = "!i"
 SAVE_CHAT_HISTORY = "!s"
 EXIT_STRING_KEY = "!e"
+ADVANCE_SEARCH_KEY = "!b"
 
 # important global variables
 CURRENT_CHAT_HISTORY = []
@@ -59,7 +60,8 @@ def title_print(selected_model):
  - '{MULTI_LINE_SEND}' in multi-line mode to send message
  - '{CLEAR_HISTORY_TEXT}' to clear chat history
  - '{IMG_GEN_MODE}' for image generation
- - '{SAVE_CHAT_HISTORY}' to save chat history""").strip())
+ - '{SAVE_CHAT_HISTORY}' to save chat history
+ - '{ADVANCE_SEARCH_KEY}' and a question to run an advance-search""").strip())
 
 def chatbot(selected_model):
     messages = [{"role": "system", "content": INITIAL_PROMPT}]
@@ -121,7 +123,21 @@ def chatbot(selected_model):
             if not multi_line_input:
                 continue
 
+        # NOTE: this is annoying, but we have to account for this :(
         print()
+
+        if ADVANCE_SEARCH_KEY in message:
+            try:
+                asq = " ".join(message.replace(ADVANCE_SEARCH_KEY, "").split())
+                # NOTE: the question most be greater then 2 words atleast
+                if len(asq) >= 5 and len(asq.split(" ")) >= 3:
+                    print("\n")
+                    aso = search.answer_search(asq, print_mode=True)
+                    CURRENT_CHAT_HISTORY.append({ "time": time.time(), "user": asq, "bot": aso })
+                    print()
+            except Exception as err:
+                print(colors.red(f"Failed to run Answer-Search due to: {err}\n"))
+            continue
 
         if message == SAVE_CHAT_HISTORY:
             cha_filepath = f"cha_{int(time.time())}.txt"
