@@ -199,7 +199,7 @@ def scrape_html(url, headless=True, time_delay=10):
     finally:
         driver.quit()
 
-def scrape_urls_in_parallel(urls, max_workers=20):
+def scrape_urls_in_parallel(urls, max_workers=10):
     results = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_url = {executor.submit(scrape_html, url): url for url in urls}
@@ -308,7 +308,7 @@ def answer_search(user_question, print_mode=False):
 
     # scrape all webpages rathered from the browser
     all_urls = convert_all_urls(search_results)
-    raw_scrapped_url_data = scrape_urls_in_parallel(all_urls, len(all_urls))
+    raw_scrapped_url_data = scrape_urls_in_parallel(all_urls)
     scrapped_url_data = {}
     for url in raw_scrapped_url_data:
         if raw_scrapped_url_data[url] != None:
