@@ -17,9 +17,9 @@ from cha import scrapper, colors
 
 # hard coded config variables
 main_embedding_model ="cl100k_base"
+big_model = "gpt-4-turbo-preview"
 cheap_model = "gpt-3.5-turbo-1106"
 cheap_model_max_token = ( 16385 ) - 100
-big_model = "gpt-4-turbo-preview"
 
 client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
@@ -256,8 +256,13 @@ def research_prompt(url_data, question):
         "ids": source_ids
     }
 
-# main function calls
 def answer_search(user_question, print_mode=False):
+    if "OPENAI_API_KEY" not in os.environ and "BRAVE_API_KEY" not in os.environ:
+        print(colors.red("Can't run advance-search, you most define the following env variables:"))
+        print(colors.red("     OPENAI_API_KEY : https://platform.openai.com/api-keys"))
+        print(colors.red("     BRAVE_API_KEY : https://brave.com/search/api/"))
+        return None
+
     output = {
         "all_urls": [],
         "scrapped_urls": [],

@@ -14,6 +14,7 @@ A simple CLI chat tool to easily interface with OpenAI's LLM models.
 - Multi-line support; easily copy and paste new lines into the CLI.
 - Generate images using OpenAI's image models.
 - Supports interactive and non-interactive mode for chatting.
+- Advance-Search, using the Brave API, similar to Perplexity AI's search engine.
 
 ## Demo
 
@@ -41,11 +42,17 @@ pip3 install --upgrade .
 
 2. Get your OpenAI API key [HERE](https://platform.openai.com/api-keys).
 
-3. Add your OpenAI API key to the `.env` file, following this format:
+3. Add your keys to the `.env` file, following this format:
+
+- You can get your OpenAI API key [HERE](https://platform.openai.com/api-keys)
+- If you want to use Advance-Search, you need to grab a Brave API key which you can [HERE](https://brave.com/search/api/)
 
 ```env
-# Replace YOUR_KEY_HERE with your actual API key
+# Replace YOUR_KEY_HERE with your OpenAI API key
 export OPENAI_API_KEY="YOUR_KEY_HERE"
+
+# (optional) replace YOUR_KEY_HERE with your Brave API key for advance-search
+export BRAVE_API_KEY="YOUR_KEY_HERE"
 ```
 
 4. Activate the environment variables:
@@ -62,7 +69,7 @@ Execute the main script by running:
 cha
 ```
 
-### 5. Optionally, setup an alias/command for cha
+### 5. Optional, setup an alias/command for cha
 
 You can create a useful alias/command to simplify the use of `cha`. Add this to your `.zshrc` or `.bashrc`. For example, here is a command I have in my `.zshrc`:
 
