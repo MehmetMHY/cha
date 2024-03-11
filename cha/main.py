@@ -134,7 +134,7 @@ def chatbot(selected_model):
                     print("\n")
                     aso = search.answer_search(asq, print_mode=True)
                     CURRENT_CHAT_HISTORY.append({ "time": time.time(), "user": asq, "bot": aso })
-                    print("\n")
+                    print()
             except Exception as err:
                 print(colors.red(f"Failed to run Answer-Search due to: {err}\n"))
             continue
