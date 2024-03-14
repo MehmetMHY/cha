@@ -123,12 +123,11 @@ def gen_image():
         # display generated image in the termianl using CLImage (https://github.com/MehmetMHY/CLImage)
         try:
             import climage
-            term_img = climage.convert(
+            print(climage.convert(
                 filename,
                 is_unicode=False,
-                width=int( shutil.get_terminal_size().columns * 0.5)
-            ).rstrip('\n')
-            print(term_img, "\n")
+                width=int( shutil.get_terminal_size().columns * 0.7)
+            ))
         except:
             pass
 
