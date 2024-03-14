@@ -145,9 +145,15 @@ def chatbot(selected_model):
             print(colors.red(f"\nSaved current saved history to {cha_filepath}"))
             continue
         
-        if len(scrapper.extract_urls(message)) > 0:
-            print(colors.magenta("\n--- BROWSING THE WEB ---\n"))
-            message = scrapper.scrapped_prompt(message)
+        detected_urls = len(scrapper.extract_urls(message))
+        if detected_urls > 0:
+            du_print = f"{detected_urls} URL"
+            if detected_urls > 1:
+                du_print = f"{detected_urls} URLs"
+            du_user = input(colors.red(f"{du_print} detected, continue web scrapping (y/n)? "))
+            if du_user.lower() == "y" or du_user.lower() == "yes":
+                print(colors.magenta("\n--- BROWSING THE WEB ---"))
+                message = scrapper.scrapped_prompt(message)
             print()
 
         # exit if no prompt is provided
