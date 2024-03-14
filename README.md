@@ -73,30 +73,14 @@ cha
 
 ### 4. Optional, setup an alias/command for cha
 
-You can create a useful alias/command to simplify the use of `cha`. Add this to your `.zshrc` or `.bashrc`. For example, here is an alias/command I have in my `.zshrc`:
+To simplify the use of `cha`, you can create a useful alias/command. Either create your own or add the alias/command I use for Cha. To do this, run the following command (only run one of these commands for your respective shell):
 
 ```bash
-"""
-For this function/code:
-- If no arguments are provided, it will run Cha in interactive mode (chat interface).
-- If an argument is provided, it will run Cha in non-interactive mode (sends one string, your argument).
-"""
+# if you are using a zsh shell
+cat cha.sh >> $HOME/.zshrc
 
-chatgpt () {
-    DEFAULT_MODEL="gpt-4-turbo-preview"
-
-    source /Users/mehmet/.custom/.env
-
-    if [[ "$1" == "-f" && -n "$2" ]]; then
-        cha -m $DEFAULT_MODEL -f "$2"
-    elif [ $# -eq 0 ]; then
-        cha --model $DEFAULT_MODEL
-    else
-        cha -m $DEFAULT_MODEL -s "$1"
-    fi
-
-    unset OPENAI_API_KEY
-}
+# if you are using a sh or bash shell
+cat cha.sh >> $HOME/.bashrc
 ```
 
 Now you should be all set!

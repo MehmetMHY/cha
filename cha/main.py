@@ -152,7 +152,7 @@ def chatbot(selected_model):
                 du_print = f"{detected_urls} URLs"
             du_user = input(colors.red(f"{du_print} detected, continue web scrapping (y/n)? "))
             if du_user.lower() == "y" or du_user.lower() == "yes":
-                print(colors.magenta("\n--- BROWSING THE WEB ---"))
+                print(colors.magenta("\n\n--- BROWSING THE WEB ---\n"))
                 message = scrapper.scrapped_prompt(message)
             print()
 
