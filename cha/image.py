@@ -1,6 +1,7 @@
 import subprocess
 import requests
 import datetime
+import shutil
 import json
 import time
 import sys
@@ -118,6 +119,18 @@ def gen_image():
         
         print(colors.green(f"\nCreated Image:"))
         print(f"{filename}\n")
+
+        # display generated image in the termianl using CLImage (https://github.com/MehmetMHY/CLImage)
+        try:
+            import climage
+            term_img = climage.convert(
+                filename,
+                is_unicode=False,
+                width=int( shutil.get_terminal_size().columns * 0.5)
+            ).rstrip('\n')
+            print(term_img, "\n")
+        except:
+            pass
 
         get_user_open(filename)
     except Exception as e:

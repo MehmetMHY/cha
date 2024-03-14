@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='cha',
-    version='0.2.5',
+    version='0.3.0',
     packages=find_packages(),
     license='MIT',
     description="A simple CLI chat tool to easily interface with OpenAI's LLM models",
@@ -14,7 +14,8 @@ setup(
         'beautifulsoup4==4.12.3',
         'selenium==4.18.1',
         'webdriver-manager==4.0.1',
-        'yt-dlp==2024.03.10'
+        'yt-dlp==2024.03.10',
+        'climage @ git+https://github.com/MehmetMHY/CLImage.git#egg=climage'
     ],
     python_requires='>=3.10',
     entry_points={

@@ -13,6 +13,7 @@ A simple CLI chat tool to easily interface with OpenAI's LLM models.
 - YouTube scraping; scraping the transcript from a video.
 - Multi-line support; easily copy and paste new lines into the CLI.
 - Generate images using OpenAI's image models.
+  - CLImage is used to display the image in the terminal
 - Supports interactive and non-interactive mode for chatting.
 - Answer-Search, using the Brave API, similar to Perplexity AI's search engine.
   - Click [HERE](https://www.youtube.com/watch?v=pTHk5G6TzH4) to see a demo of Answer-Search
@@ -23,7 +24,7 @@ A simple CLI chat tool to easily interface with OpenAI's LLM models.
 
 [![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=YcfFC1IU_SA)
 
-*Click the image or go to https://www.youtube.com/watch?v=qOOzjTdmg7w*
+*Click the image or go to https://www.youtube.com/watch?v=YcfFC1IU_SA*
 
 </div>
 
