@@ -53,15 +53,15 @@ def list_models():
         sys.exit(1)
 
 def title_print(selected_model):
-    # last updated: 3-9-2024
+    # last updated: 3-15-2024
     print(colors.yellow(f"""Chatting With OpenAI's '{selected_model}' Model
- - '{EXIT_STRING_KEY}' or enter CTRL-C to exit the chat
- - '{MULI_LINE_MODE_TEXT}' to toggle between single & multi-line mode
- - '{MULTI_LINE_SEND}' in multi-line mode to send message
+ - '{EXIT_STRING_KEY}' or CTRL-C to exit
+ - '{MULI_LINE_MODE_TEXT}' for single/multi-line mode
+ - '{MULTI_LINE_SEND}' to end in multi-line mode
  - '{CLEAR_HISTORY_TEXT}' to clear chat history
  - '{IMG_GEN_MODE}' for image generation
  - '{SAVE_CHAT_HISTORY}' to save chat history
- - '{ADVANCE_SEARCH_KEY}' and a question to run an answer-search""").strip())
+ - '{ADVANCE_SEARCH_KEY}' for answer-search""").strip())
 
 def chatbot(selected_model):
     messages = [{"role": "system", "content": INITIAL_PROMPT}]
@@ -111,7 +111,6 @@ def chatbot(selected_model):
                     print(colors.blue("\n\nSwitched to single-line input mode."))
                     break
                 elif line.lower() == MULTI_LINE_SEND.lower():
-                    print()
                     break
                 message_lines.append(line)
             message = '\n'.join(message_lines)
@@ -126,7 +125,7 @@ def chatbot(selected_model):
         # NOTE: this is annoying, but we have to account for this :(
         print()
 
-        if ADVANCE_SEARCH_KEY in message:
+        if message.startswith(ADVANCE_SEARCH_KEY):
             try:
                 asq = " ".join(message.replace(ADVANCE_SEARCH_KEY, "").split())
                 # NOTE: the question most be greater then 2 words atleast
@@ -135,6 +134,8 @@ def chatbot(selected_model):
                     aso = search.answer_search(asq, print_mode=True)
                     CURRENT_CHAT_HISTORY.append({ "time": time.time(), "user": asq, "bot": aso })
                     print()
+                else:
+                    print(colors.red(f"\nFor An Answer-Search, your question MOST be atleast 3 words long"))
             except Exception as err:
                 print(colors.red(f"Failed to run Answer-Search due to: {err}\n"))
             continue
