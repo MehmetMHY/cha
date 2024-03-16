@@ -7,11 +7,7 @@ export OPENAI_API_KEY=""
 # get Brave API key: https://api.search.brave.com/app/keys
 export BRAVE_API_KEY=""
 
-"""
-For this function/code:
-- If no arguments are provided, it will run Cha in interactive mode (chat interface).
-- If an argument is provided, it will run Cha in non-interactive mode (send one string or multiple string arguments, for your argument).
-"""
+# run Cha in interactive mode (chat interface) without arguments or in non-interactive mode (processing one or multiple string arguments) if an argument is provided
 chatgpt () {
     # set a default OpenAI model
     #   - model list: https://platform.openai.com/docs/models
