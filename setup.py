@@ -1,27 +1,26 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='cha',
-    version='0.3.0',
+    name="cha",
+    version="0.3.0",
     packages=find_packages(),
-    license='MIT',
+    license="MIT",
     description="A simple CLI chat tool to easily interface with OpenAI's LLM models",
-    long_description=open('README.md').read(),
-    long_description_content_type='text/markdown',
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     install_requires=[
-        'openai==1.13.3',
-        'tiktoken==0.5.1',
-        'beautifulsoup4==4.12.3',
-        'selenium==4.18.1',
-        'webdriver-manager==4.0.1',
-        'yt-dlp==2024.03.10',
-        'climage @ git+https://github.com/MehmetMHY/CLImage.git#egg=climage'
+        "openai==1.13.3",
+        "tiktoken==0.5.1",
+        "beautifulsoup4==4.12.3",
+        "selenium==4.18.1",
+        "webdriver-manager==4.0.1",
+        "yt-dlp==2024.03.10",
+        "climage @ git+https://github.com/MehmetMHY/CLImage.git#egg=climage",
     ],
-    python_requires='>=3.10',
+    python_requires=">=3.10",
     entry_points={
-        'console_scripts': [
-            'cha = cha.main:cli',
+        "console_scripts": [
+            "cha = cha.main:cli",
         ],
     },
 )
-

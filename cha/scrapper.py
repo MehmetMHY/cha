@@ -11,6 +11,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from cha import youtube
 
+
 def extract_urls(text):
     urls = []
     for word in text.split(" "):
@@ -20,18 +21,21 @@ def extract_urls(text):
             urls.append(word)
     return urls
 
+
 def remove_html(content):
     oline = content
     soup = BeautifulSoup(oline, "html.parser")
-    for data in soup(['style', 'script']):
+    for data in soup(["style", "script"]):
         data.decompose()
-    tmp = ' '.join(soup.stripped_strings)
-    tmp = ''.join(filter(lambda x: x in set(string.printable), tmp))
-    tmp = re.sub(' +', ' ', tmp)
+    tmp = " ".join(soup.stripped_strings)
+    tmp = "".join(filter(lambda x: x in set(string.printable), tmp))
+    tmp = re.sub(" +", " ", tmp)
     return tmp
+
 
 class TimeoutException(Exception):
     pass
+
 
 def timeout(seconds=10, error_message="function call timed out"):
     def decorator(func):
@@ -46,17 +50,22 @@ def timeout(seconds=10, error_message="function call timed out"):
             finally:
                 signal.alarm(0)  # disable the alarm
             return result
+
         return wrapper
+
     return decorator
+
 
 @timeout(seconds=60)
 def scrape_html(url, headless=True, time_delay=10):
     options = webdriver.ChromeOptions()
     if headless:
         # run Chrome in headless mode
-        options.add_argument('--headless')
+        options.add_argument("--headless")
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()), options=options
+    )
 
     try:
         driver.get(url)
@@ -68,11 +77,12 @@ def scrape_html(url, headless=True, time_delay=10):
     finally:
         driver.quit()
 
+
 def get_all_htmls(text):
     urls = list(set(extract_urls(text)))
     if len(urls) == 0:
         return {}
-    
+
     output = {}
     for url in urls:
         content = None
@@ -84,8 +94,9 @@ def get_all_htmls(text):
         except:
             content = None
         output[url] = content
-    
+
     return output
+
 
 def scrapped_prompt(prompt):
     htmls = get_all_htmls(prompt)
@@ -99,7 +110,8 @@ Here is the content from the following url(s) in the form of a JSON:
 ```
 
 Knowing this, can you answer the following prompt: {1}
-""".format(json.dumps(htmls), prompt)
-    
-    return new_prompt
+""".format(
+        json.dumps(htmls), prompt
+    )
 
+    return new_prompt
