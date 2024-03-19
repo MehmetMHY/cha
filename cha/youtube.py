@@ -11,14 +11,17 @@ import json
 import os
 import re
 
+
 def read_json(path):
     with open(str(path)) as file:
         content = json.load(file)
     return content
 
+
 def write_json(path, data):
     with open(str(path), "w") as file:
         json.dump(data, file, indent=4)
+
 
 def read_file(path):
     with open(str(path)) as file:
@@ -26,29 +29,37 @@ def read_file(path):
     content = [i.strip() for i in content]
     return content
 
+
 def write_file(path, data):
     file = open(str(path), "w")
     for line in data:
         file.write(str(line) + "\n")
     file.close()
 
+
 def execute(cmd):
-    proc = subprocess.Popen(str(cmd), shell=True, stdout=subprocess.PIPE,)
+    proc = subprocess.Popen(
+        str(cmd),
+        shell=True,
+        stdout=subprocess.PIPE,
+    )
     output = proc.communicate()[0].decode("utf-8")
     return output.split("\n")
 
+
 def rm_repeated_empty_strs(lst):
     return [v for i, v in enumerate(lst) if v != "" or lst[i - 1] != ""]
+
 
 def parse_transcript(transcript_lines):
     transcript_dict = {}
     current_sentence = ""
     current_time = ""
-    
+
     for line in transcript_lines:
         if "-->" in line:
             current_time = line.split(" --> ")[0]
-            
+
             if current_sentence:
                 transcript_dict[current_time] = current_sentence.strip()
                 current_sentence = ""
@@ -56,11 +67,12 @@ def parse_transcript(transcript_lines):
             continue
         else:
             current_sentence += line + " "
-    
+
     if current_time and current_sentence:
         transcript_dict[current_time] = current_sentence.strip()
-    
+
     return transcript_dict
+
 
 def valid_yt_link(link):
     if "www.youtube.com" not in link:
@@ -72,6 +84,7 @@ def valid_yt_link(link):
     if "http" not in link:
         return False
     return True
+
 
 def extract_yt_transcript(url):
     try:
@@ -94,18 +107,12 @@ def extract_yt_transcript(url):
                 output_file = os.path.join(root_dir, file)
                 break
 
-        content = parse_transcript(
-            rm_repeated_empty_strs(
-                read_file(
-                    output_file
-                )
-            )
-        )
+        content = parse_transcript(rm_repeated_empty_strs(read_file(output_file)))
 
         full_content = ""
         for key in content:
             full_content = full_content + " " + content[key]
-        full_content = re.sub(r'\s+', ' ', full_content.replace("[Music]", ""))
+        full_content = re.sub(r"\s+", " ", full_content.replace("[Music]", ""))
 
         if ".srt" in output_file:
             os.remove(output_file)
@@ -113,4 +120,3 @@ def extract_yt_transcript(url):
         return full_content
     except:
         return None
-
