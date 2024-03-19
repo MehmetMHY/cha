@@ -79,7 +79,7 @@ def chatbot(selected_model):
         if last_line.endswith('\n') == False:
             print()
 
-        print("User: ", end="", flush=True)
+        print(colors.blue("User: "), end="", flush=True)
 
         first_loop = False
 
@@ -88,7 +88,7 @@ def chatbot(selected_model):
             
             if message == MULI_LINE_MODE_TEXT:
                 multi_line_input = True
-                print(colors.blue(f"\n\nSwitched to multi-line input mode. Type '{MULTI_LINE_SEND}' to send message."))
+                print(colors.yellow(f"\n\nSwitched to multi-line input mode. Type '{MULTI_LINE_SEND}' to send message."))
                 continue
             elif message.replace(" ", "") == IMG_GEN_MODE:
                 print("\n")
@@ -98,7 +98,7 @@ def chatbot(selected_model):
                 break
             elif message.replace(" ", "") == CLEAR_HISTORY_TEXT:
                 messages = [{"role": "system", "content": INITIAL_PROMPT}]
-                print(colors.blue("\n\nChat history cleared.\n"))
+                print(colors.yellow("\n\nChat history cleared.\n"))
                 first_loop = True
                 continue
         
@@ -108,7 +108,7 @@ def chatbot(selected_model):
                 line = sys.stdin.readline().rstrip('\n')
                 if line == MULI_LINE_MODE_TEXT:
                     multi_line_input = False
-                    print(colors.blue("\n\nSwitched to single-line input mode."))
+                    print(colors.yellow("\n\nSwitched to single-line input mode."))
                     break
                 elif line.lower() == MULTI_LINE_SEND.lower():
                     break
@@ -116,7 +116,7 @@ def chatbot(selected_model):
             message = '\n'.join(message_lines)
             if message.upper() == CLEAR_HISTORY_TEXT:
                 messages = [{"role": "system", "content": INITIAL_PROMPT}]
-                print(colors.blue("\n\nChat history cleared.\n"))
+                print(colors.yellow("\n\nChat history cleared.\n"))
                 first_loop = True
                 continue
             if not multi_line_input:
