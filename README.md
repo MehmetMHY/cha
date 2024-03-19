@@ -4,19 +4,19 @@
 
 ## About
 
-A simple CLI chat tool to easily interface with OpenAI's LLM models.
+A simple CLI chat tool designed for easy interaction with OpenAI's models.
 
 ## Features
 
-- Basic CLI chat interface to OpenAI’s LLM models.
-- Web scraping for a provided link (supports JavaScript scraping).
-- YouTube scraping; scraping the transcript from a video.
-- Multi-line support; easily copy and paste new lines into the CLI.
-- Generate images using OpenAI's image models.
-  - CLImage is used to display the image in the terminal
-- Supports interactive and non-interactive mode for chatting.
-- Answer-Search, using the Brave API, similar to Perplexity AI's search engine.
-  - Click [HERE](https://www.youtube.com/watch?v=pTHk5G6TzH4) to see a demo of Answer-Search
+- Basic CLI chat interface with OpenAI’s LLM models.
+- Web scraping capability for provided links (supports JavaScript scraping).
+- YouTube scraping functionality for extracting video transcripts.
+- Answer-Search feature utilizing the Brave API, similar to the Perplexity AI search engine.
+    - Click [HERE](https://www.youtube.com/watch?v=pTHk5G6TzH4) to view a demo of the Answer-Search feature.
+- Multi-line support for easy copying and pasting into the CLI.
+- Ability to generate images using OpenAI's image models.
+    - Uses CLImage to display images directly in the terminal.
+- Supports both interactive and non-interactive chat modes.
 
 ## Demo
 
@@ -24,15 +24,15 @@ A simple CLI chat tool to easily interface with OpenAI's LLM models.
 
 [![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=zRnMu6OHNtU)
 
-*Click the image or go to https://www.youtube.com/watch?v=zRnMu6OHNtU*
+*Click the image or visit https://www.youtube.com/watch?v=zRnMu6OHNtU*
 
 </div>
 
 ## How To Set Up?
 
-### 1. Install cha
+### 1. Install `cha`
 
-Clone this repo, cd into it's directory, and run the following command to install or upgrade `cha`:
+Clone this repository, navigate to its directory, and run the following command to install or upgrade `cha`:
 
 ```bash
 pip3 install --upgrade .
@@ -42,52 +42,49 @@ pip3 install --upgrade .
 
 1. Create a `.env` file in the root directory.
 
-2. Get your OpenAI API key [HERE](https://platform.openai.com/api-keys).
+2. Obtain your OpenAI API key [HERE](https://platform.openai.com/api-keys). If you want to use Answer-Search, obtain your Brave API key [HERE](https://brave.com/search/api/).
 
-3. Add your keys to the `.env` file, following this format:
+3. Add your keys to the `.env` file, using this format:
 
-   - You can get your OpenAI API key [HERE](https://platform.openai.com/api-keys)
-   - If you want to use Answer-Search, you need to grab a Brave API key which you can [HERE](https://brave.com/search/api/)
+    ```env
+    # Replace YOUR_KEY_HERE with your OpenAI API key
+    OPENAI_API_KEY="YOUR_KEY_HERE"
 
-```env
-# Replace YOUR_KEY_HERE with your OpenAI API key
-export OPENAI_API_KEY="YOUR_KEY_HERE"
+    # (Optional) Replace YOUR_KEY_HERE with your Brave API key
+    BRAVE_API_KEY="YOUR_KEY_HERE"
+    ```
 
-# (optional) replace YOUR_KEY_HERE with your Brave API key for Answer-Search
-export BRAVE_API_KEY="YOUR_KEY_HERE"
-```
-
-4. Activate the environment variables:
+4. To activate the environment variables, run:
 
 ```bash
 source .env
 ```
 
-### 3. Run cha
+### 3. Run `cha`
 
-Execute the main script by running:
+To start the tool, execute:
 
 ```bash
 cha
 ```
 
-### 4. Optional, setup an alias/command for cha
+### 4. (Optional) Setup an Alias/Command for `cha`
 
-To simplify the use of `cha`, you can create a useful alias/command. Either create your own or add the alias/command I use for Cha. To do this, run the following command (only run one of these commands for your respective shell):
+For easier use of `cha`, consider setting up an alias or command. To add the preferred alias/command for Cha, run the appropriate command for your shell:
 
 ```bash
-# if you are using a zsh shell
-cat cha.sh >> $HOME/.zshrc
+# if using a zsh shell
+echo 'alias cha="path/to/cha"' >> $HOME/.zshrc
 
-# if you are using a sh or bash shell
-cat cha.sh >> $HOME/.bashrc
+# if using a bash shell
+echo 'alias cha="path/to/cha"' >> $HOME/.bashrc
 ```
 
-Now you should be all set!
+You're now ready to go!
 
 ## Credits
 
-- OpenAI Documentation
-- ChatGPT (GPT-4)
-- Ollama's CLI tool
+- [OpenAI Documentation](https://platform.openai.com/docs/introduction)
+- [ChatGPT (GPT-4)](https://chat.openai.com/)
+- [Ollama's CLI](https://ollama.com/)
 

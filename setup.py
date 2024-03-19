@@ -15,6 +15,7 @@ setup(
         "selenium==4.18.1",
         "webdriver-manager==4.0.1",
         "yt-dlp==2024.03.10",
+        # NOTE: (3-13-2024) this package did not have a PyPi page, so it was forked and git was used instead of PyPi
         "climage @ git+https://github.com/MehmetMHY/CLImage.git#egg=climage",
     ],
     python_requires=">=3.10",
