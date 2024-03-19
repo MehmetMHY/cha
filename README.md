@@ -22,9 +22,9 @@ A simple CLI chat tool to easily interface with OpenAI's LLM models.
 
 <div align="center">
 
-[![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=YcfFC1IU_SA)
+[![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=zRnMu6OHNtU)
 
-*Click the image or go to https://www.youtube.com/watch?v=YcfFC1IU_SA*
+*Click the image or go to https://www.youtube.com/watch?v=zRnMu6OHNtU*
 
 </div>
 
