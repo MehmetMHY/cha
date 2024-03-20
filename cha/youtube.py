@@ -11,6 +11,8 @@ import json
 import os
 import re
 
+from cha import colors
+
 
 def read_json(path):
     with open(str(path)) as file:
@@ -91,7 +93,8 @@ def extract_yt_transcript(url):
         if valid_yt_link(url) == False:
             raise Exception(f"URL {url} it NOT a valid YouTube url/link")
 
-        filename = f"yt_sub_{int(time.time())}_{str(uuid.uuid4())}"
+        file_id = str(uuid.uuid4())
+        filename = f"yt_sub_{int(time.time())}_{file_id}"
 
         # NOTE: make sure to install yt-dlp (https://github.com/yt-dlp/yt-dlp)
         # NOTE: the command was from https://www.reddit.com/r/youtubedl/comments/15fcrmd/transcript_extract_from_youtube_videos_ytdlp/
@@ -114,8 +117,14 @@ def extract_yt_transcript(url):
             full_content = full_content + " " + content[key]
         full_content = re.sub(r"\s+", " ", full_content.replace("[Music]", ""))
 
-        if ".srt" in output_file:
+        if ".srt" in output_file and file_id in output_file:
             os.remove(output_file)
+        else:
+            print(
+                colors.red(
+                    f"\n\nfailed to delete file {output_file} from YouTube scrape\n\n"
+                )
+            )
 
         return full_content
     except:
