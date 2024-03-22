@@ -5,6 +5,7 @@ import uuid
 import sys
 import os
 
+
 def read_file(path):
     try:
         with open(str(path), "r", encoding="utf-8") as file:
@@ -81,11 +82,8 @@ def raw_git_scrape(repo_url):
     # delete cloned git project
     shutil.rmtree(filename)
 
-    return {
-        "prompt": prompt,
-        "command": git_command,
-        "filepath": filename
-    }
+    return {"prompt": prompt, "command": git_command, "filepath": filename}
+
 
 def valid_git_url(url):
     if "github.com" not in str(url):
@@ -93,6 +91,7 @@ def valid_git_url(url):
     if str(url).endswith(".git") == False:
         return False
     return True
+
 
 def git_scrape(repo_url):
     try:

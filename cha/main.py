@@ -75,14 +75,15 @@ def title_print(selected_model):
     )
 
 
-def chatbot(selected_model):
+def chatbot(selected_model, print_title=True):
     messages = [{"role": "system", "content": INITIAL_PROMPT}]
     multi_line_input = False
+    first_loop = True
 
     # print the initial title
-    title_print(selected_model)
+    if print_title == True:
+        title_print(selected_model)
 
-    first_loop = True
     last_line = ""
     while True:
         if first_loop == False:
@@ -267,6 +268,9 @@ def cli():
     try:
         parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
         parser.add_argument(
+            "-tp", "--titleprint", help="Print initial title during interactive mode"
+        )
+        parser.add_argument(
             "-m", "--model", help="Model to use for chatting", required=False
         )
         parser.add_argument(
@@ -282,6 +286,10 @@ def cli():
         )
 
         args = parser.parse_args()
+
+        title_print_value = True
+        if str(args.titleprint).lower() == "false":
+            title_print_value = False
 
         openai_models = list_models()
 
@@ -325,7 +333,7 @@ def cli():
             return
 
         try:
-            chatbot(selected_model)
+            chatbot(selected_model, title_print_value)
         except:
             pass
     except:
