@@ -7,8 +7,9 @@ export OPENAI_API_KEY=""
 # get Brave API key: https://api.search.brave.com/app/keys
 export BRAVE_API_KEY=""
 
+# cha's github repo: https://github.com/MehmetMHY/cha
 # run Cha in interactive mode (chat interface) without arguments or in non-interactive mode (processing one or multiple string arguments) if an argument is provided
-chatgpt () {
+ca () {
     # set a default OpenAI model
     #   - model list: https://platform.openai.com/docs/models
     DEFAULT_MODEL="gpt-4-turbo-preview"
@@ -28,7 +29,7 @@ chatgpt () {
     fi
 }
 
-alias ca="chatgpt"
+alias chatgpt="ca"
 
 #########################[CHA_CONFIGS]#########################
 
