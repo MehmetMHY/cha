@@ -9,10 +9,10 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
-        "openai==1.13.3",
-        "tiktoken==0.5.1",
+        "openai==1.16.2",
+        "tiktoken==0.6.0",
         "beautifulsoup4==4.12.3",
-        "selenium==4.18.1",
+        "selenium==4.19.0",
         "webdriver-manager==4.0.1",
         "yt-dlp==2024.03.10",
         # NOTE: (3-13-2024) this package did not have a PyPi page, so it was forked and git was used instead of PyPi
