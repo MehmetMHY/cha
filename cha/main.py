@@ -1,5 +1,7 @@
 import argparse
 import datetime
+import copy
+import json
 import time
 import sys
 import os
@@ -13,7 +15,7 @@ if "OPENAI_API_KEY" not in os.environ:
 
 # 3rd party packages
 from openai import OpenAI
-from cha import scrapper, youtube, colors, image, search
+from cha import scrapper, youtube, colors, image, search, cost
 
 # hard coded config variables
 INITIAL_PROMPT = (
@@ -338,3 +340,30 @@ def cli():
             pass
     except:
         pass
+
+    # estimate total toke and cost for a session
+
+    total_user_text = ""
+    total_bot_text = ""
+    for entry in CURRENT_CHAT_HISTORY:
+        total_user_text += str(entry["user"]) + " "
+        total_bot_text += str(entry["bot"]) + " "
+    user_tokens = cost.tokens_counter(selected_model, total_user_text)
+    bot_tokens = cost.tokens_counter(selected_model, total_bot_text)
+
+    user_cost = 0
+    bot_cost = 0
+    pricing = cost.text_model_pricing(selected_model)
+    if pricing["official"] == True:
+        user_cost = (user_tokens / 1_000_000) * pricing["input"]
+        bot_cost = (bot_tokens / 1_000_000) * pricing["output"]
+
+    print("\n\n")
+    print(f"Session Stats:")
+    print(f" - LLM Model Name: {selected_model}")
+    print(f" ~ Total Input Tokens: {user_tokens}")
+    print(f" ~ Total Output Tokens: {bot_tokens}")
+    print(f" ~ Total Total Tokens: {user_tokens + bot_tokens}")
+    print(f" ~ Total Input Cost: ${user_cost}")
+    print(f" ~ Total Output Cost: ${bot_cost}")
+    print(f" ~ Total Total Cost: ${user_cost + bot_cost}")
