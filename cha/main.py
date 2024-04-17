@@ -282,7 +282,7 @@ def print_stats(selected_model, the_chat=None):
         stats = cost.totals_costs_cal_and_print(
             selected_model, total_user_text, total_bot_text
         )
-        print()
+        print("\n")
         print(colors.red(f"SESSION'S STATS (TEXT-BASED):"))
         print(colors.magenta(f"- LLM Model Name: {stats['model_name']}"))
         print(
@@ -372,6 +372,9 @@ def cli():
                 pass
 
         if args.stats:
-            print_stats(selected_model, CURRENT_CHAT_HISTORY)
+            try:
+                print_stats(selected_model, CURRENT_CHAT_HISTORY)
+            except:
+                print(colors.red("Failed to generate stats print"))
     except:
         pass
