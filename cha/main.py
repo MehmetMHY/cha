@@ -1,5 +1,7 @@
 import argparse
 import datetime
+import copy
+import json
 import time
 import sys
 import os
@@ -13,7 +15,7 @@ if "OPENAI_API_KEY" not in os.environ:
 
 # 3rd party packages
 from openai import OpenAI
-from cha import scrapper, youtube, colors, image, search
+from cha import scrapper, youtube, colors, image, search, cost
 
 # hard coded config variables
 INITIAL_PROMPT = (
@@ -28,7 +30,7 @@ EXIT_STRING_KEY = "!e"
 ADVANCE_SEARCH_KEY = "!b"
 
 # important global variables
-CURRENT_CHAT_HISTORY = []
+CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": INITIAL_PROMPT, "bot": ""}]
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -212,7 +214,7 @@ def chatbot(selected_model, print_title=True):
         CURRENT_CHAT_HISTORY.append(obj_chat_history)
 
 
-def basic_chat(filepath, model, justString=None):
+def basic_chat(filepath, model, justString=None, show_stats=False):
     try:
         print_padding = False
 
@@ -248,12 +250,18 @@ def basic_chat(filepath, model, justString=None):
         )
 
         last_line = ""
+        complete_output = ""
         for chunk in response:
             chunk_message = chunk.choices[0].delta.content
             if chunk_message:
                 last_line = chunk_message
+                complete_output += chunk_message
                 sys.stdout.write(colors.green(chunk_message))
                 sys.stdout.flush()
+
+        CURRENT_CHAT_HISTORY.append(
+            {"time": time.time(), "user": content, "bot": complete_output}
+        )
 
         if last_line.startswith("\n") == False:
             print()
@@ -262,6 +270,33 @@ def basic_chat(filepath, model, justString=None):
             print()
     except Exception as e:
         print(colors.red(f"Error during chat: {e}"))
+
+
+def print_stats(selected_model, the_chat=None):
+    try:
+        total_user_text = ""
+        total_bot_text = ""
+        for entry in the_chat:
+            total_user_text += str(entry["user"]) + " "
+            total_bot_text += str(entry["bot"]) + " "
+        stats = cost.totals_costs_cal_and_print(
+            selected_model, total_user_text, total_bot_text
+        )
+        print("\n")
+        print(colors.red(f"SESSION'S STATS (TEXT-BASED):"))
+        print(colors.magenta(f"- LLM Model Name: {stats['model_name']}"))
+        print(
+            colors.yellow(
+                f"~ Total Input+Output Tokens: {stats['input_tokens']} + {stats['output_tokens']} = {stats['total_tokens']}"
+            )
+        )
+        print(
+            colors.green(
+                f"~ Total Input+Output Cost: ${stats['input_cost']:.2f} + ${stats['output_cost']:.2f} = ${stats['total_cost']}"
+            )
+        )
+    except:
+        print(colors.red(f"Failed to calculate statistics from last session"))
 
 
 def cli():
@@ -283,6 +318,11 @@ def cli():
             "-s",
             "--string",
             help="None interactive mode, just feed a string into the model",
+        )
+        parser.add_argument(
+            "--stats",
+            help="Enable printing of stats after the session",
+            action="store_true",
         )
 
         args = parser.parse_args()
@@ -308,13 +348,12 @@ def cli():
 
             try:
                 selected_model = input("Which model do you want to use? ")
+                if selected_model not in [model[0] for model in openai_models]:
+                    print(colors.red("Invalid model selected. Exiting."))
+                    return
             except KeyboardInterrupt:
                 return
             print()
-
-        if selected_model not in [model[0] for model in openai_models]:
-            print(colors.red("Invalid model selected. Exiting."))
-            return
 
         if args.string and args.file:
             print(
@@ -322,19 +361,20 @@ def cli():
                     f"You can't use the string and file option at the same time!"
                 )
             )
-            return
-
-        if args.string:
+        elif args.string:
             basic_chat(None, selected_model, str(args.string))
-            return
-
-        if args.file:
+        elif args.file:
             basic_chat(args.file, selected_model)
-            return
+        else:
+            try:
+                chatbot(selected_model, title_print_value)
+            except:
+                pass
 
-        try:
-            chatbot(selected_model, title_print_value)
-        except:
-            pass
+        if args.stats:
+            try:
+                print_stats(selected_model, CURRENT_CHAT_HISTORY)
+            except:
+                print(colors.red("Failed to generate stats print"))
     except:
         pass
