@@ -19,6 +19,7 @@ def text_model_pricing(model):
         - We ignore image models, for now
         - The cost is in dollars ($)
     """
+    token_per_count = 1_000_000
     text_models = {
         "gpt-4-turbo-2024-04-09": {"input": 10.00, "output": 30.00},
         "gpt-4": {"input": 30.00, "output": 60.00},
@@ -38,7 +39,38 @@ def text_model_pricing(model):
 
     if pricing != None:
         pricing["official"] = True
+        pricing["div_by"] = token_per_count
         return pricing
 
     all_values = [info[key] for model, info in text_models.items() for key in info]
-    return {"official": False, "low": min(all_values), "high": max(all_values)}
+    return {
+        "official": False,
+        "low": min(all_values),
+        "high": max(all_values),
+        "div_by": token_per_count,
+    }
+
+
+def totals_costs_cal_and_print(selected_model, total_user_text, total_bot_text):
+    user_tokens = tokens_counter(selected_model, total_user_text)
+    bot_tokens = tokens_counter(selected_model, total_bot_text)
+
+    user_cost = 0
+    bot_cost = 0
+    pricing = text_model_pricing(selected_model)
+    div = pricing["div_by"]
+    if pricing["official"] == True:
+        user_cost = (user_tokens / div) * pricing["input"]
+        bot_cost = (bot_tokens / div) * pricing["output"]
+
+    stats = {
+        "model_name": selected_model,
+        "input_tokens": user_tokens,
+        "output_tokens": bot_tokens,
+        "total_tokens": user_tokens + bot_tokens,
+        "input_cost": user_cost,
+        "output_cost": bot_cost,
+        "total_cost": user_cost + bot_cost,
+    }
+
+    return stats

@@ -266,6 +266,30 @@ def basic_chat(filepath, model, justString=None):
         print(colors.red(f"Error during chat: {e}"))
 
 
+def print_stats(selected_model, the_chat=None):
+    try:
+        total_user_text = ""
+        total_bot_text = ""
+        for entry in the_chat:
+            total_user_text += str(entry["user"]) + " "
+            total_bot_text += str(entry["bot"]) + " "
+        stats = cost.totals_costs_cal_and_print(
+            selected_model, total_user_text, total_bot_text
+        )
+        print("\n\n")
+        print(colors.red(f"SESSION'S STATS:"))
+        print(colors.magenta(f"- LLM Model Name: {stats['model_name']}"))
+        print(colors.yellow(f"~ Total Input Tokens: {stats['input_tokens']}"))
+        print(colors.yellow(f"~ Total Output Tokens: {stats['output_tokens']}"))
+        print(colors.yellow(f"~ Total Tokens: {stats['total_tokens']}"))
+        print(colors.green(f"~ Total Input Cost: ${stats['input_cost']:.2f}"))
+        print(colors.green(f"~ Total Output Cost: ${stats['output_cost']:.2f}"))
+        print(colors.green(f"~ Total Image Gen Cost: $?"))
+        print(colors.green(f"~ Total Cost: ${stats['total_cost']:.2f}"))
+    except:
+        print(colors.red(f"Failed to calculate statistics from last session"))
+
+
 def cli():
     try:
         parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
@@ -342,28 +366,4 @@ def cli():
         pass
 
     # estimate total toke and cost for a session
-
-    total_user_text = ""
-    total_bot_text = ""
-    for entry in CURRENT_CHAT_HISTORY:
-        total_user_text += str(entry["user"]) + " "
-        total_bot_text += str(entry["bot"]) + " "
-    user_tokens = cost.tokens_counter(selected_model, total_user_text)
-    bot_tokens = cost.tokens_counter(selected_model, total_bot_text)
-
-    user_cost = 0
-    bot_cost = 0
-    pricing = cost.text_model_pricing(selected_model)
-    if pricing["official"] == True:
-        user_cost = (user_tokens / 1_000_000) * pricing["input"]
-        bot_cost = (bot_tokens / 1_000_000) * pricing["output"]
-
-    print("\n\n")
-    print(f"Session Stats:")
-    print(f" - LLM Model Name: {selected_model}")
-    print(f" ~ Total Input Tokens: {user_tokens}")
-    print(f" ~ Total Output Tokens: {bot_tokens}")
-    print(f" ~ Total Total Tokens: {user_tokens + bot_tokens}")
-    print(f" ~ Total Input Cost: ${user_cost}")
-    print(f" ~ Total Output Cost: ${bot_cost}")
-    print(f" ~ Total Total Cost: ${user_cost + bot_cost}")
+    print_stats(selected_model, CURRENT_CHAT_HISTORY)
