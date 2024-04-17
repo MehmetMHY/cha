@@ -277,15 +277,18 @@ def print_stats(selected_model, the_chat=None):
             selected_model, total_user_text, total_bot_text
         )
         print("\n\n")
-        print(colors.red(f"SESSION'S STATS:"))
+        print(colors.red(f"SESSION'S STATS (TEXT-BASED):"))
         print(colors.magenta(f"- LLM Model Name: {stats['model_name']}"))
-        print(colors.yellow(f"~ Total Input Tokens: {stats['input_tokens']}"))
-        print(colors.yellow(f"~ Total Output Tokens: {stats['output_tokens']}"))
-        print(colors.yellow(f"~ Total Tokens: {stats['total_tokens']}"))
-        print(colors.green(f"~ Total Input Cost: ${stats['input_cost']:.2f}"))
-        print(colors.green(f"~ Total Output Cost: ${stats['output_cost']:.2f}"))
-        print(colors.green(f"~ Total Image Gen Cost: $?"))
-        print(colors.green(f"~ Total Cost: ${stats['total_cost']:.2f}"))
+        print(
+            colors.yellow(
+                f"~ Total Input+Output Tokens: {stats['input_tokens']} + {stats['output_tokens']} = {stats['total_tokens']}"
+            )
+        )
+        print(
+            colors.green(
+                f"~ Total Input+Output Cost: ${stats['input_cost']:.2f} + ${stats['output_cost']:.2f} = ${stats['total_cost']}"
+            )
+        )
     except:
         print(colors.red(f"Failed to calculate statistics from last session"))
 
