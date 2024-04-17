@@ -52,8 +52,13 @@ def text_model_pricing(model):
 
 
 def totals_costs_cal_and_print(selected_model, total_user_text, total_bot_text):
-    user_tokens = tokens_counter(selected_model, total_user_text)
-    bot_tokens = tokens_counter(selected_model, total_bot_text)
+    try:
+        user_tokens = tokens_counter(selected_model, total_user_text)
+        bot_tokens = tokens_counter(selected_model, total_bot_text)
+    except:
+        # NOTE: just used hard-coded model for token estimate
+        user_tokens = tokens_counter("gpt-4", total_user_text)
+        bot_tokens = tokens_counter("gpt-4", total_bot_text)
 
     user_cost = 0
     bot_cost = 0
@@ -62,6 +67,11 @@ def totals_costs_cal_and_print(selected_model, total_user_text, total_bot_text):
     if pricing["official"] == True:
         user_cost = (user_tokens / div) * pricing["input"]
         bot_cost = (bot_tokens / div) * pricing["output"]
+    else:
+        # NOTE: really estimate the pricing for models that are not listed/saved
+        est_avg_price = ((pricing["high"] + pricing["low"]) / 2) * 1.2
+        user_cost = (user_tokens / div) * est_avg_price
+        bot_cost = (bot_tokens / div) * est_avg_price
 
     stats = {
         "model_name": selected_model,
