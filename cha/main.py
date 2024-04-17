@@ -310,6 +310,11 @@ def cli():
             "--string",
             help="None interactive mode, just feed a string into the model",
         )
+        parser.add_argument(
+            "--stats",
+            help="Enable printing of stats after the session",
+            action="store_true",
+        )
 
         args = parser.parse_args()
 
@@ -334,13 +339,12 @@ def cli():
 
             try:
                 selected_model = input("Which model do you want to use? ")
+                if selected_model not in [model[0] for model in openai_models]:
+                    print(colors.red("Invalid model selected. Exiting."))
+                    return
             except KeyboardInterrupt:
                 return
             print()
-
-        if selected_model not in [model[0] for model in openai_models]:
-            print(colors.red("Invalid model selected. Exiting."))
-            return
 
         if args.string and args.file:
             print(
@@ -362,8 +366,8 @@ def cli():
             chatbot(selected_model, title_print_value)
         except:
             pass
+
+        if args.stats:
+            print_stats(selected_model, CURRENT_CHAT_HISTORY)
     except:
         pass
-
-    # estimate total toke and cost for a session
-    print_stats(selected_model, CURRENT_CHAT_HISTORY)
