@@ -30,7 +30,9 @@ EXIT_STRING_KEY = "!e"
 ADVANCE_SEARCH_KEY = "!b"
 
 # important global variables
-CURRENT_CHAT_HISTORY = []
+CURRENT_CHAT_HISTORY = [
+    {"time": time.time(), "user": INITIAL_PROMPT, "bot": ""}
+]
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -214,7 +216,7 @@ def chatbot(selected_model, print_title=True):
         CURRENT_CHAT_HISTORY.append(obj_chat_history)
 
 
-def basic_chat(filepath, model, justString=None):
+def basic_chat(filepath, model, justString=None, show_stats=False):
     try:
         print_padding = False
 
@@ -250,12 +252,18 @@ def basic_chat(filepath, model, justString=None):
         )
 
         last_line = ""
+        complete_output = ""
         for chunk in response:
             chunk_message = chunk.choices[0].delta.content
             if chunk_message:
                 last_line = chunk_message
+                complete_output += chunk_message
                 sys.stdout.write(colors.green(chunk_message))
                 sys.stdout.flush()
+
+        CURRENT_CHAT_HISTORY.append(
+            {"time": time.time(), "user": content, "bot": complete_output}
+        )
 
         if last_line.startswith("\n") == False:
             print()
@@ -276,7 +284,7 @@ def print_stats(selected_model, the_chat=None):
         stats = cost.totals_costs_cal_and_print(
             selected_model, total_user_text, total_bot_text
         )
-        print("\n\n")
+        print()
         print(colors.red(f"SESSION'S STATS (TEXT-BASED):"))
         print(colors.magenta(f"- LLM Model Name: {stats['model_name']}"))
         print(
@@ -355,20 +363,15 @@ def cli():
                     f"You can't use the string and file option at the same time!"
                 )
             )
-            return
-
-        if args.string:
+        elif args.string:
             basic_chat(None, selected_model, str(args.string))
-            return
-
-        if args.file:
+        elif args.file:
             basic_chat(args.file, selected_model)
-            return
-
-        try:
-            chatbot(selected_model, title_print_value)
-        except:
-            pass
+        else:
+            try:
+                chatbot(selected_model, title_print_value)
+            except:
+                pass
 
         if args.stats:
             print_stats(selected_model, CURRENT_CHAT_HISTORY)
