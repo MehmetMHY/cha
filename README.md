@@ -17,6 +17,7 @@ A simple CLI chat tool designed for easy interaction with OpenAI's models.
 - Ability to generate images using OpenAI's image models.
     - Uses CLImage to display images directly in the terminal.
 - Supports both interactive and non-interactive chat modes.
+- Stats option that estimates how much you have spent per session.
 
 ## Demo
 
@@ -81,6 +82,10 @@ echo 'alias cha="path/to/cha"' >> $HOME/.bashrc
 ```
 
 You're now ready to go!
+
+## Important Notes
+
+- For the "--stats" option, the cost is estimated using hard-coded values gathered manually from OpenAI's [pricing](https://openai.com/pricing) website. If prices change, these values need to be manually updated. You can view or edit these prices in the `cha/cost.py` file in the `text_model_pricing()` function. If pricing has changed or a new model has been added, please raise an issue in this repo.
 
 ## Credits
 

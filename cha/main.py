@@ -30,9 +30,7 @@ EXIT_STRING_KEY = "!e"
 ADVANCE_SEARCH_KEY = "!b"
 
 # important global variables
-CURRENT_CHAT_HISTORY = [
-    {"time": time.time(), "user": INITIAL_PROMPT, "bot": ""}
-]
+CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": INITIAL_PROMPT, "bot": ""}]
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
