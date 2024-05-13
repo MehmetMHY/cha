@@ -17,7 +17,7 @@ from cha import scrapper, colors
 
 # hard coded config variables
 main_embedding_model = "cl100k_base"
-big_model = "gpt-4-turbo-preview"
+big_model = "gpt-4o"
 cheap_model = "gpt-3.5-turbo-1106"
 cheap_model_max_token = (16385) - 100
 
