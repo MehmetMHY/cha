@@ -129,15 +129,19 @@ def chatbot(selected_model, print_title=True):
                     multi_line_input = False
                     print(colors.yellow("\n\nSwitched to single-line input mode."))
                     break
+                elif line.replace(" ", "").replace("\n", "") == CLEAR_HISTORY_TEXT:
+                    messages = [{"role": "system", "content": INITIAL_PROMPT}]
+                    multi_line_input = False
+                    print(
+                        colors.yellow(
+                            "\n\nChat history cleared - Switching to single-line input mode..."
+                        )
+                    )
+                    break
                 elif line.lower() == MULTI_LINE_SEND.lower():
                     break
                 message_lines.append(line)
             message = "\n".join(message_lines)
-            if message.upper() == CLEAR_HISTORY_TEXT:
-                messages = [{"role": "system", "content": INITIAL_PROMPT}]
-                print(colors.yellow("\n\nChat history cleared.\n"))
-                first_loop = True
-                continue
             if not multi_line_input:
                 continue
 
