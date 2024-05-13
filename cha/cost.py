@@ -11,7 +11,7 @@ def tokens_counter(model_name: str, string: str) -> int:
 
 def text_model_pricing(model):
     """
-    UPDATED: April 16, 2024
+    UPDATED: May 13, 2024
     SOURCE: https://openai.com/pricing
     NOTES:
         - The pricings are for every 1 Million tokens
@@ -21,6 +21,9 @@ def text_model_pricing(model):
     """
     token_per_count = 1_000_000
     text_models = {
+        "gpt-4o": {"input": 5.00, "output": 15.00},
+        "gpt-4o-2024-05-13": {"input": 5.00, "output": 15.00},
+        "gpt-4-turbo": {"input": 10.00, "output": 30.00},
         "gpt-4-turbo-2024-04-09": {"input": 10.00, "output": 30.00},
         "gpt-4": {"input": 30.00, "output": 60.00},
         "gpt-4-32k": {"input": 60.00, "output": 120.00},
