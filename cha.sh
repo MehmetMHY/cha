@@ -12,7 +12,7 @@ export BRAVE_API_KEY=""
 ca () {
     # set a default OpenAI model
     #   - model list: https://platform.openai.com/docs/models
-    DEFAULT_MODEL="gpt-4-turbo-preview"
+    DEFAULT_MODEL="gpt-4o"
 
     # get OpenAI API key: https://platform.openai.com/api-keys
     export OPENAI_API_KEY=""
