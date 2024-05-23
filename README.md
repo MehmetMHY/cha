@@ -83,10 +83,6 @@ echo 'alias cha="path/to/cha"' >> $HOME/.bashrc
 
 You're now ready to go!
 
-## Important Notes
-
-- For the "--stats" option, the cost is estimated using hard-coded values gathered manually from OpenAI's [pricing](https://openai.com/pricing) website. If prices change, these values need to be manually updated. You can view or edit these prices in the `cha/cost.py` file in the `text_model_pricing()` function. If pricing has changed or a new model has been added, please raise an issue in this repo.
-
 ## Credits
 
 - [OpenAI Documentation](https://platform.openai.com/docs/introduction)

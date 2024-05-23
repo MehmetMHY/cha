@@ -15,7 +15,7 @@ if "OPENAI_API_KEY" not in os.environ:
 
 # 3rd party packages
 from openai import OpenAI
-from cha import scrapper, youtube, colors, image, search, cost
+from cha import scrapper, youtube, colors, image, search
 
 # hard coded config variables
 INITIAL_PROMPT = (
@@ -218,7 +218,7 @@ def chatbot(selected_model, print_title=True):
         CURRENT_CHAT_HISTORY.append(obj_chat_history)
 
 
-def basic_chat(filepath, model, justString=None, show_stats=False):
+def basic_chat(filepath, model, justString=None):
     try:
         print_padding = False
 
@@ -276,33 +276,6 @@ def basic_chat(filepath, model, justString=None, show_stats=False):
         print(colors.red(f"Error during chat: {e}"))
 
 
-def print_stats(selected_model, the_chat=None):
-    try:
-        total_user_text = ""
-        total_bot_text = ""
-        for entry in the_chat:
-            total_user_text += str(entry["user"]) + " "
-            total_bot_text += str(entry["bot"]) + " "
-        stats = cost.totals_costs_cal_and_print(
-            selected_model, total_user_text, total_bot_text
-        )
-        print("\n")
-        print(colors.red(f"SESSION'S STATS (TEXT-BASED):"))
-        print(colors.magenta(f"- LLM Model Name: {stats['model_name']}"))
-        print(
-            colors.yellow(
-                f"~ Total Input+Output Tokens: {stats['input_tokens']} + {stats['output_tokens']} = {stats['total_tokens']}"
-            )
-        )
-        print(
-            colors.green(
-                f"~ Total Input+Output Cost: ${stats['input_cost']:.2f} + ${stats['output_cost']:.2f} = ${stats['total_cost']}"
-            )
-        )
-    except:
-        print(colors.red(f"Failed to calculate statistics from last session"))
-
-
 def cli():
     try:
         parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
@@ -322,11 +295,6 @@ def cli():
             "-s",
             "--string",
             help="None interactive mode, just feed a string into the model",
-        )
-        parser.add_argument(
-            "--stats",
-            help="Enable printing of stats after the session",
-            action="store_true",
         )
 
         args = parser.parse_args()
@@ -375,10 +343,5 @@ def cli():
             except:
                 pass
 
-        if args.stats:
-            try:
-                print_stats(selected_model, CURRENT_CHAT_HISTORY)
-            except:
-                print(colors.red("Failed to generate stats print"))
     except:
         pass
