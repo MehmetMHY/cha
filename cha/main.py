@@ -86,9 +86,7 @@ def chatbot(selected_model, print_title=True):
     if print_title == True:
         title_print(selected_model)
 
-    # NOTE: this can only be "[S] or [M]"
-    line_mode = "[S]"
-
+    line_mode = ""
     last_line = ""
     while True:
         if first_loop == False:
@@ -97,7 +95,7 @@ def chatbot(selected_model, print_title=True):
         if last_line.endswith("\n") == False:
             print()
 
-        print(colors.blue(f"{line_mode} User: "), end="", flush=True)
+        print(colors.blue(f"{line_mode}User: "), end="", flush=True)
 
         first_loop = False
 
@@ -106,7 +104,7 @@ def chatbot(selected_model, print_title=True):
 
             if message == MULI_LINE_MODE_TEXT:
                 multi_line_input = True
-                line_mode = "[M]"
+                line_mode = "[M] "
                 last_line = "\n"
                 continue
             elif message.replace(" ", "") == IMG_GEN_MODE:
@@ -134,7 +132,7 @@ def chatbot(selected_model, print_title=True):
                     break
                 message_lines.append(line)
             message = "\n".join(message_lines)
-            line_mode = "[S]"
+            line_mode = ""
             multi_line_input = False
 
         # NOTE: this is annoying, but we have to account for this :(
