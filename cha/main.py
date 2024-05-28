@@ -86,6 +86,7 @@ def chatbot(selected_model, print_title=True):
     if print_title == True:
         title_print(selected_model)
 
+    line_mode = ""
     last_line = ""
     while True:
         if first_loop == False:
@@ -94,7 +95,7 @@ def chatbot(selected_model, print_title=True):
         if last_line.endswith("\n") == False:
             print()
 
-        print(colors.blue("User: "), end="", flush=True)
+        print(colors.blue(f"{line_mode}User: "), end="", flush=True)
 
         first_loop = False
 
@@ -103,11 +104,8 @@ def chatbot(selected_model, print_title=True):
 
             if message == MULI_LINE_MODE_TEXT:
                 multi_line_input = True
-                print(
-                    colors.yellow(
-                        f"\n\nSwitched to multi-line input mode. Type '{MULTI_LINE_SEND}' to send message."
-                    )
-                )
+                line_mode = "[M] "
+                last_line = "\n"
                 continue
             elif message.replace(" ", "") == IMG_GEN_MODE:
                 print("\n")
@@ -125,25 +123,17 @@ def chatbot(selected_model, print_title=True):
             message_lines = []
             while True:
                 line = sys.stdin.readline().rstrip("\n")
-                if line == MULI_LINE_MODE_TEXT:
-                    multi_line_input = False
-                    print(colors.yellow("\n\nSwitched to single-line input mode."))
+                if line.lower() == MULTI_LINE_SEND.lower():
                     break
                 elif line.replace(" ", "").replace("\n", "") == CLEAR_HISTORY_TEXT:
                     messages = [{"role": "system", "content": INITIAL_PROMPT}]
-                    multi_line_input = False
-                    print(
-                        colors.yellow(
-                            "\n\nChat history cleared - Switching to single-line input mode..."
-                        )
-                    )
-                    break
-                elif line.lower() == MULTI_LINE_SEND.lower():
+                    print(colors.yellow("\n\nChat history cleared.\n"))
+                    first_loop = True
                     break
                 message_lines.append(line)
             message = "\n".join(message_lines)
-            if not multi_line_input:
-                continue
+            line_mode = ""
+            multi_line_input = False
 
         # NOTE: this is annoying, but we have to account for this :(
         print()

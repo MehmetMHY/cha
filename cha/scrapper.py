@@ -9,7 +9,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium import webdriver
 from bs4 import BeautifulSoup
-from cha import youtube, git
+from cha import youtube
 
 
 def extract_urls(text):
@@ -89,8 +89,6 @@ def get_all_htmls(text):
         try:
             if youtube.valid_yt_link(url):
                 content = youtube.extract_yt_transcript(url)
-            elif git.valid_git_url(url):
-                content = git.git_scrape(url)
             else:
                 content = remove_html(scrape_html(url))
         except:
