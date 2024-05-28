@@ -19,7 +19,7 @@ from cha import scrapper, youtube, colors, image, search
 
 # hard coded config variables
 INITIAL_PROMPT = (
-    "You are a helpful assistant who keeps your response short and to the point."
+    "You are a helpful assistant who keeps your response short and to the point"
 )
 MULTI_LINE_SEND = "END"
 MULI_LINE_MODE_TEXT = "!m"
@@ -86,7 +86,7 @@ def chatbot(selected_model, print_title=True):
     if print_title == True:
         title_print(selected_model)
 
-    line_mode = ""
+    line_mode = False
     last_line = ""
     while True:
         if first_loop == False:
@@ -95,7 +95,15 @@ def chatbot(selected_model, print_title=True):
         if last_line.endswith("\n") == False:
             print()
 
-        print(colors.blue(f"{line_mode}User: "), end="", flush=True)
+        user_input_string = colors.blue(f"User: ")
+        if line_mode:
+            print(
+                colors.yellow(
+                    f"Entered multi-line input mode. Type '{MULTI_LINE_SEND}' to send message"
+                )
+            )
+            user_input_string = colors.red("[M]") + " " + colors.blue(f"User: ")
+        print(colors.blue(user_input_string), end="", flush=True)
 
         first_loop = False
 
@@ -104,7 +112,7 @@ def chatbot(selected_model, print_title=True):
 
             if message == MULI_LINE_MODE_TEXT:
                 multi_line_input = True
-                line_mode = "[M] "
+                line_mode = True
                 last_line = "\n"
                 continue
             elif message.replace(" ", "") == IMG_GEN_MODE:
@@ -132,7 +140,7 @@ def chatbot(selected_model, print_title=True):
                     break
                 message_lines.append(line)
             message = "\n".join(message_lines)
-            line_mode = ""
+            line_mode = False
             multi_line_input = False
 
         # NOTE: this is annoying, but we have to account for this :(
@@ -330,8 +338,8 @@ def cli():
         else:
             try:
                 chatbot(selected_model, title_print_value)
-            except:
-                pass
+            except KeyboardInterrupt:
+                sys.exit(0)
 
-    except:
+    except Exception as err:
         pass
