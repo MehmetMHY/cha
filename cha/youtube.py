@@ -41,11 +41,16 @@ def write_file(path, data):
 
 def execute(cmd):
     proc = subprocess.Popen(
-        str(cmd),
+        cmd,
         shell=True,
         stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
-    output = proc.communicate()[0].decode("utf-8")
+    output, error = proc.communicate()
+    output = output.decode("utf-8")
+    error = error.decode("utf-8")
+    if proc.returncode != 0:
+        print(colors.red(f"Failed to execute command {cmd} due to error: {error}"))
     return output.split("\n")
 
 
@@ -90,8 +95,11 @@ def valid_yt_link(link):
 
 def extract_yt_transcript(url):
     try:
-        if valid_yt_link(url) == False:
+        if not valid_yt_link(url):
             raise Exception(f"URL {url} it NOT a valid YouTube url/link")
+        
+        # NOTE: remove aditional metadata from URL
+        url = url.split("&")[0]
 
         file_id = str(uuid.uuid4())
         filename = f"yt_sub_{int(time.time())}_{file_id}"
@@ -101,9 +109,7 @@ def extract_yt_transcript(url):
         cmd = f"yt-dlp --write-auto-sub --convert-subs=srt --skip-download {url} -o {filename}"
         execute(cmd)
 
-        # root_dir = os.path.dirname(os.path.abspath(__file__))
         root_dir = os.getcwd()
-
         output_file = ""
         for file in os.listdir(root_dir):
             if filename in file:
@@ -127,5 +133,6 @@ def extract_yt_transcript(url):
             )
 
         return full_content
-    except:
+    except Exception as e:
+        print(colors.red(f"Error occurred with YouTube scrapper: {e}"))
         return None
