@@ -97,7 +97,7 @@ def extract_yt_transcript(url):
     try:
         if not valid_yt_link(url):
             raise Exception(f"URL {url} it NOT a valid YouTube url/link")
-        
+
         # NOTE: remove aditional metadata from URL
         url = url.split("&")[0]
 

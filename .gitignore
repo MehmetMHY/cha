@@ -135,7 +135,50 @@ cython_debug/
 # PyCharm
 .idea/
 
-# custom
+# Video
+*.mp4
+*.webm
+*.mpg
+*.mp2
+*.mpeg
+*.mpe
+*.mpv
+*.ogg
+*.m4p
+*.m4v
+*.avi
+*.wmv
+*.mov
+*.qt
+*.flv
+*.swf
+*.avchd
+*.mp4
+*.webm
+*.mkv
+
+# Audio
+*.mp3
+*.m4a
+*.flac
+*.aac
+*.wav
+*.dsd
+*.ogg
+*.wma
+*.alac
+*.aiff
+
+# Files
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+
+# Custom
 .DS_Store
 *.jpg
 *.png
