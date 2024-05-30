@@ -83,6 +83,20 @@ echo 'alias cha="path/to/cha"' >> $HOME/.bashrc
 
 You're now ready to go!
 
+## Develop Mode
+
+For developing Cha, you can do the following:
+
+### 1. Install `cha` in editable mode so that pip points to the source files of the cloned code:
+
+```bash
+pip install -e .
+```
+
+### 2. Make changes to the code, then run `cha` to try out your changes
+
+### 3. If you add a new dependency, you will have to do step 1 again
+
 ## Credits
 
 - [OpenAI Documentation](https://platform.openai.com/docs/introduction)
