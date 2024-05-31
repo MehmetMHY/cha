@@ -15,12 +15,10 @@ import openai
 
 from cha import scrapper, colors
 
-
-# NOTE: hard coded config variables
-main_embedding_model = "cl100k_base"
+# GLOBAL CONFIG VARIABLES
 big_model = "gpt-4o"
-cheap_model = "gpt-3.5-turbo-1106"
-cheap_model_max_token = (16385) - 100  # account for some error
+cheap_model = "gpt-3.5-turbo"
+cheap_model_max_token = int((16_385) * 0.99)  # account for some error
 
 client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
@@ -108,20 +106,21 @@ def get_sources(query):
         return None
 
 
-def token_count(string: str, encoding_name: str) -> int:
-    encoding = tiktoken.get_encoding(encoding_name)
+def token_count(model_name: str, string: str) -> int:
+    encoding_name = tiktoken.encoding_for_model(model_name)
+    encoding = tiktoken.get_encoding(encoding_name.name)
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
 
 def adjust_prompt_to_token_limit(model, prompt: str, token_limit: int) -> str:
-    num_tokens = token_count(prompt, model)
+    num_tokens = token_count(model, prompt)
     while num_tokens > token_limit and token_limit >= 0:
         diff = int((num_tokens - cheap_model_max_token) / 2)
         if diff == 0:
             diff = 1
         prompt = prompt[:-(diff)]
-        num_tokens = token_count(prompt, model)
+        num_tokens = token_count(model, prompt)
     return prompt
 
 
@@ -254,7 +253,7 @@ def summarize_urls_data(scrapped_url_data):
         try:
             prompt = f"Summarize the following text into one paragraph:\n```\n{scrapped_url_data[key]}\n```"
             prompt = adjust_prompt_to_token_limit(
-                main_embedding_model, prompt, cheap_model_max_token
+                cheap_model, prompt, cheap_model_max_token
             )
             response = (
                 client.chat.completions.create(
@@ -305,16 +304,8 @@ def answer_search(user_question, print_mode=False):
         "runtime": 0,
         "search_queries": [],
         "models": {
-            "small": {
-                "name": cheap_model,
-                "tokens": 0,
-                "embedding": main_embedding_model,
-            },
-            "large": {
-                "name": big_model,
-                "tokens": 0,
-                "embedding": main_embedding_model,
-            },
+            "small": {"name": cheap_model, "tokens": 0},
+            "large": {"name": big_model, "tokens": 0},
         },
         "search_results": {},
         "output": {"question": user_question, "sources": {}, "answer": ""},
@@ -332,7 +323,7 @@ def answer_search(user_question, print_mode=False):
     search_results = convert_search_results(search_results)
 
     output["models"]["small"]["tokens"] += token_count(
-        raw_search_results["prompt"], main_embedding_model
+        cheap_model, raw_search_results["prompt"]
     )
     output["search_results"] = search_results
     output["search_queries"] = list(search_results.keys())
@@ -366,11 +357,11 @@ def answer_search(user_question, print_mode=False):
 
     # reduce token count by summarizing a lot of the results
     output["models"]["small"]["tokens"] += token_count(
-        str(scrapped_url_data), main_embedding_model
+        cheap_model, str(scrapped_url_data)
     )
     scrapped_url_data = summarize_urls_data(scrapped_url_data)
     output["models"]["small"]["tokens"] += token_count(
-        str(scrapped_url_data), main_embedding_model
+        cheap_model, str(scrapped_url_data)
     )
 
     if print_mode:
@@ -415,9 +406,9 @@ def answer_search(user_question, print_mode=False):
         )
 
     response = final_response
-    output["models"]["large"]["tokens"] = token_count(
-        prompt, main_embedding_model
-    ) + token_count(response, main_embedding_model)
+    output["models"]["large"]["tokens"] = token_count(big_model, prompt) + token_count(
+        big_model, response
+    )
     output["runtime"] = time.time() - start_time
     output["output"]["sources"] = source_ids
     output["output"]["answer"] = response
@@ -425,36 +416,30 @@ def answer_search(user_question, print_mode=False):
     if print_mode:
         print("\n\n")
         print(
-            colors.green(f"SM Small Model: ") + str(output["models"]["small"]["name"])
+            colors.green(f"SM Small Model:  ") + str(output["models"]["small"]["name"])
         )
         print(
-            colors.green(f"SM Embedding:   ")
-            + str(output["models"]["small"]["embedding"])
-        )
-        print(
-            colors.green(f"SM Tokens:      ") + str(output["models"]["small"]["tokens"])
+            colors.green(f"SM Total Tokens: ")
+            + str(output["models"]["small"]["tokens"])
         )
         print()
         print(
-            colors.green(f"LM Large Model: ") + str(output["models"]["large"]["name"])
+            colors.green(f"LM Large Model:  ") + str(output["models"]["large"]["name"])
         )
         print(
-            colors.green(f"LM Embedding:   ")
-            + str(output["models"]["large"]["embedding"])
-        )
-        print(
-            colors.green(f"LM Tokens:      ") + str(output["models"]["large"]["tokens"])
+            colors.green(f"LM Total Tokens: ")
+            + str(output["models"]["large"]["tokens"])
         )
         print()
         print(
-            colors.green(f"Total Tokens:   ")
+            colors.green(f"Total Tokens:    ")
             + str(
                 output["models"]["small"]["tokens"]
                 + output["models"]["large"]["tokens"]
             )
         )
         print(
-            colors.green(f"Total Runtime:  ")
+            colors.green(f"Total Runtime:   ")
             + f'{round(output["runtime"], 2)} seconds ({round(output["runtime"] / 60, 2)} minutes)'
         )
 
