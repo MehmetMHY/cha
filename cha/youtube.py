@@ -11,7 +11,7 @@ import json
 import os
 import re
 
-from cha import colors
+from cha import colors, config
 
 
 def read_json(path):
@@ -104,9 +104,7 @@ def extract_yt_transcript(url):
         file_id = str(uuid.uuid4())
         filename = f"yt_sub_{int(time.time())}_{file_id}"
 
-        # NOTE: make sure to install yt-dlp (https://github.com/yt-dlp/yt-dlp)
-        # NOTE: the command was from https://www.reddit.com/r/youtubedl/comments/15fcrmd/transcript_extract_from_youtube_videos_ytdlp/
-        cmd = f"yt-dlp --write-auto-sub --convert-subs=srt --skip-download {url} -o {filename}"
+        cmd = config.build_youtube_scrape_cmd(url, filename)
         execute(cmd)
 
         root_dir = os.getcwd()

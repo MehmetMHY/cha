@@ -13,56 +13,9 @@ from selenium import webdriver
 import tiktoken
 import openai
 
-from cha import scrapper, colors
-
-# GLOBAL CONFIG VARIABLES
-big_model = "gpt-4o"
-cheap_model = "gpt-3.5-turbo"
-cheap_model_max_token = int((16_385) * 0.99)  # account for some error
+from cha import scrapper, colors, config
 
 client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
-
-def brave_search(search_input):
-    # (March 9, 2024) Setup Brave API key here:
-    #       https://api.search.brave.com/app/dashboard
-
-    params = {
-        # (required) the user's search query term
-        "q": search_input,
-        # (optional) the search query country
-        "country": "us",
-        # (optional) the search language preference
-        "search_lang": "en",
-        # (optional) user interface language preferred in response
-        "ui_lang": "en-US",
-        # (optional) the number of search results returned in response
-        "count": 5,
-        # (optional) the zero-based offset for pagination
-        "offset": 0,
-        # (optional) filters search results for adult content
-        "safesearch": "moderate",
-        # (optional) filters search results by when they were discovered
-        "freshness": "none",
-        # (optional) specifies if text decorations should be applied
-        "text_decorations": 1,
-        # (optional) specifies if spellcheck should be applied
-        "spellcheck": 1,
-        # (optional) a comma-delimited string of result types to include
-        "result_filter": "web,news",
-    }
-
-    headers = {
-        "Accept": "application/json",
-        "Accept-Encoding": "gzip",
-        "X-Subscription-Token": os.environ.get("BRAVE_API_KEY"),
-    }
-
-    response = requests.get(
-        "https://api.search.brave.com/res/v1/web/search", headers=headers, params=params
-    )
-
-    return response.json()
 
 
 def generate_search_results(question, model, time_delay=1.5):
@@ -80,7 +33,7 @@ def generate_search_results(question, model, time_delay=1.5):
         try:
             time.sleep(time_delay)
 
-            search = brave_search(query)
+            search = config.brave_search(query)
 
             results[query] = {"query": search["query"]["original"], "pages": []}
 
@@ -100,7 +53,7 @@ def generate_search_results(question, model, time_delay=1.5):
 
 def get_sources(query):
     try:
-        response = generate_search_results(query, cheap_model, 2.0)
+        response = generate_search_results(query, config.cheap_model, 2.0)
         return response
     except Exception as err:
         return None
@@ -116,7 +69,7 @@ def token_count(model_name: str, string: str) -> int:
 def adjust_prompt_to_token_limit(model, prompt: str, token_limit: int) -> str:
     num_tokens = token_count(model, prompt)
     while num_tokens > token_limit and token_limit >= 0:
-        diff = int((num_tokens - cheap_model_max_token) / 2)
+        diff = int((num_tokens - config.cheap_model_max_token) / 2)
         if diff == 0:
             diff = 1
         prompt = prompt[:-(diff)]
@@ -139,55 +92,12 @@ def convert_search_results(search_results):
 
 
 def is_valid_url(url):
-    # LAST UPDATED: March 10, 2024
-
-    excluded_extensions = [
-        ".pdf",
-        ".xml",
-        ".css",
-        ".docx",
-        ".xlsx",
-        ".pptx",
-        ".zip",
-        ".rar",
-        ".exe",
-        ".dmg",
-        ".tar.gz",
-        ".mp3",
-        ".mp4",
-        ".avi",
-        ".mov",
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".gif",
-        ".bmp",
-        ".csv",
-        ".json",
-        ".txt",
-        ".ppt",
-        ".pptx",
-        ".doc",
-        ".xls",
-        ".rtf",
-        ".7z",
-        ".iso",
-        ".wav",
-        ".mkv",
-    ]
-
     # check if the URL ends with any of the excluded extensions
-    if any(url.lower().endswith(ext) for ext in excluded_extensions):
+    if any(url.lower().endswith(ext) for ext in config.excluded_extensions):
         return False
 
     # match common file naming conventions on the web; likely non-HTML content
-    patterns = [
-        r"/[^/?#]+\.[^/?#]+($|\?|#)",  # paths with a file extension
-        r"/[^/?#]+/download($|\?|#)",  # urls with "download" in the last path segment
-        r"/api/",  # urls that likely point to an API endpoint
-        r"/[^/?#]+\.php($|\?|#)",  # php files (often dynamic but can be used for downloads)
-    ]
-
+    patterns = config.invalid_url_patterns
     if any(re.search(pattern, url, re.IGNORECASE) for pattern in patterns):
         return False
 
@@ -253,11 +163,12 @@ def summarize_urls_data(scrapped_url_data):
         try:
             prompt = f"Summarize the following text into one paragraph:\n```\n{scrapped_url_data[key]}\n```"
             prompt = adjust_prompt_to_token_limit(
-                cheap_model, prompt, cheap_model_max_token
+                config.cheap_model, prompt, config.cheap_model_max_token
             )
             response = (
                 client.chat.completions.create(
-                    model=cheap_model, messages=[{"role": "system", "content": prompt}]
+                    model=config.cheap_model,
+                    messages=[{"role": "system", "content": prompt}],
                 )
                 .choices[0]
                 .message.content
@@ -291,11 +202,9 @@ def answer_search(user_question, print_mode=False):
     if "OPENAI_API_KEY" not in os.environ and "BRAVE_API_KEY" not in os.environ:
         print(
             colors.red(
-                "Can't run advance-search, you most define the following env variables:"
+                f"Can't run advance-search, the OPENAI_API_KEY & BRAVE_API_KEY environment variables are NOT defined"
             )
         )
-        print(colors.red("     OPENAI_API_KEY : https://platform.openai.com/api-keys"))
-        print(colors.red("     BRAVE_API_KEY : https://brave.com/search/api/"))
         return None
 
     output = {
@@ -304,8 +213,8 @@ def answer_search(user_question, print_mode=False):
         "runtime": 0,
         "search_queries": [],
         "models": {
-            "small": {"name": cheap_model, "tokens": 0},
-            "large": {"name": big_model, "tokens": 0},
+            "small": {"name": config.cheap_model, "tokens": 0},
+            "large": {"name": config.big_model, "tokens": 0},
         },
         "search_results": {},
         "output": {"question": user_question, "sources": {}, "answer": ""},
@@ -323,7 +232,7 @@ def answer_search(user_question, print_mode=False):
     search_results = convert_search_results(search_results)
 
     output["models"]["small"]["tokens"] += token_count(
-        cheap_model, raw_search_results["prompt"]
+        config.cheap_model, raw_search_results["prompt"]
     )
     output["search_results"] = search_results
     output["search_queries"] = list(search_results.keys())
@@ -357,11 +266,11 @@ def answer_search(user_question, print_mode=False):
 
     # reduce token count by summarizing a lot of the results
     output["models"]["small"]["tokens"] += token_count(
-        cheap_model, str(scrapped_url_data)
+        config.cheap_model, str(scrapped_url_data)
     )
     scrapped_url_data = summarize_urls_data(scrapped_url_data)
     output["models"]["small"]["tokens"] += token_count(
-        cheap_model, str(scrapped_url_data)
+        config.cheap_model, str(scrapped_url_data)
     )
 
     if print_mode:
@@ -383,7 +292,7 @@ def answer_search(user_question, print_mode=False):
         print(colors.blue("\n========CONCLUSION========\n"))
 
         response = client.chat.completions.create(
-            model=big_model,
+            model=config.big_model,
             messages=[{"role": "system", "content": prompt}],
             stream=True,
         )
@@ -399,16 +308,16 @@ def answer_search(user_question, print_mode=False):
     if print_mode == False:
         final_response = (
             client.chat.completions.create(
-                model=big_model, messages=[{"role": "system", "content": prompt}]
+                model=config.big_model, messages=[{"role": "system", "content": prompt}]
             )
             .choices[0]
             .message.content
         )
 
     response = final_response
-    output["models"]["large"]["tokens"] = token_count(big_model, prompt) + token_count(
-        big_model, response
-    )
+    output["models"]["large"]["tokens"] = token_count(
+        config.big_model, prompt
+    ) + token_count(config.big_model, response)
     output["runtime"] = time.time() - start_time
     output["output"]["sources"] = source_ids
     output["output"]["answer"] = response

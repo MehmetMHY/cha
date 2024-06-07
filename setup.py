@@ -2,14 +2,14 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.4.2",
+    version="0.4.3",
     packages=find_packages(),
     license="MIT",
     description="A simple CLI chat tool to easily interface with OpenAI's LLM models",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
-        "openai==1.30.1",
+        "openai==1.32.0",
         "tiktoken==0.7.0",
         "beautifulsoup4==4.12.3",
         "selenium==4.21.0",
