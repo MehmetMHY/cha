@@ -97,6 +97,10 @@ pip install -e .
 
 ### 3. If you add a new dependency, you will have to do step 1 again
 
+## Other Notes
+
+- To see and/or change hard-coded config variables/logic in Cha, checkout the `config.py` file.
+
 ## Credits
 
 - [OpenAI Documentation](https://platform.openai.com/docs/introduction)

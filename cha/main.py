@@ -8,29 +8,16 @@ import os
 
 # NOTE: make sure environment variable is defined before doing anything
 if "OPENAI_API_KEY" not in os.environ:
-    print(
-        "The OPENAI_API_KEY env variable is not defined. Grab your API key at: https://platform.openai.com/api-keys"
-    )
+    print("Can't proceed because an OPENAI_API_KEY env variable is not defined!")
     sys.exit(1)
 
 # 3rd party packages
 from openai import OpenAI
-from cha import scrapper, youtube, colors, image, search
+from cha import scrapper, youtube, colors, image, search, config
 
-# hard coded config variables
-INITIAL_PROMPT = (
-    "You are a helpful assistant who keeps your response short and to the point"
-)
-MULTI_LINE_SEND = "END"
-MULI_LINE_MODE_TEXT = "!m"
-CLEAR_HISTORY_TEXT = "!c"
-IMG_GEN_MODE = "!i"
-SAVE_CHAT_HISTORY = "!s"
-EXIT_STRING_KEY = "!e"
-ADVANCE_SEARCH_KEY = "!b"
 
-# important global variables
-CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": INITIAL_PROMPT, "bot": ""}]
+# global, in memory, variables
+CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -66,19 +53,19 @@ def title_print(selected_model):
     print(
         colors.yellow(
             f"""Chatting With OpenAI's '{selected_model}' Model
- - '{EXIT_STRING_KEY}' or CTRL-C to exit
- - '{MULI_LINE_MODE_TEXT}' for single/multi-line mode
- - '{MULTI_LINE_SEND}' to end in multi-line mode
- - '{CLEAR_HISTORY_TEXT}' to clear chat history
- - '{IMG_GEN_MODE}' for image generation
- - '{SAVE_CHAT_HISTORY}' to save chat history
- - '{ADVANCE_SEARCH_KEY}' for answer-search"""
+ - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
+ - '{config.MULI_LINE_MODE_TEXT}' for single/multi-line mode
+ - '{config.MULTI_LINE_SEND}' to end in multi-line mode
+ - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
+ - '{config.IMG_GEN_MODE}' for image generation
+ - '{config.SAVE_CHAT_HISTORY}' to save chat history
+ - '{config.ADVANCE_SEARCH_KEY}' for answer-search"""
         ).strip()
     )
 
 
 def chatbot(selected_model, print_title=True):
-    messages = [{"role": "system", "content": INITIAL_PROMPT}]
+    messages = [{"role": "system", "content": config.INITIAL_PROMPT}]
     multi_line_input = False
     first_loop = True
 
@@ -99,7 +86,7 @@ def chatbot(selected_model, print_title=True):
         if line_mode:
             print(
                 colors.yellow(
-                    f"Entered multi-line input mode. Type '{MULTI_LINE_SEND}' to send message"
+                    f"Entered multi-line input mode. Type '{config.MULTI_LINE_SEND}' to send message"
                 )
             )
             user_input_string = colors.red("[M]") + " " + colors.blue(f"User: ")
@@ -110,19 +97,19 @@ def chatbot(selected_model, print_title=True):
         if not multi_line_input:
             message = sys.stdin.readline().rstrip("\n")
 
-            if message == MULI_LINE_MODE_TEXT:
+            if message == config.MULI_LINE_MODE_TEXT:
                 multi_line_input = True
                 line_mode = True
                 last_line = "\n"
                 continue
-            elif message.replace(" ", "") == IMG_GEN_MODE:
+            elif message.replace(" ", "") == config.IMG_GEN_MODE:
                 print("\n")
                 image.gen_image()
                 continue
-            elif message.replace(" ", "") == EXIT_STRING_KEY.lower():
+            elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
                 break
-            elif message.replace(" ", "") == CLEAR_HISTORY_TEXT:
-                messages = [{"role": "system", "content": INITIAL_PROMPT}]
+            elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
+                messages = [{"role": "system", "content": config.INITIAL_PROMPT}]
                 print(colors.yellow("\n\nChat history cleared.\n"))
                 first_loop = True
                 continue
@@ -131,10 +118,12 @@ def chatbot(selected_model, print_title=True):
             message_lines = []
             while True:
                 line = sys.stdin.readline().rstrip("\n")
-                if line.lower() == MULTI_LINE_SEND.lower():
+                if line.lower() == config.MULTI_LINE_SEND.lower():
                     break
-                elif line.replace(" ", "").replace("\n", "") == CLEAR_HISTORY_TEXT:
-                    messages = [{"role": "system", "content": INITIAL_PROMPT}]
+                elif (
+                    line.replace(" ", "").replace("\n", "") == config.CLEAR_HISTORY_TEXT
+                ):
+                    messages = [{"role": "system", "content": config.INITIAL_PROMPT}]
                     print(colors.yellow("\n\nChat history cleared.\n"))
                     first_loop = True
                     break
@@ -146,9 +135,9 @@ def chatbot(selected_model, print_title=True):
         # NOTE: this is annoying, but we have to account for this :(
         print()
 
-        if message.startswith(ADVANCE_SEARCH_KEY):
+        if message.startswith(config.ADVANCE_SEARCH_KEY):
             try:
-                asq = " ".join(message.replace(ADVANCE_SEARCH_KEY, "").split())
+                asq = " ".join(message.replace(config.ADVANCE_SEARCH_KEY, "").split())
                 # NOTE: the question most be greater then 2 words atleast
                 if len(asq) >= 5 and len(asq.split(" ")) >= 3:
                     print("\n")
@@ -167,7 +156,7 @@ def chatbot(selected_model, print_title=True):
                 print(colors.red(f"Failed to run Answer-Search due to: {err}\n"))
             continue
 
-        if message == SAVE_CHAT_HISTORY:
+        if message == config.SAVE_CHAT_HISTORY:
             cha_filepath = f"cha_{int(time.time())}.txt"
             youtube.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
             print(colors.red(f"\nSaved current saved history to {cha_filepath}"))
@@ -245,7 +234,7 @@ def basic_chat(filepath, model, justString=None):
         response = client.chat.completions.create(
             model=model,
             messages=[
-                {"role": "system", "content": INITIAL_PROMPT},
+                {"role": "system", "content": config.INITIAL_PROMPT},
                 {"role": "system", "content": content},
             ],
             stream=True,
