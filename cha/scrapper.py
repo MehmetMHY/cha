@@ -9,7 +9,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium import webdriver
 from bs4 import BeautifulSoup
-from cha import youtube
+from cha import youtube, pdfs
 
 
 def extract_urls(text):
@@ -89,6 +89,8 @@ def get_all_htmls(text):
         try:
             if youtube.valid_yt_link(url):
                 content = youtube.extract_yt_transcript(url)
+            elif pdfs.valid_pdf_url(url):
+                content = pdfs.scrape_pdf_url(url)
             else:
                 content = remove_html(scrape_html(url))
         except:
