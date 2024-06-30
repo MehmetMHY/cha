@@ -290,11 +290,10 @@ def cli():
         if str(args.titleprint).lower() == "false":
             title_print_value = False
 
-        openai_models = list_models()
+        selected_model = args.model
 
-        if args.model and any(model[0] == args.model for model in openai_models):
-            selected_model = args.model
-        else:
+        if selected_model == None:
+            openai_models = list_models()
             print(colors.yellow("Available OpenAI Models:"))
             max_length = max(len(model_id) for model_id, _ in openai_models)
             openai_models = sorted(openai_models, key=lambda x: x[1])
