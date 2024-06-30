@@ -181,7 +181,6 @@ cython_debug/
 # Custom
 .DS_Store
 *.jpg
-*.png
 *.jpeg
 .sandbox/
 bd.json
