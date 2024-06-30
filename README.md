@@ -6,6 +6,10 @@
 
 A simple CLI chat tool designed for easy interaction with OpenAI's models.
 
+## Alternatives
+
+If you want to use Anthropic's models in the CLI, check out [Cla](https://github.com/MehmetMHY/cla)!
+
 ## Features
 
 - Basic CLI chat interface with OpenAI’s LLM models.
