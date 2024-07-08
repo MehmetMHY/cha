@@ -10,6 +10,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=[
         "openai==1.35.10",
+        "groq==0.9.0",
         "tiktoken==0.7.0",
         "beautifulsoup4==4.12.3",
         "selenium==4.22.0",
