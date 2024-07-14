@@ -88,7 +88,7 @@ def get_all_htmls(text):
         content = None
         try:
             if youtube.valid_yt_link(url):
-                content = youtube.extract_yt_transcript(url)
+                content = youtube.main_yt_pointer(url)
             elif pdfs.valid_pdf_url(url):
                 content = pdfs.scrape_pdf_url(url)
             else:
