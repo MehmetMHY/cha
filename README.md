@@ -77,19 +77,25 @@ To start the tool, execute:
 cha
 ```
 
-### 4. (Optional) Setup an Alias/Command for `cha`
+### 4. (Optional) Using my configuration of `cha`
 
-For easier use of `cha`, consider setting up an alias or command. To add the preferred alias/command for Cha, run the appropriate command for your shell:
+If you would like, you can use my configuration of `cha`. To view my configuration, check out the `cha.sh` file. To use it, add the content from the `cha.sh` file to your shell's config file:
 
 ```bash
-# if using a zsh shell
-echo 'alias cha="path/to/cha"' >> $HOME/.zshrc
+# zsh
+cat cha.sh >> $HOME/.zshrc
 
-# if using a bash shell
-echo 'alias cha="path/to/cha"' >> $HOME/.bashrc
+# bash
+cat cha.sh >> $HOME/.bashrc
 ```
 
-You're now ready to go!
+Then, run my configuration of `cha`:
+
+```bash
+chatgpt
+```
+
+### 5. Now you're now ready to go!
 
 ## Develop Mode
 
