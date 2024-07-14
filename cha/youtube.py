@@ -11,6 +11,7 @@ import json
 import os
 import re
 
+from groq import Groq
 from cha import colors, config
 
 
@@ -95,9 +96,6 @@ def valid_yt_link(link):
 
 def extract_yt_transcript(url):
     try:
-        if not valid_yt_link(url):
-            raise Exception(f"URL {url} it NOT a valid YouTube url/link")
-
         # NOTE: remove aditional metadata from URL
         url = url.split("&")[0]
 
@@ -133,4 +131,83 @@ def extract_yt_transcript(url):
         return full_content
     except Exception as e:
         print(colors.red(f"Error occurred with YouTube scrapper: {e}"))
+        return None
+
+
+def download_youtube_mp3(link):
+    filename = os.path.dirname(__file__) + "/yt_" + str(uuid.uuid4()) + ".mp3"
+    cmd = f"yt-dlp --extract-audio --audio-format mp3 -o {filename} {link}"
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    result = result.stdout
+    return filename
+
+
+def audio_to_text(filename):
+    client = Groq()
+    with open(filename, "rb") as file:
+        transcription = client.audio.transcriptions.create(
+            file=(filename, file.read()),
+            model="whisper-large-v3",
+            # prompt="Specify context or spelling",
+            response_format="json",
+            language="en",
+            temperature=0.0,
+        )
+        return transcription.text
+
+
+def extract_yt_auto_transcript(url):
+    try:
+        st1 = time.time()
+        file = download_youtube_mp3(url)
+        rt1 = time.time() - st1
+
+        st2 = time.time()
+        content = audio_to_text(file)
+        rt2 = time.time() - st2
+
+        st3 = time.time()
+        os.remove(file)
+        rt3 = time.time() - st3
+
+        return {
+            "content": content,
+            "filename": file,
+            "runtimes": {"yt_down_sec": rt1, "to_text_sec": rt2, "rm_file_sec": rt3},
+        }
+    except:
+        return None
+
+
+def main_yt_pointer(url):
+    if not valid_yt_link(url):
+        print(colors.red("Error: Invalid YouTube URL"))
+        print(colors.red(f"Provided URL: {url}"))
+        return None
+
+    print(colors.yellow(f"\nYouTube URL detected:"))
+    print(colors.yellow(f"> {url}"))
+
+    # NOTE: only provide the ability to use the advance yt scarpper if they provided a GROQ API key
+    if len(os.environ.get("GROQ_API_KEY", "")) > 0:
+        user_prompt = "\nUse the slow but accurate scraper? (y/n): "
+        user_input = input(colors.blue(user_prompt)).lower()
+    else:
+        user_input = ""
+
+    try:
+        if user_input in ["yes", "y"]:
+            print(colors.yellow("\nUsing advanced yt audio scraper...\n"))
+            output = extract_yt_auto_transcript(url)
+            if output is None:
+                raise Exception("Failed to perform advanced yt audio scrape")
+            return output["content"]
+
+        print(colors.yellow("\nUsing simple yt transcript scraper...\n"))
+        output = extract_yt_transcript(url)
+        if output is None:
+            raise Exception("Failed to perform simple yt transcript scrape")
+        return output
+    except Exception as e:
+        print(colors.red(f"\nError: {str(e)}"))
         return None
