@@ -14,7 +14,7 @@ SAVE_CHAT_HISTORY = "!s"
 EXIT_STRING_KEY = "!e"
 ADVANCE_SEARCH_KEY = "!b"
 
-#######################################[YouTube-Scrapper]#######################################
+#######################################[YouTube-Scraper]#######################################
 
 
 def build_youtube_scrape_cmd(url, filename):
