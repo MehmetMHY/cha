@@ -1,7 +1,7 @@
 """
 March 7, 2024
 
-The YouTube Scrapper uses yt-dlp (https://github.com/yt-dlp/yt-dlp)
+The YouTube Scraper uses yt-dlp (https://github.com/yt-dlp/yt-dlp)
 """
 
 import subprocess
@@ -130,7 +130,7 @@ def extract_yt_transcript(url):
 
         return full_content
     except Exception as e:
-        print(colors.red(f"Error occurred with YouTube scrapper: {e}"))
+        print(colors.red(f"Error occurred with YouTube scraper: {e}"))
         return None
 
 

@@ -4,7 +4,7 @@ import re
 import html
 import copy
 
-from cha import scrapper, colors
+from cha import scraper, colors
 
 
 def get_item(item_id, errors):
@@ -77,7 +77,7 @@ def fetch_hacker_news_post(url):
     if post_data is None:
         return {"errors": errors}
 
-    scrapped_content = None
+    scraped_content = None
     try:
         url_in_post = str(post_data["url"]).replace(" ", "")
 
@@ -93,14 +93,14 @@ def fetch_hacker_news_post(url):
                 page_scrape_continue = False
                 break
         if page_scrape_continue:
-            scrapped_content = scrapper.remove_html(scrapper.scrape_html(url_in_post))
+            scraped_content = scraper.remove_html(scraper.scrape_html(url_in_post))
     except Exception as err:
         print(err)
         pass
 
     comments_copy = copy.deepcopy(post_data["comments"])
     del post_data["comments"]
-    post_data["url_content"] = scrapped_content
+    post_data["url_content"] = scraped_content
     post_data["errors"] = errors
     post_data["comments"] = comments_copy
     return post_data
@@ -116,7 +116,7 @@ def valid_hacker_news_url(url):
 def get_hn_post(url):
     final_output = None
     try:
-        print(colors.yellow(f"\nScrapping Hacker News Post {url}\n"))
+        print(colors.yellow(f"\nScraping Hacker News Post {url}\n"))
         output = fetch_hacker_news_post(url)
         all_keys = len(list(output.keys()))
         if len(list(output.keys())) == 1 and all_keys == ["errors"]:
