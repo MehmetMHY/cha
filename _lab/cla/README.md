@@ -31,28 +31,32 @@ bash tests/run.sh
 ## Setup
 
 1. Get your Anthropic API key. Follow [this tutorial](https://docs.anthropic.com/en/docs/quickstart).
-    - Check out your Anthropic console [here](https://docs.anthropic.com/en/docs/console.anthropic.com)
-    - Check out/get your API key(s) [here](https://console.anthropic.com/settings/keys)
+
+   - Check out your Anthropic console [here](https://docs.anthropic.com/en/docs/console.anthropic.com)
+   - Check out/get your API key(s) [here](https://console.anthropic.com/settings/keys)
 
 2. Create a `.env` file in the root directory and add the following to it:
-    ```env
-    export ANTHROPIC_API_KEY="YOUR_KEY_HERE"
-    ```
+
+   ```env
+   export ANTHROPIC_API_KEY="YOUR_KEY_HERE"
+   ```
 
 3. Ensure you have Python and pip installed. Then install the tool's dependencies:
-    ```bash
-    pip3 install --upgrade .
-    ```
+
+   ```bash
+   pip3 install --upgrade .
+   ```
 
 4. Source your environment variables:
-    ```bash
-    source .env
-    ```
+
+   ```bash
+   source .env
+   ```
 
 5. To start the tool, execute:
-    ```bash
-    cla
-    ```
+   ```bash
+   cla
+   ```
 
 ## (Optional) Setup `claude` Command
 
@@ -84,9 +88,9 @@ For developing `cla`, you can do the following:
 
 1. Install `cla` in editable mode so that pip points to the source files of the cloned code:
 
-    ```bash
-    pip install -e .
-    ```
+   ```bash
+   pip install -e .
+   ```
 
 2. Make changes to the code, then run `cla` to try out your changes.
 
@@ -101,4 +105,3 @@ For developing `cla`, you can do the following:
 - [Anthropic Documentation](https://docs.anthropic.com/)
 - [Cha](https://github.com/MehmetMHY/cha)
 - [ChatGPT (GPT-4)](https://chat.openai.com/)
-
