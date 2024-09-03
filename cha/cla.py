@@ -218,7 +218,7 @@ def cli():
         selected_model = args.model
 
         if selected_model == None:
-            anthropic_models = scrapper.get_models()
+            anthropic_models = scrapper.get_anthropic_models()
             print(colors.yellow("Available Anthropic Models:"))
             for i, model in enumerate(anthropic_models, 1):
                 print(colors.yellow(f"   {i}) {model['name']} ({model['model']})"))
@@ -258,7 +258,7 @@ def cli():
 
 
 if __name__ == "__main__":
-    if scrapper.test_scrapper_get_models() == False:
+    if scrapper.test_scrapper_get_anthropic_models() == False:
         print(colors.red(f"Models' name scrapper is broken"))
         sys.exit(1)
     cli()
