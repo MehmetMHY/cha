@@ -5,7 +5,7 @@ import sys
 import os
 
 from anthropic import Anthropic
-import colors, config, scrapper
+from cha import colors, config, scrapper
 
 # global variables
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
