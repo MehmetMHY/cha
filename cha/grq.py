@@ -3,51 +3,12 @@ import sys
 import time
 import argparse
 from typing import List, Dict, Any
+
 from groq import Groq
+from cha import colors
 
-# Initialize Groq client
+
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-
-
-# Colors and styles
-def reset(text):
-    return f"\033[0m{text}"
-
-
-def red(text):
-    return f"\033[91m{text}\033[0m"
-
-
-def green(text):
-    return f"\033[92m{text}\033[0m"
-
-
-def yellow(text):
-    return f"\033[93m{text}\033[0m"
-
-
-def blue(text):
-    return f"\033[94m{text}\033[0m"
-
-
-def magenta(text):
-    return f"\033[95m{text}\033[0m"
-
-
-def cyan(text):
-    return f"\033[96m{text}\033[0m"
-
-
-def white(text):
-    return f"\033[97m{text}\033[0m"
-
-
-def bold(text):
-    return f"\033[1m{text}\033[0m"
-
-
-def underline(text):
-    return f"\033[4m{text}\033[0m"
 
 
 def get_models() -> List[Dict[str, Any]]:
@@ -59,7 +20,7 @@ def get_models() -> List[Dict[str, Any]]:
 
     # NOTE: not all Groq models are text based
     # NOTE: last updated on July 26, 2024
-    invalid_model_prefixes = ["whisper"]
+    invalid_model_prefixes = ["whisper", "distil-whisper"]
 
     response = client.models.list()
 
@@ -89,7 +50,7 @@ def create_chat_completion(model: str, messages: List[Dict[str, str]]) -> str:
     ):
         if chunk.choices[0].delta.content is not None:
             content = chunk.choices[0].delta.content
-            print(green(content), end="", flush=True)
+            print(colors.green(content), end="", flush=True)
             full_response += content
     print()  # Add a newline after the full response
     return full_response
@@ -118,7 +79,7 @@ def validate_environment() -> None:
 
 def title_print(selected_model: str):
     print(
-        yellow(
+        colors.yellow(
             f"""
 Chatting With Groq's '{selected_model}' Model
  - 'exit' to exit
@@ -145,12 +106,16 @@ def chatbot(selected_model: str, print_title: bool = True):
         if not first_loop:
             print()
 
-        user_input_string = blue("User: ")
+        user_input_string = colors.blue("User: ")
         if multi_line_input:
-            print(yellow("Entered multi-line input mode. Type 'done' to send message"))
-            user_input_string = red("[M] ") + blue("User: ")
+            print(
+                colors.yellow(
+                    "Entered multi-line input mode. Type 'done' to send message"
+                )
+            )
+            user_input_string = colors.red("[M] ") + colors.blue("User: ")
 
-        print(blue(user_input_string), end="", flush=True)
+        print(colors.blue(user_input_string), end="", flush=True)
         user_input = input()
 
         if user_input.lower() == "exit":
@@ -160,7 +125,7 @@ def chatbot(selected_model: str, print_title: bool = True):
             continue
         elif user_input.lower() == "clear":
             messages = []
-            print(yellow("\nChat history cleared.\n"))
+            print(colors.yellow("\nChat history cleared.\n"))
             first_loop = True
             continue
 
@@ -184,7 +149,7 @@ def chatbot(selected_model: str, print_title: bool = True):
             bot_response = create_chat_completion(selected_model, messages)
             messages.append(format_message("assistant", bot_response))
         except Exception as e:
-            print(red(f"\nError during chat: {e}"))
+            print(colors.red(f"\nError during chat: {e}"))
             break
 
         first_loop = False
@@ -199,10 +164,12 @@ def process_file(filepath: str, model: str):
     """
     try:
         if not os.path.exists(filepath):
-            print(red(f"The following file does not exist: {filepath}"))
+            print(colors.red(f"The following file does not exist: {filepath}"))
             return
 
-        print(blue(f"Feeding the following file content to {model}:\n{filepath}\n"))
+        print(
+            colors.blue(f"Feeding the following file content to {model}:\n{filepath}\n")
+        )
 
         with open(filepath, "r") as file:
             content = file.read()
@@ -215,7 +182,7 @@ def process_file(filepath: str, model: str):
         create_chat_completion(model, messages)
 
     except Exception as e:
-        print(red(f"Error processing file: {e}"))
+        print(colors.red(f"Error processing file: {e}"))
 
 
 def process_string(input_string: str, model: str):
@@ -236,7 +203,7 @@ def process_string(input_string: str, model: str):
         create_chat_completion(model, messages)
 
     except Exception as e:
-        print(red(f"Error processing string: {e}"))
+        print(colors.red(f"Error processing string: {e}"))
 
 
 def cli():
@@ -264,20 +231,20 @@ def cli():
 
     if not selected_model:
         models = get_models()
-        print(yellow("Available Groq Models:"))
+        print(colors.yellow("Available Groq Models:"))
         for i, model in enumerate(models, 1):
-            print(yellow(f"   {i}) {model.id}"))
+            print(colors.yellow(f"   {i}) {model.id}"))
         print()
 
         try:
-            model_choice = int(input(blue("Model (Enter the number): ")))
+            model_choice = int(input(colors.blue("Model (Enter the number): ")))
             if 1 <= model_choice <= len(models):
                 selected_model = models[model_choice - 1].id
             else:
-                print(red("Invalid model selected. Exiting."))
+                print(colors.red("Invalid model selected. Exiting."))
                 return
         except ValueError:
-            print(red("Invalid input. Exiting."))
+            print(colors.red("Invalid input. Exiting."))
             return
         except KeyboardInterrupt:
             return
@@ -285,7 +252,9 @@ def cli():
 
     try:
         if args.file and args.string:
-            print(red("You can't use the string and file option at the same time!"))
+            print(
+                colors.red("You can't use the string and file option at the same time!")
+            )
         elif args.file:
             process_file(args.file, selected_model)
         elif args.string:
