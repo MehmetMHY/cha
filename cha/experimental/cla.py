@@ -5,8 +5,7 @@ import sys
 import os
 
 from anthropic import Anthropic
-
-from cla import colors, config, scrapper
+import colors, config, scrapper
 
 # global variables
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
@@ -259,4 +258,7 @@ def cli():
 
 
 if __name__ == "__main__":
+    if scrapper.test_scrapper_get_models() == False:
+        print(colors.red(f"Models' name scrapper is broken"))
+        sys.exit(1)
     cli()
