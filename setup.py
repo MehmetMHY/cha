@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.4.7",
+    version="0.5.0",
     packages=find_packages(),
     license="MIT",
-    description="A simple CLI chat tool to easily interface with OpenAI's LLM models",
+    description="A simple CLI chat tool to easily interface with OpenAI's LLM models, as well as some other platforms",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
@@ -25,6 +25,8 @@ setup(
     entry_points={
         "console_scripts": [
             "cha = cha.main:cli",
+            "cla = cha.cla:cli",
+            "groq = cha.grq:cli",
         ],
     },
 )
