@@ -4,15 +4,11 @@
 
 ## About
 
-A simple CLI chat tool designed for easy interaction with OpenAI's models.
-
-## Alternatives
-
-If you want to use Anthropic's models in the CLI, check out [Cla](https://github.com/MehmetMHY/cla)!
+A simple CLI chat tool designed for easy interaction with OpenAI's models. It also allows you to easily interact with Anthropic's Claude models and Groq's API.
 
 ## Features
 
-- Basic CLI chat interface with OpenAI’s LLM models.
+- Basic CLI chat interface with OpenAI's LLM models.
 - Web scraping capability for provided links (supports JavaScript scraping).
 - YouTube scraping functionality for extracting video transcripts.
   - The YouTube scraper either scrapes transcripts or downloads the video's audio and converts it to text using OpenAI's Whisper model though the Groq API.
@@ -22,7 +18,9 @@ If you want to use Anthropic's models in the CLI, check out [Cla](https://github
 - Ability to generate images using OpenAI's image models.
   - Uses CLImage to display images directly in the terminal.
 - Supports both interactive and non-interactive chat modes.
-- Stats option that estimates how much you have spent per session.
+- Basic support for other models on different platforms:
+  - Anthropic's Claude models via the `cla` command.
+  - Groq's API through the `grq` command.
 
 ## Demo
 
@@ -44,37 +42,46 @@ Clone this repository, navigate to its directory, and run the following command 
 pip3 install --upgrade .
 ```
 
-### 2. Configure API Key
+### 2. Configure API Keys
 
 1. Create a `.env` file in the root directory.
 
-2. Obtain your OpenAI API key [HERE](https://platform.openai.com/api-keys). If you want to use Answer-Search, obtain your Brave API key [HERE](https://brave.com/search/api/). Also, if you want to use the YouTube scraper more advance and accurate audio-mode, you will need a Groq API key which you can get [HERE](https://console.groq.com/keys).
+2. Obtain your API keys:
+
+   - OpenAI API key: [Get it here](https://platform.openai.com/api-keys)
+   - Anthropic API key: [Get it here](https://www.anthropic.com/) (for `cla` command)
+   - Groq API key: [Get it here](https://console.groq.com/keys) (for `grq` command)
+   - Brave API key: [Get it here](https://brave.com/search/api/) (optional, for Answer-Search feature)
 
 3. Add your keys to the `.env` file, using this format:
 
    ```env
-   # Replace YOUR_KEY_HERE with your OpenAI API key
+   # Replace YOUR_KEY_HERE with your respective API keys
    export OPENAI_API_KEY="YOUR_KEY_HERE"
-
-   # (Optional) Replace YOUR_KEY_HERE with your Brave API key
-   export BRAVE_API_KEY="YOUR_KEY_HERE"
-
-   # (Optional) Replace YOUR_KEY_HERE with your Groq API key
+   export ANTHROPIC_API_KEY="YOUR_KEY_HERE"
    export GROQ_API_KEY="YOUR_KEY_HERE"
+   export BRAVE_API_KEY="YOUR_KEY_HERE"
    ```
 
 4. To activate the environment variables, run:
 
+   ```bash
+   source .env
+   ```
+
+### 3. Run `cha`, `cla`, or `grq`
+
+To start the tool, execute one of the following:
+
 ```bash
-source .env
-```
-
-### 3. Run `cha`
-
-To start the tool, execute:
-
-```bash
+# talk with OpenAI's models
 cha
+
+# talk with Anthropic's models
+cla
+
+# talk with Groq's supported models
+grq
 ```
 
 ### 4. (Optional) Using my configuration of `cha`
@@ -107,7 +114,7 @@ For developing Cha, you can do the following:
 pip install -e .
 ```
 
-### 2. Make changes to the code, then run `cha` to try out your changes
+### 2. Make changes to the code, then run `cha`, `cla`, or `grq` to try out your changes
 
 ### 3. If you add a new dependency, you will have to do step 1 again
 
@@ -117,6 +124,9 @@ pip install -e .
 
 ## Credits
 
-- [OpenAI Documentation](https://platform.openai.com/docs/introduction)
-- [ChatGPT (GPT-4)](https://chat.openai.com/)
+- [OpenAI Documentation](https://platform.openai.com/docs/overview)
+- [Anthropic Documentation](https://docs.anthropic.com/)
+- [Groq Documentation](https://console.groq.com/docs/quickstart)
 - [Ollama's CLI](https://ollama.com/)
+- [ChatGPT (GPT-4)](https://chat.openai.com/)
+- [Claude 3.5 Sonnet](https://claude.ai/chats)
