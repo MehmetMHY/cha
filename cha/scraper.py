@@ -103,7 +103,7 @@ def get_all_htmls(text):
     return output
 
 
-def scrapped_prompt(prompt):
+def scraped_prompt(prompt):
     htmls = get_all_htmls(prompt)
     if htmls == {}:
         return prompt
