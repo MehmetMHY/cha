@@ -5,7 +5,7 @@ import sys
 import os
 
 from anthropic import Anthropic
-from cha import colors, config, scrapper
+from cha import colors, config, scraper
 
 # global variables
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
@@ -218,7 +218,7 @@ def cli():
         selected_model = args.model
 
         if selected_model == None:
-            anthropic_models = scrapper.get_anthropic_models()
+            anthropic_models = scraper.get_anthropic_models()
             print(colors.yellow("Available Anthropic Models:"))
             for i, model in enumerate(anthropic_models, 1):
                 print(colors.yellow(f"   {i}) {model['name']} ({model['model']})"))
@@ -258,7 +258,7 @@ def cli():
 
 
 if __name__ == "__main__":
-    if scrapper.test_scrapper_get_anthropic_models() == False:
-        print(colors.red(f"Models' name scrapper is broken"))
+    if scraper.test_scraper_get_anthropic_models() == False:
+        print(colors.red(f"Models' name scraper is broken"))
         sys.exit(1)
     cli()
