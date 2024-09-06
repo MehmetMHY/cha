@@ -48,7 +48,7 @@ pip3 install --upgrade .
 
 1. Create a `.env` file in the root directory.
 
-2. Obtain your OpenAI API key [HERE](https://platform.openai.com/api-keys). If you want to use Answer-Search, obtain your Brave API key [HERE](https://brave.com/search/api/). Also, if you want to use the YouTube scrapper more advance and accurate audio-mode, you will need a Groq API key which you can get [HERE](https://console.groq.com/keys).
+2. Obtain your OpenAI API key [HERE](https://platform.openai.com/api-keys). If you want to use Answer-Search, obtain your Brave API key [HERE](https://brave.com/search/api/). Also, if you want to use the YouTube scraper more advance and accurate audio-mode, you will need a Groq API key which you can get [HERE](https://console.groq.com/keys).
 
 3. Add your keys to the `.env` file, using this format:
 
