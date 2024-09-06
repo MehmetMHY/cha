@@ -13,7 +13,7 @@ from selenium import webdriver
 import tiktoken
 import openai
 
-from cha import scrapper, colors, config
+from cha import scraper, colors, config
 
 client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
@@ -155,13 +155,13 @@ def scrape_urls_in_parallel(urls, max_workers=10):
     return results
 
 
-def summarize_urls_data(scrapped_url_data):
-    sum_scrapped_url_data = {}
+def summarize_urls_data(scraped_url_data):
+    sum_scraped_url_data = {}
 
-    for key in scrapped_url_data:
+    for key in scraped_url_data:
         response = None
         try:
-            prompt = f"Summarize the following text into one paragraph:\n```\n{scrapped_url_data[key]}\n```"
+            prompt = f"Summarize the following text into one paragraph:\n```\n{scraped_url_data[key]}\n```"
             prompt = adjust_prompt_to_token_limit(
                 config.cheap_model, prompt, config.cheap_model_max_token
             )
@@ -176,9 +176,9 @@ def summarize_urls_data(scrapped_url_data):
         except:
             pass
 
-        sum_scrapped_url_data[key] = response
+        sum_scraped_url_data[key] = response
 
-    return sum_scrapped_url_data
+    return sum_scraped_url_data
 
 
 def research_prompt(url_data, question):
@@ -209,7 +209,7 @@ def answer_search(user_question, print_mode=False):
 
     output = {
         "all_urls": [],
-        "scrapped_urls": [],
+        "scraped_urls": [],
         "runtime": 0,
         "search_queries": [],
         "models": {
@@ -242,35 +242,35 @@ def answer_search(user_question, print_mode=False):
         for i in output["search_queries"]:
             print(f"- {i}")
         print()
-        print(colors.green(f"Started web scrapping..."))
+        print(colors.green(f"Started web scraping..."))
         print()
 
     # scrape all webpages rathered from the browser
     all_urls = convert_all_urls(search_results)
-    raw_scrapped_url_data = scrape_urls_in_parallel(all_urls)
-    scrapped_url_data = {}
-    for url in raw_scrapped_url_data:
-        if raw_scrapped_url_data[url] != None:
-            scrapped_url_data[url] = scrapper.remove_html(raw_scrapped_url_data[url])
+    raw_scraped_url_data = scrape_urls_in_parallel(all_urls)
+    scraped_url_data = {}
+    for url in raw_scraped_url_data:
+        if raw_scraped_url_data[url] != None:
+            scraped_url_data[url] = scraper.remove_html(raw_scraped_url_data[url])
 
     output["all_urls"] = all_urls
-    output["scrapped_urls"] = scrapped_url_data
+    output["scraped_urls"] = scraped_url_data
 
     if print_mode:
         print(colors.green(f"Total Websites/URLs: ") + str(len(output["all_urls"])))
         print(
             colors.green(f"Total Processed URLs: ")
-            + str(len(list(output["scrapped_urls"].keys())))
+            + str(len(list(output["scraped_urls"].keys())))
         )
         print()
 
     # reduce token count by summarizing a lot of the results
     output["models"]["small"]["tokens"] += token_count(
-        config.cheap_model, str(scrapped_url_data)
+        config.cheap_model, str(scraped_url_data)
     )
-    scrapped_url_data = summarize_urls_data(scrapped_url_data)
+    scraped_url_data = summarize_urls_data(scraped_url_data)
     output["models"]["small"]["tokens"] += token_count(
-        config.cheap_model, str(scrapped_url_data)
+        config.cheap_model, str(scraped_url_data)
     )
 
     if print_mode:
@@ -278,7 +278,7 @@ def answer_search(user_question, print_mode=False):
         print()
 
     # create main prompt for big model
-    prompt_data = research_prompt(scrapped_url_data, user_question)
+    prompt_data = research_prompt(scraped_url_data, user_question)
     prompt = prompt_data["prompt"]
     source_ids = prompt_data["ids"]
 
