@@ -26,7 +26,7 @@ setup(
         "console_scripts": [
             "cha = cha.main:cli",
             "cla = cha.cla:cli",
-            "groq = cha.grq:cli",
+            "grq = cha.grq:cli",
         ],
     },
 )
