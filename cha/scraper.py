@@ -162,7 +162,7 @@ def get_anthropic_models():
     return output
 
 
-def test_scrapper_get_anthropic_models():
+def test_scraper_get_anthropic_models():
     try:
         model_list = get_anthropic_models()
     except Exception as e:
