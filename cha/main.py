@@ -13,7 +13,7 @@ if "OPENAI_API_KEY" not in os.environ:
 
 # 3rd party packages
 from openai import OpenAI
-from cha import scrapper, youtube, colors, image, search, config
+from cha import scraper, youtube, colors, image, search, config
 
 
 # global, in memory, variables
@@ -162,17 +162,17 @@ def chatbot(selected_model, print_title=True):
             print(colors.red(f"\nSaved current saved history to {cha_filepath}"))
             continue
 
-        detected_urls = len(scrapper.extract_urls(message))
+        detected_urls = len(scraper.extract_urls(message))
         if detected_urls > 0:
             du_print = f"{detected_urls} URL"
             if detected_urls > 1:
                 du_print = f"{detected_urls} URLs"
             du_user = input(
-                colors.red(f"{du_print} detected, continue web scrapping (y/n)? ")
+                colors.red(f"{du_print} detected, continue web scraping (y/n)? ")
             )
             if du_user.lower() == "y" or du_user.lower() == "yes":
                 print(colors.magenta("\n\n--- BROWSING THE WEB ---\n"))
-                message = scrapper.scrapped_prompt(message)
+                message = scraper.scraped_prompt(message)
             print()
 
         # exit if no prompt is provided
