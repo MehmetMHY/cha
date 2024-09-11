@@ -3,6 +3,7 @@ import sys
 import time
 import argparse
 from typing import List, Dict, Any
+import json
 
 from groq import Groq
 from cha import colors
@@ -25,13 +26,15 @@ def get_models() -> List[Dict[str, Any]]:
     response = client.models.list()
 
     filtered_models = [
-        model
+        model.to_dict()
         for model in response.data
         if not any(
             model.id.lower().startswith(prefix.lower())
             for prefix in invalid_model_prefixes
         )
     ]
+
+    filtered_models = sorted(filtered_models, key=lambda x: x["id"])
 
     return filtered_models
 
@@ -233,13 +236,13 @@ def cli():
         models = get_models()
         print(colors.yellow("Available Groq Models:"))
         for i, model in enumerate(models, 1):
-            print(colors.yellow(f"   {i}) {model.id}"))
+            print(colors.yellow(f"   {i}) {model['id']}"))
         print()
 
         try:
             model_choice = int(input(colors.blue("Model (Enter the number): ")))
             if 1 <= model_choice <= len(models):
-                selected_model = models[model_choice - 1].id
+                selected_model = models[model_choice - 1]["id"]
             else:
                 print(colors.red("Invalid model selected. Exiting."))
                 return
