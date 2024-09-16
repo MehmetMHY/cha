@@ -12,8 +12,6 @@ A simple CLI chat tool designed for easy interaction with OpenAI's models. It al
 - Web scraping capability for provided links (supports JavaScript scraping).
 - YouTube scraping functionality for extracting video transcripts.
   - The YouTube scraper either scrapes transcripts or downloads the video's audio and converts it to text using OpenAI's Whisper model though the Groq API.
-- Answer-Search feature utilizing the Brave API, similar to the Perplexity AI search engine.
-  - Click [HERE](https://www.youtube.com/watch?v=pTHk5G6TzH4) to view a demo of the Answer-Search feature.
 - Multi-line support for easy copying and pasting into the CLI.
 - Ability to generate images using OpenAI's image models.
   - Uses CLImage to display images directly in the terminal.
@@ -31,6 +29,12 @@ A simple CLI chat tool designed for easy interaction with OpenAI's models. It al
 _Click the image or visit https://www.youtube.com/watch?v=zRnMu6OHNtU_
 
 </div>
+
+## Events
+
+### September 16, 2024
+
+Cha's Answer-Search feature was removed because the code was difficult to maintain and the feature was not used often. If you want to use something similar, or even better, you can check out [Perplexity](https://www.perplexity.ai/) or [Perplexica](https://github.com/ItzCrazyKns/Perplexica/tree/master). Also, the last version of Cha that supported this feature was version 0.5.1, whose commit you can view [HERE](https://github.com/MehmetMHY/cha/tree/306c0661268446dd325cf892e6a6dc22b36b26a2).
 
 ## How To Set Up?
 
@@ -51,7 +55,6 @@ pip3 install --upgrade .
    - OpenAI API key: [Get it here](https://platform.openai.com/api-keys)
    - Anthropic API key: [Get it here](https://www.anthropic.com/) (for `cla` command)
    - Groq API key: [Get it here](https://console.groq.com/keys) (for `grq` command)
-   - Brave API key: [Get it here](https://brave.com/search/api/) (optional, for Answer-Search feature)
 
 3. Add your keys to the `.env` file, using this format:
 
@@ -60,7 +63,6 @@ pip3 install --upgrade .
    export OPENAI_API_KEY="YOUR_KEY_HERE"
    export ANTHROPIC_API_KEY="YOUR_KEY_HERE"
    export GROQ_API_KEY="YOUR_KEY_HERE"
-   export BRAVE_API_KEY="YOUR_KEY_HERE"
    ```
 
 4. To activate the environment variables, run:

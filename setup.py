@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.5.1",
+    version="0.6.0",
     packages=find_packages(),
     license="MIT",
     description="A simple CLI chat tool for easy interaction with OpenAI's LLM models and other platforms",
@@ -12,7 +12,6 @@ setup(
         "openai==1.43.0",
         "anthropic==0.34.2",
         "groq==0.11.0",
-        "tiktoken==0.7.0",
         "beautifulsoup4==4.12.3",
         "selenium==4.24.0",
         "webdriver-manager==4.0.2",
