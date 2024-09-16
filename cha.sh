@@ -3,9 +3,6 @@
 # get OpenAI API key: https://platform.openai.com/api-keys
 export OPENAI_API_KEY=""
 
-# (optional) get Brave API key: https://api.search.brave.com/app/keys
-export BRAVE_API_KEY=""
-
 # (optional) get GROQ API key: https://console.groq.com/keys
 export GROQ_API_KEY=""
 
