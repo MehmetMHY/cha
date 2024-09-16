@@ -13,7 +13,7 @@ if "OPENAI_API_KEY" not in os.environ:
 
 # 3rd party packages
 from openai import OpenAI
-from cha import scraper, youtube, colors, image, search, config
+from cha import scraper, youtube, colors, image, config
 
 
 # global, in memory, variables
@@ -49,7 +49,7 @@ def list_models():
 
 
 def title_print(selected_model):
-    # last updated: 3-15-2024
+    # last updated: 9-16-2024
     print(
         colors.yellow(
             f"""Chatting With OpenAI's '{selected_model}' Model
@@ -58,8 +58,7 @@ def title_print(selected_model):
  - '{config.MULTI_LINE_SEND}' to end in multi-line mode
  - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
  - '{config.IMG_GEN_MODE}' for image generation
- - '{config.SAVE_CHAT_HISTORY}' to save chat history
- - '{config.ADVANCE_SEARCH_KEY}' for answer-search"""
+ - '{config.SAVE_CHAT_HISTORY}' to save chat history"""
         ).strip()
     )
 
@@ -134,27 +133,6 @@ def chatbot(selected_model, print_title=True):
 
         # NOTE: this is annoying, but we have to account for this :(
         print()
-
-        if message.startswith(config.ADVANCE_SEARCH_KEY):
-            try:
-                asq = " ".join(message.replace(config.ADVANCE_SEARCH_KEY, "").split())
-                # NOTE: the question most be greater then 2 words atleast
-                if len(asq) >= 5 and len(asq.split(" ")) >= 3:
-                    print("\n")
-                    aso = search.answer_search(asq, print_mode=True)
-                    CURRENT_CHAT_HISTORY.append(
-                        {"time": time.time(), "user": asq, "bot": aso}
-                    )
-                    print()
-                else:
-                    print(
-                        colors.red(
-                            f"\nFor An Answer-Search, your question MOST be atleast 3 words long"
-                        )
-                    )
-            except Exception as err:
-                print(colors.red(f"Failed to run Answer-Search due to: {err}\n"))
-            continue
 
         if message == config.SAVE_CHAT_HISTORY:
             cha_filepath = f"cha_{int(time.time())}.txt"
