@@ -26,15 +26,9 @@ A simple CLI chat tool designed for easy interaction with OpenAI's models. It al
 
 [![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=zRnMu6OHNtU)
 
-_Click the image or visit https://www.youtube.com/watch?v=zRnMu6OHNtU_
+_Click the image or visit the video [HERE](https://www.youtube.com/watch?v=zRnMu6OHNtU)_
 
 </div>
-
-## Events
-
-### September 16, 2024
-
-Cha's Answer-Search feature was removed because the code was difficult to maintain and the feature was not used often. If you want to use something similar, or even better, you can check out [Perplexity](https://www.perplexity.ai/) or [Perplexica](https://github.com/ItzCrazyKns/Perplexica/tree/master). Also, the last version of Cha that supported this feature was version 0.5.1, whose commit you can view [HERE](https://github.com/MehmetMHY/cha/tree/306c0661268446dd325cf892e6a6dc22b36b26a2).
 
 ## How To Set Up?
 
@@ -110,15 +104,15 @@ chatgpt
 
 For developing Cha, you can do the following:
 
-### 1. Install `cha` in editable mode so that pip points to the source files of the cloned code:
+Install `cha` in editable mode so that pip points to the source files of the cloned code:
 
 ```bash
 pip install -e .
 ```
 
-### 2. Make changes to the code, then run `cha`, `cla`, or `grq` to try out your changes
+Make changes to the code, then run `cha`, `cla`, or `grq` to try out your changes
 
-### 3. If you add a new dependency, you will have to do step 1 again
+If you add a new dependency, you will have to do step 1 again
 
 ## Other Notes
 
