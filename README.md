@@ -32,7 +32,7 @@ _Click the image or visit the video [HERE](https://www.youtube.com/watch?v=zRnMu
 
 ## How To Set Up?
 
-### 1. Install `cha`
+#### 1. Install `cha`
 
 Clone this repository, navigate to its directory, and run the following command to install or upgrade `cha`:
 
@@ -40,7 +40,7 @@ Clone this repository, navigate to its directory, and run the following command 
 pip3 install --upgrade .
 ```
 
-### 2. Configure API Keys
+#### 2. Configure API Keys
 
 1. Create a `.env` file in the root directory.
 
@@ -65,7 +65,7 @@ pip3 install --upgrade .
    source .env
    ```
 
-### 3. Run `cha`, `cla`, or `grq`
+#### 3. Run `cha`, `cla`, or `grq`
 
 To start the tool, execute one of the following:
 
@@ -80,7 +80,9 @@ cla
 grq
 ```
 
-### 4. (Optional) Using my configuration of `cha`
+#### 2.
+
+#### 4. (Optional) Using my configuration of `cha`
 
 If you would like, you can use my configuration of `cha`. To view my configuration, check out the `cha.sh` file. To use it, add the content from the `cha.sh` file to your shell's config file:
 
@@ -98,21 +100,19 @@ Then, run my configuration of `cha`:
 chatgpt
 ```
 
-### 5. Now you're now ready to go!
+#### 5. Now you're now ready to go!
 
 ## Develop Mode
 
-For developing Cha, you can do the following:
-
-Install `cha` in editable mode so that pip points to the source files of the cloned code:
+#### 1. For developing Cha, you can do the following. Install `cha` in editable mode so that pip points to the source files of the cloned code:
 
 ```bash
 pip install -e .
 ```
 
-Make changes to the code, then run `cha`, `cla`, or `grq` to try out your changes
+#### 2. Make changes to the code, then run `cha`, `cla`, or `grq` to try out your changes
 
-If you add a new dependency, you will have to do step 1 again
+#### 3. If you add a new dependency, you will have to do step 1 again
 
 ## Other Notes
 
