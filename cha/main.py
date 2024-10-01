@@ -288,6 +288,7 @@ def cli():
                     print(colors.red("Invalid model selected. Exiting."))
                     return
             except KeyboardInterrupt:
+                print()
                 return
             print()
 
