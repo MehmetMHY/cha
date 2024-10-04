@@ -6,6 +6,9 @@ export OPENAI_API_KEY=""
 # (optional) get GROQ API key: https://console.groq.com/keys
 export GROQ_API_KEY=""
 
+# (optional) get Anthropic API key: https://docs.anthropic.com/en/api/getting-started
+export ANTHROPIC_API_KEY=""
+
 # cha's github repo: https://github.com/MehmetMHY/cha
 # run Cha in interactive mode (chat interface) without arguments or in non-interactive mode (processing one or multiple string arguments) if an argument is provided
 chatgpt() {

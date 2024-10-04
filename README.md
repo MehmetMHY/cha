@@ -9,7 +9,7 @@ A simple CLI chat tool designed for easy interaction with OpenAI's models. It al
 ## Features
 
 - Basic CLI chat interface with OpenAI's LLM models.
-- Web scraping capability for provided links (supports JavaScript scraping).
+- Web scraping capability for provided links (supports both HTTP & JavaScript scraping).
 - YouTube scraping functionality for extracting video transcripts.
   - The YouTube scraper either scrapes transcripts or downloads the video's audio and converts it to text using OpenAI's Whisper model though the Groq API.
 - Multi-line support for easy copying and pasting into the CLI.
@@ -80,11 +80,9 @@ cla
 grq
 ```
 
-#### 2.
-
 #### 4. (Optional) Using my configuration of `cha`
 
-If you would like, you can use my configuration of `cha`. To view my configuration, check out the `cha.sh` file. To use it, add the content from the `cha.sh` file to your shell's config file:
+If you would like, you can use my configuration of `cha`. To view my configuration, check out the `cha.sh` file. To use it, add the API key(s) and copy the content from the `cha.sh` file to your shell's config file:
 
 ```bash
 # zsh
