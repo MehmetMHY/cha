@@ -79,6 +79,34 @@ def scrape_html(url, headless=True, time_delay=10):
         driver.quit()
 
 
+def fast_scraper(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.text
+    except requests.RequestException as e:
+        return f"An error occurred: {e}"
+
+
+def main_general_scraper(url):
+    user_input = input(colors.yellow("Use Advance Web Scraper (y/n)? "))
+    print()
+
+    use_advance = False
+    if user_input.lower() in ["y", "yes"]:
+        use_advance = True
+
+    content = ""
+    if use_advance:
+        # NOTE: this uses Selenium for scraping which should work on almost all websites but it's very slow
+        content = scrape_html(url)
+    else:
+        # NOTE: this just uses HTTP which is faster but not all websites allow this
+        content = fast_scraper(url)
+
+    return remove_html(content)
+
+
 def get_all_htmls(text):
     urls = list(set(extract_urls(text)))
     if len(urls) == 0:
@@ -95,7 +123,7 @@ def get_all_htmls(text):
             elif hn.valid_hacker_news_url(url):
                 content = hn.get_hn_post(url)
             else:
-                content = remove_html(scrape_html(url))
+                content = main_general_scraper(url)
         except:
             content = None
         output[url] = content
