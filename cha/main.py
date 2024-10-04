@@ -308,7 +308,7 @@ def cli():
             try:
                 chatbot(selected_model, title_print_value)
             except KeyboardInterrupt:
-                print()
+                print("\n")
                 sys.exit(0)
 
     except Exception as err:
