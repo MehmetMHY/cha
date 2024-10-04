@@ -10,7 +10,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium import webdriver
 from bs4 import BeautifulSoup
-from cha import youtube, pdfs, hn, colors
+from cha import youtube, pdfs, colors
 
 
 def extract_urls(text):
@@ -120,8 +120,6 @@ def get_all_htmls(text):
                 content = youtube.main_yt_pointer(url)
             elif pdfs.valid_pdf_url(url):
                 content = pdfs.scrape_pdf_url(url)
-            elif hn.valid_hacker_news_url(url):
-                content = hn.get_hn_post(url)
             else:
                 content = main_general_scraper(url)
         except:
