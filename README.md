@@ -26,8 +26,6 @@ A simple CLI chat tool designed for easy interaction with OpenAI's models. It al
 
 [![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=zRnMu6OHNtU)
 
-_Click the image or visit the video [HERE](https://www.youtube.com/watch?v=zRnMu6OHNtU)_
-
 </div>
 
 ## How To Set Up?
@@ -52,7 +50,7 @@ pip3 install --upgrade .
 
 3. Add your keys to the `.env` file, using this format:
 
-   ```env
+   ```bash
    # Replace YOUR_KEY_HERE with your respective API keys
    export OPENAI_API_KEY="YOUR_KEY_HERE"
    export ANTHROPIC_API_KEY="YOUR_KEY_HERE"
