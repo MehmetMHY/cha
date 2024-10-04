@@ -39,7 +39,9 @@ def list_models():
         openai_models = [
             (model.id, model.created)
             for model in response.data
-            if "gpt" in model.id and "instruct" not in model.id
+            if "gpt" in model.id
+            and "instruct" not in model.id
+            and "realtime" not in model.id
         ]
 
         return openai_models
