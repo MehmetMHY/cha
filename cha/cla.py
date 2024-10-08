@@ -258,7 +258,10 @@ def cli():
 
 
 if __name__ == "__main__":
-    if scraper.test_scraper_get_anthropic_models() == False:
-        print(colors.red(f"Models' name scraper is broken"))
-        sys.exit(1)
-    cli()
+    try:
+        if scraper.test_scraper_get_anthropic_models() == False:
+            print(colors.red(f"Models' name scraper is broken"))
+            sys.exit(1)
+        cli()
+    except KeyboardInterrupt:
+        pass
