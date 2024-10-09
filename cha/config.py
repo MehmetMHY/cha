@@ -1,5 +1,6 @@
 # Main Chat Logic Variables
 
+
 INITIAL_PROMPT = (
     "You are a helpful assistant who keeps your response short and to the point"
 )
@@ -9,6 +10,7 @@ CLEAR_HISTORY_TEXT = "!c"
 IMG_GEN_MODE = "!i"
 SAVE_CHAT_HISTORY = "!s"
 EXIT_STRING_KEY = "!e"
+
 
 # YouTube Scraper Variables
 
