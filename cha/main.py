@@ -60,9 +60,56 @@ def title_print(selected_model):
  - '{config.MULTI_LINE_SEND}' to end in multi-line mode
  - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
  - '{config.IMG_GEN_MODE}' for image generation
- - '{config.SAVE_CHAT_HISTORY}' to save chat history"""
+ - '{config.SAVE_CHAT_HISTORY}' to save chat history
+ - '{config.LOAD_MESSAGE_CONTENT}' to load a file into your prompt"""
         ).strip()
     )
+
+
+def msg_content_load():
+    files = [f for f in os.listdir() if os.path.isfile(f)]
+
+    if len(files) == 0:
+        print(colors.red(f"No files found in the current directory"), end="")
+        return None
+
+    current_dir = os.getcwd()
+
+    print(colors.yellow(f"Current Directory:"))
+    print(f"{current_dir} \n")
+    print(colors.yellow("File(s):"))
+    for i in range(len(files)):
+        print(f"{i+1}) {files[i]}")
+    print()
+
+    while True:
+        try:
+            file_pick = input(colors.blue(f"File ID (1-{len(files)}): "))
+            file_path = files[int(file_pick) - 1]
+            break
+        except KeyboardInterrupt:
+            return None
+        except EOFError:
+            return None
+        except:
+            pass
+
+    with open(file_path, "r") as file:
+        content = file.read()
+
+    prompt = input(colors.blue("Additional Prompt: "))
+
+    output = content
+    if len(prompt) > 0:
+        output = f"""
+PROMPT: {prompt}
+CONTENT:
+``````````
+{content}
+``````````
+"""
+
+    return output
 
 
 def chatbot(selected_model, print_title=True):
@@ -141,6 +188,12 @@ def chatbot(selected_model, print_title=True):
             youtube.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
             print(colors.red(f"\nSaved current saved history to {cha_filepath}"))
             continue
+
+        if message == config.LOAD_MESSAGE_CONTENT:
+            message = msg_content_load()
+            if message == None:
+                continue
+            print()
 
         detected_urls = len(scraper.extract_urls(message))
         if detected_urls > 0:
