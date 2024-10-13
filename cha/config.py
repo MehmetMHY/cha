@@ -10,6 +10,7 @@ CLEAR_HISTORY_TEXT = "!c"
 IMG_GEN_MODE = "!i"
 SAVE_CHAT_HISTORY = "!s"
 EXIT_STRING_KEY = "!e"
+LOAD_MESSAGE_CONTENT = "!l"
 
 
 # YouTube Scraper Variables
