@@ -1,3 +1,4 @@
+import concurrent.futures
 import signal
 import string
 import time
@@ -17,12 +18,8 @@ from cha import youtube, colors
 
 
 def extract_urls(text):
-    urls = []
-    for word in text.split(" "):
-        if len(word) <= 6:
-            continue
-        if "http" in word.lower() and "//" in word.lower():
-            urls.append(word)
+    url_pattern = r"https?://(?:www\.)?\S+"
+    urls = re.findall(url_pattern, text)
     return urls
 
 
@@ -110,24 +107,30 @@ def main_general_scraper(url):
     return remove_html(content)
 
 
+def process_url(url):
+    try:
+        if youtube.valid_yt_link(url):
+            content = youtube.main_yt_pointer(url)
+        elif valid_pdf_url(url):
+            content = scrape_pdf_url(url)
+        else:
+            content = main_general_scraper(url)
+    except:
+        content = None
+    return url, content
+
+
 def get_all_htmls(text):
     urls = list(set(extract_urls(text)))
-    if len(urls) == 0:
+    if not urls:
         return {}
 
     output = {}
-    for url in urls:
-        content = None
-        try:
-            if youtube.valid_yt_link(url):
-                content = youtube.main_yt_pointer(url)
-            elif valid_pdf_url(url):
-                content = scrape_pdf_url(url)
-            else:
-                content = main_general_scraper(url)
-        except:
-            content = None
-        output[url] = content
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_to_url = {executor.submit(process_url, url): url for url in urls}
+        for future in concurrent.futures.as_completed(future_to_url):
+            url, content = future.result()
+            output[url] = content
 
     return output
 
