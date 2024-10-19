@@ -1,11 +1,3 @@
-"""
-October 15, 2024
-
-This YouTube scraper uses the following tools
-- yt-dlp: https://github.com/yt-dlp/yt-dlp
-- youtube-transcript-api: https://github.com/jdepoix/youtube-transcript-api
-"""
-
 import concurrent.futures
 import subprocess
 import json
@@ -27,6 +19,7 @@ def valid_yt_link(link):
 
 
 def video_metadata(url):
+    # https://github.com/yt-dlp/yt-dlp
     cmd = f"yt-dlp -j {url}"
 
     proc = subprocess.Popen(
@@ -64,6 +57,8 @@ def video_metadata(url):
 
 def video_transcript(url):
     video_id = url.replace(" ", "").split("v=")[1]
+
+    # https://github.com/jdepoix/youtube-transcript-api
     content = YouTubeTranscriptApi.get_transcript(video_id)
 
     output = ""
