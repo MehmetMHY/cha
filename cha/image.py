@@ -1,38 +1,49 @@
 import subprocess
 import requests
-import datetime
-import shutil
-import json
 import time
+import json
 import sys
+import os
 
-# 3rd party packages
-from openai import OpenAI
-from cha import colors
+from io import BytesIO
+from PIL import Image
+from PIL.PngImagePlugin import PngInfo
+from cha import colors, utils, config
 
-client = OpenAI()
+
+def display_metadata(image_path):
+    try:
+        if image_path.startswith("ig_") == False or os.path.isfile(image_path) == False:
+            raise Exception(f"Invalid image path provided")
+        data = None
+        with Image.open(image_path) as img:
+            data = img.info
+        print(colors.green(f"Image:"), image_path)
+        print(colors.green(f"MetaData:"))
+        print(json.dumps(data, indent=4))
+        return data
+    except IOError:
+        print(colors.red("Failed to load image file"))
+        return None
+    except Exception as e:
+        print(colors.red(f"{e}"))
+        return None
 
 
-def img_filename(model, s, max_word=10):
+def gen_img_filename(model, s):
     filtered_chars = "".join(filter(lambda c: c.isalpha() or c.isspace(), s))
     filtered_chars = filtered_chars.lower()
     content = [
+        "ig_",
         model.lower(),
-        "__",
-        str(int(time.time())),
-        "__",
-        "_".join(filtered_chars.split(" ")[:max_word]),
+        "_",
+        utils.generate_short_uuid(),
         ".jpg",
     ]
     return "".join(content)
 
 
-def simple_date(epoch_time):
-    date_time = datetime.datetime.fromtimestamp(epoch_time)
-    return date_time.strftime("%B %d, %Y")
-
-
-def pick_img_model():
+def pick_img_model(client):
     try:
         response = client.models.list()
         if not response.data:
@@ -46,8 +57,7 @@ def pick_img_model():
 
         print(colors.yellow("Available OpenAI Models:"))
         for model_id, created in openai_models:
-            print(colors.yellow(f"   > {model_id}   {simple_date(created)}"))
-        print()
+            print(colors.yellow(f"   > {model_id}   {utils.simple_date(created)}"))
 
         while True:
             picked_model = input(colors.blue("Model: ")).strip()
@@ -56,7 +66,7 @@ def pick_img_model():
             else:
                 print(
                     colors.red(
-                        f"\nModel {picked_model} is NOT a supported model by OpenAI. Please try again!\n"
+                        f"Model {picked_model} is NOT a supported model by OpenAI. Please try again!"
                     )
                 )
 
@@ -78,15 +88,6 @@ def get_user_input(
             print(error_message)
 
 
-def save_url_img(filepath, url):
-    try:
-        image_data = requests.get(url).content
-        with open(filepath, "wb") as handler:
-            handler.write(image_data)
-    except Exception as e:
-        print(colors.red(f"Failed to grab image: {e}"))
-
-
 def open_file_default_app(filepath):
     try:
         if sys.platform.startswith("linux"):
@@ -101,10 +102,10 @@ def open_file_default_app(filepath):
         print(colors.red(f"Failed to open file: {e}"))
 
 
-def get_user_open(filepath):
+def get_user_open(filepaths):
     option = None
     while True:
-        user_input = input(colors.yellow("Open The Image (y/n)? ")).lower()
+        user_input = input(colors.magenta("Open The Files (y/n)? ")).lower()
         if user_input in ["yes", "y"]:
             option = True
             break
@@ -112,64 +113,70 @@ def get_user_open(filepath):
             option = False
             break
         else:
-            print(colors.red("\nInvalid input. Please enter yes, no, y, or n.\n"))
+            print(colors.red("Invalid input. Please enter yes, no, y, or n"))
 
     if option == True:
-        open_file_default_app(filepath)
+        for filepath in filepaths:
+            open_file_default_app(filepath)
 
 
-def gen_image():
+def gen_image(client):
     try:
-        model = pick_img_model()
+        model = pick_img_model(client)
         prompt = get_user_input(colors.blue("Prompt: "))
         quality = get_user_input(
             colors.blue("Quality (standard/hd): "),
             lambda x: x.lower() in ["standard", "hd"],
-            colors.red("\nPlease enter 'standard' or 'hd' for quality\n"),
+            colors.red("Please enter 'standard' or 'hd' for quality"),
         )
         n = get_user_input(
             colors.blue("N (number of images): "),
             lambda x: x.isdigit() and int(x) > 0,
-            colors.red("\nPlease enter a positive integer\n"),
+            colors.red("Please enter a positive integer"),
         )
         size = get_user_input(
             colors.blue("Size (WidthxHeight): "),
-            lambda x: "x" in x and all(num.isdigit() for num in x.split("x")),
+            lambda x: x in config.COMMON_IMG_GEN_RESOLUTIONS,
             colors.red(
-                "\nPlease enter size in format WidthxHeight (e.g., 1024x1024)\n"
+                f"Valid Size(s): {', '.join(config.COMMON_IMG_GEN_RESOLUTIONS)}"
             ),
         )
     except:
         print(
-            colors.red(f"\nError occurred well getting user input for image generation")
+            colors.red(
+                f"\nError occurred while getting user input for image generation"
+            )
         )
         sys.exit(1)
 
     try:
-        response = client.images.generate(
-            model=model, prompt=prompt, size=size, quality=quality, n=int(n)
-        )
+        params = {
+            "model": model,
+            "prompt": prompt,
+            "size": size,
+            "quality": quality,
+            "n": int(n),
+        }
+
+        response = client.images.generate(**params)
         url = response.data[0].url
-        filename = img_filename(model, prompt)
-        save_url_img(filename, url)
 
-        print(colors.green(f"\nCreated Image:"))
-        print(f"{filename}\n")
+        img_filename = gen_img_filename(model, prompt)
+        img_data = requests.get(url).content
 
-        # display generated image in the termianl using CLImage (https://github.com/MehmetMHY/CLImage)
-        try:
-            import climage
+        # save config/meta_data to image
+        with Image.open(BytesIO(img_data)) as img:
+            metadata = PngInfo()
+            metadata.add_text("Prompt", prompt)
+            metadata.add_text("Model", model)
+            metadata.add_text("Quality", quality)
+            metadata.add_text("Size", size)
+            metadata.add_text("Created", str(time.time()))
+            img.save(img_filename, "PNG", pnginfo=metadata)
 
-            print(
-                climage.convert(
-                    filename,
-                    is_unicode=False,
-                    width=int(shutil.get_terminal_size().columns * 0.7),
-                )
-            )
-        except:
-            pass
+        print(colors.green(f"Created Image:"), img_filename)
+        print(colors.yellow(f"To View MetaData:"), "cha -igmd <image_path>")
 
-        get_user_open(filename)
+        get_user_open([img_filename])
     except Exception as e:
         print(colors.red(f"Failed to generate image: {e}"))
