@@ -182,10 +182,12 @@ cython_debug/
 .DS_Store
 *.jpg
 *.jpeg
-.sandbox/
 bd.json
 ms.json
 sd.json
-meme.json
 *.srt
+cha_*.json
+ig_*.json
+ig_*.jpg
+NOTES.md
 
