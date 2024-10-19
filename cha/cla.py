@@ -1,364 +1,213 @@
-import argparse
-import json
-import time
-import sys
-import os
-
-from anthropic import Anthropic
+import argparse, json, time, sys, os
 import requests
+from anthropic import Anthropic
 from bs4 import BeautifulSoup
-from cha import colors, config
+from cha import colors, config, scraper, utils
 
-# global variables
+utils.check_env_variable("ANTHROPIC_API_KEY", config.ANTHROPIC_DOCS_LINK)
+
+client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
-client = Anthropic(
-    api_key=os.environ.get("ANTHROPIC_API_KEY"),
-)
 
 
 # NOTE (6-30-2024): Anthropic's API lacks an endpoint for fetching the latest supported models, so web scraping is required
 def get_anthropic_models():
-    url = "https://docs.anthropic.com/en/docs/about-claude/models"
-    response = requests.get(url)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.content, "html.parser")
-
-    data_dict = []
-    tables = soup.find_all("table")
-    for table in tables:
-        headers = [header.get_text().strip() for header in table.find_all("th")]
-        rows = table.find_all("tr")[1:]
-        for row in rows:
-            cells = row.find_all("td")
-            if cells:
-                row_data = [cell.get_text().strip() for cell in cells]
-                data_dict.append(dict(zip(headers, row_data)))
-
-    data_dict = data_dict[:6]
-
-    for d in data_dict:
-        keys_to_remove = [
-            key
-            for key, value in d.items()
-            if "coming soon" in value.lower() or "later this year" in value.lower()
-        ]
-        for key in keys_to_remove:
-            del d[key]
-    data_dict = [d for d in data_dict[:6] if not (len(d) == 1 and "Model" in d)]
-
-    output = []
-    for entry in data_dict:
-        model = entry.get("Model")
-        model_id = entry.get("Anthropic API")
-        if model and model_id:
-            output.append({"name": model, "model": model_id})
-
-    return output
-
-
-# NOTE (6-30-2024): This function was created to test the Anthropic model page scraper
-def test_scraper_get_anthropic_models():
     try:
-        model_list = get_anthropic_models()
+        url = "https://docs.anthropic.com/en/docs/about-claude/models"
+        response = requests.get(url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, "html.parser")
+
+        output = []
+        for table in soup.find_all("table")[:6]:
+            headers = [header.text.strip() for header in table.find_all("th")]
+            for row in table.find_all("tr")[1:]:
+                data = dict(
+                    zip(headers, [cell.text.strip() for cell in row.find_all("td")])
+                )
+                if "Model" in data and "Anthropic API" in data:
+                    if not any(
+                        phrase in data["Anthropic API"].lower()
+                        for phrase in ["coming soon", "later this year"]
+                    ):
+                        output.append(
+                            {"name": data["Model"], "model": data["Anthropic API"]}
+                        )
+
+        if not all(
+            isinstance(d, dict)
+            and all(key in d and d[key] for key in ["name", "model"])
+            for d in output
+        ):
+            raise Exception("model scraper is broken")
+
+        return output
+    except Exception as err:
+        return str(err)
+
+
+def chat(model, message, stream=True):
+    try:
+        messages = [
+            {"role": "user", "content": msg["user"]}
+            for msg in CURRENT_CHAT_HISTORY[:-1]
+        ]
+        messages.append({"role": "user", "content": message})
+
+        response = client.messages.create(
+            model=model,
+            max_tokens=config.CLA_MAX_TOKENS,
+            messages=messages,
+            system=config.INITIAL_PROMPT,
+            stream=stream,
+        )
+        if stream:
+            full_response = ""
+            for chunk in response:
+                if chunk.type == "content_block_delta":
+                    sys.stdout.write(colors.green(chunk.delta.text))
+                    sys.stdout.flush()
+                    full_response += chunk.delta.text
+            print()
+            return full_response
+        else:
+            return response.content[0].text
+    except KeyboardInterrupt:
+        print()
+        sys.exit(1)
     except Exception as e:
-        print(colors.red(f"Error: Failed to get models - {str(e)}"))
-        return False
+        return f"Error: {e}"
 
-    if model_list is None:
-        print(colors.red("Error: Model list is None"))
-        return False
 
-    if not isinstance(model_list, list):
-        print(colors.red(f"Error: Model list is not a list, got {type(model_list)}"))
-        return False
-
-    all_tests_passed = True
-
-    for i, item in enumerate(model_list):
-        if not isinstance(item, dict):
-            print(colors.red(f"Error: Item {i} is not a dictionary, got {type(item)}"))
-            all_tests_passed = False
-            continue
-
-        if "name" not in item:
-            print(colors.red(f"Error: Item {i} is missing 'name' key"))
-            all_tests_passed = False
-        elif not isinstance(item["name"], str):
-            print(
-                colors.red(
-                    f"Error: Item {i} 'name' is not a string, got {type(item['name'])}"
-                )
-            )
-            all_tests_passed = False
-        elif len(item["name"]) == 0:
-            print(colors.red(f"Error: Item {i} 'name' is an empty string"))
-            all_tests_passed = False
-
-        if "model" not in item:
-            print(colors.red(f"Error: Item {i} is missing 'model' key"))
-            all_tests_passed = False
-        elif not isinstance(item["model"], str):
-            print(
-                colors.red(
-                    f"Error: Item {i} 'model' is not a string, got {type(item['model'])}"
-                )
-            )
-            all_tests_passed = False
-        elif len(item["model"]) == 0:
-            print(colors.red(f"Error: Item {i} 'model' is an empty string"))
-            all_tests_passed = False
-
-    return all_tests_passed
+def get_multi_line_input():
+    print(
+        colors.yellow(
+            f"Entered multi-line input mode. Type '{config.MULTI_LINE_SEND}' to send message"
+        )
+    )
+    lines = []
+    input_print = colors.red("[M] ") + colors.blue("User: ")
+    while True:
+        line = utils.safe_input(input_print).rstrip("\n")
+        if line == config.MULTI_LINE_SEND:
+            break
+        lines.append(line)
+        input_print = ""
+    return "\n".join(lines)
 
 
 def title_print(selected_model):
     print(
         colors.yellow(
-            f"""
-Chatting With Anthropic's '{selected_model}' Model
- - '{config.EXIT_STRING_KEY}' to exit
- - '{config.MULI_LINE_MODE_TEXT}' for multi-line mode
- - '{config.MULTI_LINE_SEND}' to end in multi-line mode
- - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
- - '{config.SAVE_CHAT_HISTORY}' to save chat history
-    """.strip()
+            f"Chatting with Anthropic's '{selected_model}' Model\n"
+            f" - Type '{config.EXIT_STRING_KEY}' to exit.\n"
+            f" - Type '{config.MULI_LINE_MODE_TEXT}' for multi-line mode.\n"
+            f" - Type '{config.MULTI_LINE_SEND}' to exit multi-line mode.\n"
+            f" - Type '{config.CLEAR_HISTORY_TEXT}' to clear chat history.\n"
+            f" - Type '{config.SAVE_CHAT_HISTORY}' to save chat history.\n"
+            f" - Type '{config.HELP_PRINT_OPTIONS_KEY}' to list all options"
         )
     )
 
 
-def chatbot(selected_model, print_title=True):
-    messages = []
-    multi_line_input = False
-    first_loop = True
-
+def interactive_chat(model, print_title):
+    global CURRENT_CHAT_HISTORY
     if print_title:
-        title_print(selected_model)
-
-    line_mode = False
-    last_line = ""
+        title_print(model)
     while True:
-        if not first_loop:
-            print()
-
-        if not last_line.endswith("\n"):
-            print()
-
-        user_input_string = colors.blue("User: ")
-        if line_mode:
-            print(
-                colors.yellow(
-                    f"Entered multi-line input mode. Type '{config.MULTI_LINE_SEND}' to send message"
-                )
-            )
-            user_input_string = colors.red("[M] ") + colors.blue("User: ")
-        print(user_input_string, end="", flush=True)
-
-        first_loop = False
-
-        if not multi_line_input:
-            message = sys.stdin.readline().rstrip("\n")
-
-            if message == config.MULI_LINE_MODE_TEXT:
-                multi_line_input = True
-                line_mode = True
-                last_line = "\n"
-                continue
-            elif message.replace(" ", "") == config.EXIT_STRING_KEY:
-                break
-            elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
-                messages = []
-                print(colors.yellow("\n\nChat history cleared.\n"))
-                first_loop = True
-                continue
-
-        if multi_line_input:
-            message_lines = []
-            while True:
-                line = sys.stdin.readline().rstrip("\n")
-                if line == config.MULTI_LINE_SEND:
-                    break
-                elif line.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
-                    messages = []
-                    print(colors.yellow("\nChat history cleared.\n"))
-                    first_loop = True
-                    break
-                message_lines.append(line)
-            message = "\n".join(message_lines)
-            line_mode = False
-            multi_line_input = False
-
-        print()
-
-        if message == config.SAVE_CHAT_HISTORY:
-            cha_filepath = f"cha_{int(time.time())}.json"
-            with open(cha_filepath, "w") as f:
-                json.dump(CURRENT_CHAT_HISTORY, f)
-            print(colors.red(f"\nSaved current chat history to {cha_filepath}"))
-            continue
-
-        if len(message) == 0:
-            raise KeyboardInterrupt
-
-        messages.append({"role": "user", "content": message})
-
-        obj_chat_history = {"time": time.time(), "user": message, "bot": ""}
-        try:
-            response = client.messages.create(
-                model=selected_model,
-                max_tokens=1024,
-                messages=messages,
-                system=config.INITIAL_PROMPT,
-                stream=True,
-            )
-
-            for chunk in response:
-                if chunk.type == "content_block_delta":
-                    last_line = chunk.delta.text
-                    sys.stdout.write(colors.green(chunk.delta.text))
-                    obj_chat_history["bot"] += chunk.delta.text
-                    sys.stdout.flush()
-
-            messages.append({"role": "assistant", "content": obj_chat_history["bot"]})
-        except Exception as e:
-            print(colors.red(f"Error during chat: {e}"))
+        user_input = utils.safe_input(colors.blue("User: ")).strip()
+        if user_input == config.EXIT_STRING_KEY:
             break
 
-        CURRENT_CHAT_HISTORY.append(obj_chat_history)
+        if user_input == config.MULI_LINE_MODE_TEXT:
+            user_input = get_multi_line_input()
 
+        if user_input.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
+            CURRENT_CHAT_HISTORY = [
+                {"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}
+            ]
+            print(colors.yellow("Chat history cleared"))
+            continue
 
-def basic_chat(filepath, model, just_string=None):
-    try:
-        print_padding = False
+        if user_input == config.SAVE_CHAT_HISTORY:
+            cla_filepath = f"cla_{int(time.time())}.json"
+            with open(cla_filepath, "w") as f:
+                json.dump(CURRENT_CHAT_HISTORY, f, indent=4)
+            print(colors.red(f"Saved current chat history to {cla_filepath}"))
+            continue
 
-        if just_string is None:
-            if "/" not in filepath:
-                filepath = os.path.join(os.getcwd(), filepath)
+        if user_input == config.HELP_PRINT_OPTIONS_KEY:
+            title_print(model)
+            continue
 
-            if not os.path.exists(filepath):
-                print(colors.red(f"The following file does not exist: {filepath}"))
-                return
-
-            print(
-                colors.blue(
-                    f"Feeding the following file content to {model}:\n{filepath}\n"
-                )
+        detected_urls = len(scraper.extract_urls(user_input))
+        if detected_urls > 0:
+            du_print = f"{detected_urls} URL{'s' if detected_urls > 1 else ''}"
+            du_user = input(
+                colors.red(f"{du_print} detected, continue web scraping (y/n)? ")
             )
-
-            with open(filepath, "r") as file:
-                content = file.read()
-        else:
-            content = just_string
-            print_padding = True
-
-        if print_padding:
-            print()
-
-        response = client.messages.create(
-            model=model,
-            max_tokens=1024,
-            messages=[{"role": "user", "content": content}],
-            system=config.INITIAL_PROMPT,
-            stream=True,
-        )
-
-        last_line = ""
-        complete_output = ""
-        for chunk in response:
-            if chunk.type == "content_block_delta":
-                last_line = chunk.delta.text
-                complete_output += chunk.delta.text
-                sys.stdout.write(colors.green(chunk.delta.text))
-                sys.stdout.flush()
+            if du_user.lower() == "y" or du_user.lower() == "yes":
+                user_input = scraper.scraped_prompt(user_input)
 
         CURRENT_CHAT_HISTORY.append(
-            {"time": time.time(), "user": content, "bot": complete_output}
+            {"time": time.time(), "user": user_input, "bot": ""}
         )
+        response = chat(model, user_input)
+        CURRENT_CHAT_HISTORY[-1]["bot"] = response
 
-        if not last_line.startswith("\n"):
-            print()
 
-        if print_padding:
-            print()
-    except Exception as e:
-        print(colors.red(f"Error during chat: {e}"))
+def user_select_model():
+    models = get_anthropic_models()
+    print(colors.yellow("Available Anthropic Models:"))
+    for i, model in enumerate(models, 1):
+        print(colors.yellow(f"   {i}) {model['name']} ({model['model']})"))
+    choice = int(utils.safe_input(colors.blue("Select model number: ")))
+    return models[choice - 1]["model"]
 
 
 def cli():
-    try:
-        parser = argparse.ArgumentParser(
-            description="Chat with an Anthropic Claude model."
-        )
-        parser.add_argument(
-            "-tp", "--titleprint", help="Print initial title during interactive mode"
-        )
-        parser.add_argument(
-            "-m", "--model", help="Model to use for chatting", required=False
-        )
-        parser.add_argument(
-            "-f",
-            "--file",
-            help="Filepath to file that will be sent to the model (text only)",
-            required=False,
-        )
-        parser.add_argument(
-            "-s",
-            "--string",
-            help="Non-interactive mode, just feed a string into the model",
-        )
+    parser = argparse.ArgumentParser(description="Chat with an Anthropic Claude model.")
+    parser.add_argument(
+        "-m",
+        "--model",
+        help="Model to use for chatting",
+        default=config.CLA_DEFAULT_MODEL,
+    )
+    parser.add_argument(
+        "-sm",
+        "--select_model",
+        help="Select one model from Anthropic's supported models",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-f",
+        "--file",
+        help="Filepath to file that will be sent to the model (text only)",
+    )
+    parser.add_argument(
+        "string",
+        nargs="*",
+        help="Non-interactive mode, feed a string into the model",
+    )
+    parser.add_argument(
+        "-pt",
+        "--print_title",
+        help="Print initial title during interactive mode",
+        action="store_true",
+    )
+    args = parser.parse_args()
 
-        args = parser.parse_args()
+    selected_model = args.model
+    if args.select_model:
+        selected_model = user_select_model()
 
-        title_print_value = True
-        if str(args.titleprint).lower() == "false":
-            title_print_value = False
-
-        selected_model = args.model
-
-        if selected_model == None:
-            anthropic_models = get_anthropic_models()
-            print(colors.yellow("Available Anthropic Models:"))
-            for i, model in enumerate(anthropic_models, 1):
-                print(colors.yellow(f"   {i}) {model['name']} ({model['model']})"))
-            print()
-
-            try:
-                model_choice = int(input(colors.blue("Model (Enter the number): ")))
-                if 1 <= model_choice <= len(anthropic_models):
-                    selected_model = anthropic_models[model_choice - 1]["model"]
-                else:
-                    print(colors.red("Invalid model selected. Exiting."))
-                    return
-            except ValueError:
-                print(colors.red("Invalid input. Exiting."))
-                return
-            except KeyboardInterrupt:
-                return
-            print()
-
-        if args.string and args.file:
-            print(
-                colors.red("You can't use the string and file option at the same time!")
-            )
-        elif args.string:
-            basic_chat(None, selected_model, str(args.string))
-        elif args.file:
-            basic_chat(args.file, selected_model)
-        else:
-            try:
-                chatbot(selected_model, title_print_value)
-            except KeyboardInterrupt:
-                print()
-                sys.exit(0)
-
-    except Exception as err:
-        print(colors.red(f"An error occurred: {err}"))
-
-
-if __name__ == "__main__":
-    try:
-        if test_scraper_get_anthropic_models() == False:
-            print(colors.red(f"Models' name scraper is broken"))
-            sys.exit(1)
-        cli()
-    except KeyboardInterrupt:
-        pass
+    if args.file and args.string:
+        print(colors.red("You can't use the string and file option at the same time!"))
+    elif args.file:
+        with open(args.file, "r") as file:
+            content = file.read()
+        chat(selected_model, content, stream=True)
+    elif args.string:
+        chat(selected_model, (" ".join(args.string)), stream=True)
+    else:
+        interactive_chat(selected_model, (args.print_title))

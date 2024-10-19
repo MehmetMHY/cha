@@ -1,20 +1,13 @@
 import argparse
-import datetime
-import copy
 import json
 import time
 import sys
 import os
 
-# NOTE: make sure environment variable is defined before doing anything
-if "OPENAI_API_KEY" not in os.environ:
-    print("Can't proceed because an OPENAI_API_KEY env variable is not defined!")
-    sys.exit(1)
-
-# 3rd party packages
 from openai import OpenAI
-from cha import scraper, youtube, colors, image, config
+from cha import scraper, colors, image, utils, config
 
+utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
 
 # global, in memory, variables
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
@@ -24,34 +17,24 @@ client = OpenAI(
 )
 
 
-def simple_date(epoch_time):
-    date_time = datetime.datetime.fromtimestamp(epoch_time)
-    formatted_date = date_time.strftime("%B %d, %Y")
-    return formatted_date
-
-
 def list_models():
     try:
         response = client.models.list()
         if not response.data:
             raise ValueError("No models available")
 
-        openai_models = [
+        return [
             (model.id, model.created)
             for model in response.data
-            if "gpt" in model.id
-            and "instruct" not in model.id
-            and "realtime" not in model.id
+            if any(substr in model.id for substr in config.OPENAI_MODELS_TO_KEEP)
+            and not any(substr in model.id for substr in config.OPENAI_MODELS_TO_IGNORE)
         ]
-
-        return openai_models
     except Exception as e:
         print(colors.red(f"Error fetching models: {e}"))
         sys.exit(1)
 
 
 def title_print(selected_model):
-    # last updated: 9-16-2024
     print(
         colors.yellow(
             f"""Chatting With OpenAI's '{selected_model}' Model
@@ -61,7 +44,8 @@ def title_print(selected_model):
  - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
  - '{config.IMG_GEN_MODE}' for image generation
  - '{config.SAVE_CHAT_HISTORY}' to save chat history
- - '{config.LOAD_MESSAGE_CONTENT}' to load a file into your prompt"""
+ - '{config.LOAD_MESSAGE_CONTENT}' to load a file into your prompt
+ - '{config.HELP_PRINT_OPTIONS_KEY}' list all options"""
         ).strip()
     )
 
@@ -73,18 +57,14 @@ def msg_content_load():
         print(colors.red(f"No files found in the current directory"), end="")
         return None
 
-    current_dir = os.getcwd()
-
-    print(colors.yellow(f"Current Directory:"))
-    print(f"{current_dir} \n")
+    print(colors.yellow(f"Current Directory:"), os.getcwd())
     print(colors.yellow("File(s):"))
     for i in range(len(files)):
-        print(f"{i+1}) {files[i]}")
-    print()
+        print(f"   {i+1}) {files[i]}")
 
     while True:
         try:
-            file_pick = input(colors.blue(f"File ID (1-{len(files)}): "))
+            file_pick = input(colors.yellow(f"File ID (1-{len(files)}): "))
             file_path = files[int(file_pick) - 1]
             break
         except KeyboardInterrupt:
@@ -97,7 +77,7 @@ def msg_content_load():
     with open(file_path, "r") as file:
         content = file.read()
 
-    prompt = input(colors.blue("Additional Prompt: "))
+    prompt = input(colors.yellow("Additional Prompt: "))
 
     output = content
     if len(prompt) > 0:
@@ -112,220 +92,184 @@ CONTENT:
     return output
 
 
-def chatbot(selected_model, print_title=True):
+def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
     messages = [{"role": "system", "content": config.INITIAL_PROMPT}]
     multi_line_input = False
-    first_loop = True
 
-    # print the initial title
-    if print_title == True:
-        title_print(selected_model)
+    if filepath or content_string:
+        if filepath:
+            if "/" not in filepath:
+                filepath = os.path.join(os.getcwd(), filepath)
 
-    line_mode = False
-    last_line = ""
-    while True:
-        if first_loop == False:
-            print()
+            if not os.path.exists(filepath):
+                print(colors.red(f"The following file does not exist: {filepath}"))
+                return
 
-        if last_line.endswith("\n") == False:
-            print()
-
-        user_input_string = colors.blue(f"User: ")
-        if line_mode:
             print(
                 colors.yellow(
-                    f"Entered multi-line input mode. Type '{config.MULTI_LINE_SEND}' to send message"
+                    f"Feeding the following file content to {selected_model}:"
                 )
             )
-            user_input_string = colors.red("[M]") + " " + colors.blue(f"User: ")
-        print(colors.blue(user_input_string), end="", flush=True)
+            print(colors.yellow(f"   > {filepath}"))
+            print()
 
-        first_loop = False
+            content = "\n".join(utils.read_file(filepath))
+        else:
+            content = content_string
 
-        if not multi_line_input:
-            message = sys.stdin.readline().rstrip("\n")
+        messages.append({"role": "user", "content": content})
+        single_response = True
+    else:
+        if print_title:
+            title_print(selected_model)
+        single_response = False
+
+    while True:
+        if not single_response:
+            user_input_string = colors.blue("User: ")
+            if multi_line_input:
+                print(
+                    colors.yellow(
+                        f"Entered multi-line input mode. Type '{config.MULTI_LINE_SEND}' to send message"
+                    )
+                )
+                user_input_string = colors.red("[M] ") + colors.blue("User: ")
+
+            message = utils.safe_input(user_input_string).rstrip("\n")
 
             if message == config.MULI_LINE_MODE_TEXT:
                 multi_line_input = True
-                line_mode = True
-                last_line = "\n"
                 continue
             elif message.replace(" ", "") == config.IMG_GEN_MODE:
-                print("\n")
-                image.gen_image()
+                image.gen_image(client=client)
                 continue
             elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
                 break
             elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
                 messages = [{"role": "system", "content": config.INITIAL_PROMPT}]
-                print(colors.yellow("\n\nChat history cleared.\n"))
-                first_loop = True
+                print(colors.yellow("Chat history cleared."))
                 continue
 
-        if multi_line_input:
-            message_lines = []
-            while True:
-                line = sys.stdin.readline().rstrip("\n")
-                if line.lower() == config.MULTI_LINE_SEND.lower():
-                    break
-                elif (
-                    line.replace(" ", "").replace("\n", "") == config.CLEAR_HISTORY_TEXT
-                ):
-                    messages = [{"role": "system", "content": config.INITIAL_PROMPT}]
-                    print(colors.yellow("\n\nChat history cleared.\n"))
-                    first_loop = True
-                    break
-                message_lines.append(line)
-            message = "\n".join(message_lines)
-            line_mode = False
-            multi_line_input = False
+            if multi_line_input:
+                message_lines = [message]
+                while True:
+                    line = utils.safe_input().rstrip("\n")
+                    if line.lower() == config.MULTI_LINE_SEND.lower():
+                        break
+                    message_lines.append(line)
+                message = "\n".join(message_lines)
+                multi_line_input = False
 
-        # NOTE: this is annoying, but we have to account for this :(
-        print()
-
-        if message == config.SAVE_CHAT_HISTORY:
-            cha_filepath = f"cha_{int(time.time())}.txt"
-            youtube.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
-            print(colors.red(f"\nSaved current saved history to {cha_filepath}"))
-            continue
-
-        if message == config.LOAD_MESSAGE_CONTENT:
-            message = msg_content_load()
-            if message == None:
+            if message == config.SAVE_CHAT_HISTORY:
+                cha_filepath = f"cha_{int(time.time())}.json"
+                utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
+                print(colors.red(f"Saved current saved history to {cha_filepath}"))
                 continue
-            print()
 
-        detected_urls = len(scraper.extract_urls(message))
-        if detected_urls > 0:
-            du_print = f"{detected_urls} URL"
-            if detected_urls > 1:
-                du_print = f"{detected_urls} URLs"
-            du_user = input(
-                colors.red(f"{du_print} detected, continue web scraping (y/n)? ")
-            )
-            if du_user.lower() == "y" or du_user.lower() == "yes":
-                print(colors.magenta("\n\n--- BROWSING THE WEB ---\n"))
-                message = scraper.scraped_prompt(message)
-            print()
+            if message == config.HELP_PRINT_OPTIONS_KEY:
+                title_print(selected_model)
+                continue
 
-        # exit if no prompt is provided
-        if len(message) == 0:
-            raise KeyboardInterrupt
+            if message == config.LOAD_MESSAGE_CONTENT:
+                message = msg_content_load()
+                if message is None:
+                    print()
+                    continue
 
-        messages.append({"role": "user", "content": message})
+            detected_urls = len(scraper.extract_urls(message))
+            if detected_urls > 0:
+                du_print = f"{detected_urls} URL{'s' if detected_urls > 1 else ''}"
+                du_user = utils.safe_input(
+                    colors.red(f"{du_print} detected, continue web scraping (y/n)? ")
+                )
+                if du_user.lower() == "y" or du_user.lower() == "yes":
+                    message = scraper.scraped_prompt(message)
 
-        obj_chat_history = {"time": time.time(), "user": message, "bot": ""}
+            if len(message) == 0:
+                raise KeyboardInterrupt
+
+            messages.append({"role": "user", "content": message})
+
+        obj_chat_history = {
+            "time": time.time(),
+            "user": messages[-1]["content"],
+            "bot": "",
+        }
+
         try:
             response = client.chat.completions.create(
                 model=selected_model, messages=messages, stream=True
             )
 
+            full_response = ""
             for chunk in response:
                 chunk_message = chunk.choices[0].delta.content
                 if chunk_message:
-                    last_line = chunk_message
                     sys.stdout.write(colors.green(chunk_message))
+                    full_response += chunk_message
                     obj_chat_history["bot"] += chunk_message
                     sys.stdout.flush()
 
-            chat_message = chunk.choices[0].delta.content
-            if chat_message:
-                messages.append({"role": "assistant", "content": chat_message})
+            if full_response:
+                messages.append({"role": "assistant", "content": full_response})
+                sys.stdout.write("\n")
+                sys.stdout.flush()
         except Exception as e:
             print(colors.red(f"Error during chat: {e}"))
             break
 
         CURRENT_CHAT_HISTORY.append(obj_chat_history)
 
-
-def basic_chat(filepath, model, justString=None):
-    try:
-        print_padding = False
-
-        if justString == None:
-            if "/" not in filepath:
-                filepath = os.path.join(os.getcwd(), filepath)
-
-            if os.path.exists(filepath) == False:
-                print(colors.red(f"The following file does not exist: {filepath}"))
-                return
-
-            print(
-                colors.blue(
-                    f"Feeding the following file content to {model}:\n{filepath}\n"
-                )
-            )
-
-            content = "\n".join(youtube.read_file(filepath))
-        else:
-            content = justString
-            print_padding = True
-
-        if print_padding:
-            print()
-
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": config.INITIAL_PROMPT},
-                {"role": "system", "content": content},
-            ],
-            stream=True,
-        )
-
-        last_line = ""
-        complete_output = ""
-        for chunk in response:
-            chunk_message = chunk.choices[0].delta.content
-            if chunk_message:
-                last_line = chunk_message
-                complete_output += chunk_message
-                sys.stdout.write(colors.green(chunk_message))
-                sys.stdout.flush()
-
-        CURRENT_CHAT_HISTORY.append(
-            {"time": time.time(), "user": content, "bot": complete_output}
-        )
-
-        if last_line.startswith("\n") == False:
-            print()
-
-        if print_padding:
-            print()
-    except Exception as e:
-        print(colors.red(f"Error during chat: {e}"))
+        if single_response:
+            break
 
 
 def cli():
     try:
         parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
         parser.add_argument(
-            "-tp", "--titleprint", help="Print initial title during interactive mode"
+            "-pt",
+            "--print_title",
+            help="Print initial title during interactive mode",
+            action="store_true",
         )
         parser.add_argument(
-            "-m", "--model", help="Model to use for chatting", required=False
+            "-m",
+            "--model",
+            help="Model to use for chatting",
+            default=config.CHA_DEFAULT_MODEL,
+        )
+        parser.add_argument(
+            "-sm",
+            "--select_model",
+            help="Select one model from OpenAI's supported models",
+            action="store_true",
         )
         parser.add_argument(
             "-f",
             "--file",
             help="Filepath to file that will be sent to the model (text only)",
-            required=False,
         )
         parser.add_argument(
-            "-s",
-            "--string",
-            help="None interactive mode, just feed a string into the model",
+            "string",
+            nargs="*",
+            help="Non-interactive mode, feed a string into the model",
+        )
+        parser.add_argument(
+            "-igmd", "--ig_metadata", help="Print the meta data for generated images"
         )
 
         args = parser.parse_args()
 
-        title_print_value = True
-        if str(args.titleprint).lower() == "false":
-            title_print_value = False
+        if args.ig_metadata:
+            filepath = str(args.ig_metadata)
+            status = image.display_metadata(filepath)
+            sys.exit(1 if status is None else 0)
 
+        title_print_value = args.print_title
         selected_model = args.model
 
-        if selected_model == None:
+        if args.select_model:
             openai_models = list_models()
             print(colors.yellow("Available OpenAI Models:"))
             max_length = max(len(model_id) for model_id, _ in openai_models)
@@ -333,36 +277,35 @@ def cli():
             for model_id, created in openai_models:
                 formatted_model_id = model_id.ljust(max_length)
                 print(
-                    colors.yellow(f"   > {formatted_model_id}   {simple_date(created)}")
+                    colors.yellow(
+                        f"   > {formatted_model_id}   {utils.simple_date(created)}"
+                    )
                 )
-            print()
-
-            try:
-                selected_model = input("Which model do you want to use? ")
-                if selected_model not in [model[0] for model in openai_models]:
-                    print(colors.red("Invalid model selected. Exiting."))
-                    return
-            except KeyboardInterrupt:
-                print()
+            selected_model = utils.safe_input(
+                colors.blue("Which model do you want to use? ")
+            )
+            if selected_model not in [model[0] for model in openai_models]:
+                print(colors.red("Invalid model selected. Exiting."))
                 return
-            print()
 
         if args.string and args.file:
             print(
-                colors.red(
-                    f"You can't use the string and file option at the same time!"
-                )
+                colors.red("You can't use the string and file option at the same time!")
             )
-        elif args.string:
-            basic_chat(None, selected_model, str(args.string))
         elif args.file:
-            basic_chat(args.file, selected_model)
+            chatbot(selected_model, title_print_value, filepath=args.file)
+        elif args.string:
+            chatbot(
+                selected_model, title_print_value, content_string=" ".join(args.string)
+            )
         else:
-            try:
-                chatbot(selected_model, title_print_value)
-            except KeyboardInterrupt:
-                print("\n")
-                sys.exit(0)
+            chatbot(selected_model, title_print_value)
 
+    except (KeyboardInterrupt, EOFError):
+        print()
     except Exception as err:
-        pass
+        if str(err):
+            print(colors.red(f"An error occurred: {err}"))
+        else:
+            print(colors.red("Exited unexpectedly"))
+        sys.exit(1)
