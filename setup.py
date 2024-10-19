@@ -17,7 +17,7 @@ setup(
         "PyMuPDF==1.24.11",
         "pillow==10.3.0",
     ],
-    python_requires=">=3.10",
+    python_requires=">=3.9.2",
     entry_points={
         "console_scripts": ["cha = cha.main:cli", "cla = cha.cla:cli"],
     },
