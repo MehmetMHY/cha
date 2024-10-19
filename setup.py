@@ -2,30 +2,23 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.6.6",
+    version="0.7.0",
     packages=find_packages(),
     license="MIT",
-    description="A simple CLI chat tool for easy interaction with OpenAI's LLM models and other platforms",
+    description="A simple CLI chat tool for easy interaction with OpenAI's LLM models",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
-        "openai==1.51.0",
-        "anthropic==0.34.2",
-        "groq==0.11.0",
+        "openai==1.51.2",
+        "anthropic==0.36.1",
         "beautifulsoup4==4.12.3",
-        "selenium==4.25.0",
-        "webdriver-manager==4.0.2",
-        "yt-dlp==2024.9.27",
+        "yt-dlp==2024.10.7",
+        "youtube-transcript-api==0.6.2",
         "PyMuPDF==1.24.11",
-        # NOTE: (3-13-2024) Using Git because PyPi page does not exist
-        "climage @ git+https://github.com/MehmetMHY/CLImage.git#egg=climage",
+        "pillow==10.3.0",
     ],
     python_requires=">=3.10",
     entry_points={
-        "console_scripts": [
-            "cha = cha.main:cli",
-            "cla = cha.cla:cli",
-            "grq = cha.grq:cli",
-        ],
+        "console_scripts": ["cha = cha.main:cli", "cla = cha.cla:cli"],
     },
 )

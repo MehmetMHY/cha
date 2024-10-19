@@ -1,124 +1,136 @@
-<p align="center">
-    <img width="300" src="./assets/logo.png">
-</p>
+# Cha
 
-## About
+## Overview
 
-A simple CLI chat tool designed for easy interaction with OpenAI's models. It also allows you to easily interact with Anthropic's Claude models and Groq's API.
+Cha is an open-source command-line tool that simplifies interactions with AI models from OpenAI and Anthropic. It allows users to efficiently engage with powerful language models directly from their terminal, enhancing development workflows.
+
+[Watch the demo](https://www.youtube.com/watch?v=zRnMu6OHNtU) to see Cha in action!
 
 ## Features
 
-- Basic CLI chat interface with OpenAI's LLM models.
-- Web scraping capability for provided links (supports both HTTP & JavaScript scraping).
-- YouTube scraping functionality for extracting video transcripts.
-  - The YouTube scraper either scrapes transcripts or downloads the video's audio and converts it to text using OpenAI's Whisper model though the Groq API.
-- Multi-line support for easy copying and pasting into the CLI.
-- Ability to generate images using OpenAI's image models.
-  - Uses CLImage to display images directly in the terminal.
-- Supports both interactive and non-interactive chat modes.
-- Basic support for other models on different platforms:
-  - Anthropic's Claude models via the `cla` command.
-  - Groq's API through the `grq` command.
+- **CLI Chat Interface**: Communicate with OpenAI's and Anthropic's models via commands `cha` and `cla`
+- **Web and YouTube Scraping**: Extract YouTube video transcripts, web pdfs, and general web content.
+- **Multi-line Input Mode**: Simplifies complex input directly into the CLI.
+- **Interactive and Non-interactive Modes**: Tailor your experience.
+- **Image Generation**: Generate custom images using OpenAI's image models.
 
-## Demo
+## Getting Started
 
-<div align="center">
+### Installation
 
-[![Demo Video](./assets/thumbnail.png)](https://www.youtube.com/watch?v=zRnMu6OHNtU)
-
-</div>
-
-## How To Set Up?
-
-#### 1. Install `cha`
-
-Clone this repository, navigate to its directory, and run the following command to install or upgrade `cha`:
-
-```bash
-pip3 install --upgrade .
-```
-
-#### 2. Configure API Keys
-
-1. Create a `.env` file in the root directory.
-
-2. Obtain your API keys:
-
-   - OpenAI API key: [Get it here](https://platform.openai.com/api-keys)
-   - Anthropic API key: [Get it here](https://www.anthropic.com/) (for `cla` command)
-   - Groq API key: [Get it here](https://console.groq.com/keys) (for `grq` command)
-
-3. Add your keys to the `.env` file, using this format:
+1. **Clone the Repository**:
 
    ```bash
-   # Replace YOUR_KEY_HERE with your respective API keys
-   export OPENAI_API_KEY="YOUR_KEY_HERE"
-   export ANTHROPIC_API_KEY="YOUR_KEY_HERE"
-   export GROQ_API_KEY="YOUR_KEY_HERE"
+   git clone <repository-url>
+   cd <repository-folder>
    ```
 
-4. To activate the environment variables, run:
+2. **Install the Package**:
+   ```bash
+   pip3 install --upgrade .
+   ```
 
+### Configuration
+
+1. **API Keys Setup**: Grab your API keys from the following links
+
+   - [OpenAI API key](https://platform.openai.com/api-keys)
+   - [Anthropic API key](https://www.anthropic.com/)
+
+2. **Setup your .env file**: Create a `.env` file in the root directory and add your keys
+
+   ```bash
+   export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
+   export ANTHROPIC_API_KEY="YOUR_ANTHROPIC_API_KEY"
+   ```
+
+3. **Apply the environment variables**
    ```bash
    source .env
    ```
 
-#### 3. Run `cha`, `cla`, or `grq`
+### Usage
 
-To start the tool, execute one of the following:
+To start using **cha**, run the following simple command:
 
 ```bash
-# talk with OpenAI's models
 cha
+```
 
-# talk with Anthropic's models
+To start using **cla**, run the following simple command:
+
+```bash
 cla
-
-# talk with Groq's supported models
-grq
 ```
 
-#### 4. (Optional) Using my configuration of `cha`
-
-If you would like, you can use my configuration of `cha`. To view my configuration, check out the `cha.sh` file. To use it, add the API key(s) and copy the content from the `cha.sh` file to your shell's config file:
+Both commands support and accept additional parameters. Here are all of their respected help page for reference:
 
 ```bash
-# zsh
-cat cha.sh >> $HOME/.zshrc
+usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-igmd IG_METADATA] [string ...]
 
-# bash
-cat cha.sh >> $HOME/.bashrc
+Chat with an OpenAI GPT model.
+
+positional arguments:
+  string                Non-interactive mode, feed a string into the model
+
+options:
+  -h, --help            show this help message and exit
+  -pt, --print_title    Print initial title during interactive mode
+  -m MODEL, --model MODEL
+                        Model to use for chatting
+  -sm, --select_model   Select one model from OpenAI's supported models
+  -f FILE, --file FILE  Filepath to file that will be sent to the model (text only)
+  -igmd IG_METADATA, --ig_metadata IG_METADATA
+                        Print the meta data for generated images
 ```
-
-Then, run my configuration of `cha`:
 
 ```bash
-chatgpt
+usage: cla [-h] [-m MODEL] [-sm] [-f FILE] [-pt] [string ...]
+
+Chat with an Anthropic Claude model.
+
+positional arguments:
+  string                Non-interactive mode, feed a string into the model
+
+options:
+  -h, --help            show this help message and exit
+  -m MODEL, --model MODEL
+                        Model to use for chatting
+  -sm, --select_model   Select one model from Anthropic's supported models
+  -f FILE, --file FILE  Filepath to file that will be sent to the model (text only)
+  -pt, --print_title    Print initial title during interactive mode
 ```
 
-#### 5. Now you're now ready to go!
+## Development
 
-## Develop Mode
+For those interested in contributing or experimenting with Cha:
 
-#### 1. For developing Cha, you can do the following. Install `cha` in editable mode so that pip points to the source files of the cloned code:
+1. **Install in Editable Mode**:
+   ```bash
+   pip install -e .
+   ```
+2. **Develop and Test**: Modify the source code and test changes using `cha` or `cla`.
 
-```bash
-pip install -e .
-```
+3. **(optional) Load your Custom Configuration**: Use the `CHA_PYTHON_CUSTOM_CONFIG_PATH` environment variable to point to a custom `config.py` file that overrides default global variables. Set it using `export CHA_PYTHON_CUSTOM_CONFIG_PATH="/path/to/your/config.py"`. Make sure your defined variables is all uppercase.
 
-#### 2. Make changes to the code, then run `cha`, `cla`, or `grq` to try out your changes
+## Contributing
 
-#### 3. If you add a new dependency, you will have to do step 1 again
+Any contribution is always welcomed! Please feel free to submit issues or pull requests for any bugs or features.
 
-## Other Notes
+## Changelog
 
-- To see and/or change hard-coded config variables/logic in Cha, checkout the `config.py` file.
+For a detailed list of changes, please see the [CHANGELOG.md](./CHANGELOG.md).
 
-## Credits
+## License
+
+Cha is licensed under the MIT License. See [LICENSE](./LICENSE) for more details.
+
+## Acknowledgments
+
+Cha is inspired and/or made possible thanks to:
 
 - [OpenAI Documentation](https://platform.openai.com/docs/overview)
 - [Anthropic Documentation](https://docs.anthropic.com/)
-- [Groq Documentation](https://console.groq.com/docs/quickstart)
-- [Ollama's CLI](https://ollama.com/)
-- [ChatGPT (GPT-4)](https://chat.openai.com/)
+- [ChatBlade](https://github.com/npiv/chatblade)
+- [ChatGPT by OpenAI (GPT-4)](https://chat.openai.com/)
 - [Claude 3.5 Sonnet](https://claude.ai/chats)
