@@ -5,6 +5,40 @@ import json
 import sys
 import os
 
+import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+from cha import config, colors
+
+
+def get_request(
+    url,
+    timeout=config.REQUEST_DEFAULT_TIMEOUT_SECONDS,
+    retry_count=config.REQUEST_DEFAULT_RETRY_COUNT,
+    headers=config.REQUEST_DEFAULT_HEADERS,
+    debug_mode=False,
+):
+    retries = Retry(
+        total=retry_count,
+        backoff_factor=config.REQUEST_BACKOFF_FACTOR,
+        status_forcelist=config.REQUEST_BAD_HTTP_STATUSES,
+    )
+
+    session = requests.Session()
+    session.mount("http://", HTTPAdapter(max_retries=retries))
+    session.mount("https://", HTTPAdapter(max_retries=retries))
+
+    try:
+        response = session.get(url, timeout=timeout, headers=headers)
+        response.raise_for_status()
+        # NOTE: this returns a requests OBJECT not a dict or string!
+        return response
+    except requests.exceptions.RequestException as e:
+        if debug_mode:
+            print(colors.red(f"Failed to make GET request for {url} due to {e}"))
+        return None
+
 
 def check_env_variable(env_var_name, docs_url):
     if env_var_name not in os.environ:
