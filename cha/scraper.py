@@ -8,7 +8,7 @@ import uuid
 import requests
 import fitz  # PyMuPDF
 from bs4 import BeautifulSoup
-from cha import youtube, colors
+from cha import youtube, colors, utils
 
 
 def extract_urls(text):
@@ -30,10 +30,11 @@ def remove_html(content):
 
 def basic_scraper(url):
     try:
-        response = requests.get(url)
-        response.raise_for_status()
+        response = utils.get_request(url)
+        if response == None:
+            raise Exception(f"http GET request failed due to an error code or timeout")
         return response.text
-    except requests.RequestException as e:
+    except Exception as e:
         return f"An error occurred: {e}"
 
 
@@ -102,7 +103,10 @@ def valid_pdf_url(url):
 
 def scrape_pdf_url(url):
     try:
-        response = requests.get(url)
+        response = utils.get_request(url)
+        if response == None:
+            raise Exception(f"http GET request failed due to an error code or timeout")
+
         if response.headers.get("Content-Type") == "application/pdf":
             filename = f"cha_{uuid.uuid4()}.pdf"
             with open(filename, "wb") as file:
@@ -121,5 +125,5 @@ def scrape_pdf_url(url):
             return text
 
         raise Exception(f"URL {url} is NOT a valid PDF file")
-    except requests.RequestException as e:
+    except Exception as e:
         print(colors.red(f"Failed to load PDF URL {url} due to {e}"))

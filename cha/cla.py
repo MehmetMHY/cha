@@ -14,8 +14,11 @@ CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bo
 def get_anthropic_models():
     try:
         url = "https://docs.anthropic.com/en/docs/about-claude/models"
-        response = requests.get(url)
-        response.raise_for_status()
+
+        response = utils.get_request(url=url)
+        if response == None:
+            raise Exception(f"Failed to make HTTP GET request to {url}")
+
         soup = BeautifulSoup(response.content, "html.parser")
 
         output = []
@@ -158,6 +161,9 @@ def interactive_chat(model, print_title):
 
 def user_select_model():
     models = get_anthropic_models()
+    if type(models) == str:
+        print(colors.red(f"Failed to get models"))
+        sys.exit(1)
     print(colors.yellow("Available Anthropic Models:"))
     for i, model in enumerate(models, 1):
         print(colors.yellow(f"   {i}) {model['name']} ({model['model']})"))

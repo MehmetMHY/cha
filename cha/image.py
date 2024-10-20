@@ -162,7 +162,11 @@ def gen_image(client):
         url = response.data[0].url
 
         img_filename = gen_img_filename(model, prompt)
-        img_data = requests.get(url).content
+        img_data = utils.get_request(url)
+        if img_data == None:
+            print(colors.red(f"Failed to get image from {url}"))
+            return
+        img_data = img_data.content
 
         # save config/meta_data to image
         with Image.open(BytesIO(img_data)) as img:
