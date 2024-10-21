@@ -22,7 +22,7 @@ def get_request(
     retries = Retry(
         total=retry_count,
         backoff_factor=config.REQUEST_BACKOFF_FACTOR,
-        status_forcelist=config.REQUEST_BAD_HTTP_STATUSES,
+        status_forcelist=list(range(400, 600)),
     )
 
     session = requests.Session()
