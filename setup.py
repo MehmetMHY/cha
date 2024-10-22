@@ -16,7 +16,7 @@ setup(
         "youtube-transcript-api==0.6.2",
         "PyMuPDF==1.24.11",
         "pillow==10.3.0",
-        "tiktoken==0.8.0"
+        "tiktoken==0.8.0",
     ],
     python_requires=">=3.9.2",
     entry_points={

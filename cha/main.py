@@ -1,11 +1,16 @@
-import argparse
-import json
-import time
 import sys
-import os
 
-from openai import OpenAI
-from cha import scraper, colors, image, utils, config
+# NOTE: this exists to prevent a ugly print from showing if some cancels quickly
+try:
+    import argparse
+    import json
+    import time
+    import os
+
+    from openai import OpenAI
+    from cha import scraper, colors, image, utils, config
+except (KeyboardInterrupt, EOFError):
+    sys.exit(1)
 
 utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
 
@@ -258,6 +263,12 @@ def cli():
         parser.add_argument(
             "-igmd", "--ig_metadata", help="Print the meta data for generated images"
         )
+        parser.add_argument(
+            "-t",
+            "--token_count",
+            help="Count tokens for the input file or string",
+            action="store_true",
+        )
 
         args = parser.parse_args()
 
@@ -268,6 +279,41 @@ def cli():
 
         title_print_value = args.print_title
         selected_model = args.model
+
+        if args.token_count:
+            text, content_mode = None, None
+
+            if args.file:
+                content_mode = "FILE"
+                with open(args.file, "r", encoding="utf-8") as file:
+                    text = file.read()
+            elif args.string:
+                content_mode = "STRING"
+                text = " ".join(args.string)
+            elif not sys.stdin.isatty():
+                content_mode = "PIPE"
+                text = sys.stdin.read()
+
+            if text is None:
+                print(
+                    colors.red(
+                        "Please provide input text, a filepath, or pipe in content for token counting."
+                    )
+                )
+                return
+
+            try:
+                token_count = utils.count_tokens(text, selected_model)
+                if token_count is None:
+                    raise Exception("Failed to calculate token count")
+
+                print(colors.green("Content Type:"), content_mode)
+                print(colors.green("Selected Model:"), args.model)
+                print(colors.green("Text Length:"), len(text))
+                print(colors.green("Token Count:"), token_count)
+            except Exception as e:
+                print(colors.red(f"Error counting tokens: {e}"))
+            return
 
         if args.select_model:
             openai_models = list_models()
