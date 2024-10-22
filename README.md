@@ -67,7 +67,7 @@ cla
 Both commands support and accept additional parameters. Here are all of their respected help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-igmd IG_METADATA] [string ...]
+usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-igmd IG_METADATA] [-t] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -83,6 +83,7 @@ options:
   -f FILE, --file FILE  Filepath to file that will be sent to the model (text only)
   -igmd IG_METADATA, --ig_metadata IG_METADATA
                         Print the meta data for generated images
+  -t, --token_count     Count tokens for the input file or string
 ```
 
 ```bash
