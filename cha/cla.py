@@ -1,5 +1,4 @@
-import argparse, json, time, sys, os
-import requests
+import argparse, json, time, sys, os, re
 from anthropic import Anthropic
 from bs4 import BeautifulSoup
 from cha import colors, config, scraper, utils
@@ -10,7 +9,7 @@ client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
 
 
-# NOTE (6-30-2024): Anthropic's API lacks an endpoint for fetching the latest supported models, so web scraping is required
+# NOTE: (6-30-2024) Anthropic's API lacks an endpoint for fetching the latest supported models, so web scraping is required
 def get_anthropic_models():
     try:
         url = "https://docs.anthropic.com/en/docs/about-claude/models"
@@ -43,6 +42,10 @@ def get_anthropic_models():
             for d in output
         ):
             raise Exception("model scraper is broken")
+
+        # (10-22-2024) account for cases like this: "claude-3-5-sonnet-20241022 (claude-3-5-sonnet-latest)" -> "claude-3-5-sonnet-20241022"
+        for entry in output:
+            entry["model"] = re.sub(r"[\s\n]+", "", str(entry["model"].split(" (")[0]))
 
         return output
     except Exception as err:
