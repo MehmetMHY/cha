@@ -5,11 +5,20 @@ import json
 import sys
 import os
 
+import tiktoken
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 from cha import config, colors
+
+
+def count_tokens(text, model_name):
+    try:
+        encoding = tiktoken.encoding_for_model(model_name)
+        return len(encoding.encode(text))
+    except:
+        return None
 
 
 def get_request(
