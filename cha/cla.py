@@ -82,7 +82,7 @@ def chat(model, message, stream=True):
         print()
         sys.exit(1)
     except Exception as e:
-        return f"Error: {e}"
+        return {"error": str(e)}
 
 
 def get_multi_line_input():
@@ -158,7 +158,12 @@ def interactive_chat(model, print_title):
         CURRENT_CHAT_HISTORY.append(
             {"time": time.time(), "user": user_input, "bot": ""}
         )
+
         response = chat(model, user_input)
+        if type(response) == dict and response.get("error") != None:
+            print(colors.red(response.get("error")))
+            continue
+
         CURRENT_CHAT_HISTORY[-1]["bot"] = response
 
 
