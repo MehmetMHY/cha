@@ -19,7 +19,7 @@ CLA_MAX_TOKENS = 1024
 CHA_DEFAULT_MODEL = "gpt-4o"
 CLA_DEFAULT_MODEL = "claude-3-5-sonnet-20240620"
 
-OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime"]
+OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
 OPENAI_MODELS_TO_KEEP = ["gpt"]
 
 TERMINAL_THEME_CODES = {
