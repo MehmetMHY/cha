@@ -207,13 +207,19 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             )
 
             full_response = ""
-            for chunk in response:
-                chunk_message = chunk.choices[0].delta.content
-                if chunk_message:
-                    sys.stdout.write(colors.green(chunk_message))
-                    full_response += chunk_message
-                    obj_chat_history["bot"] += chunk_message
-                    sys.stdout.flush()
+
+            # NOTE: hit CTRL-C or CTRL-D to stop streaming early
+            try:
+                for chunk in response:
+                    chunk_message = chunk.choices[0].delta.content
+                    if chunk_message:
+                        sys.stdout.write(colors.green(chunk_message))
+                        full_response += chunk_message
+                        obj_chat_history["bot"] += chunk_message
+                        sys.stdout.flush()
+            except (KeyboardInterrupt, EOFError):
+                full_response += " [cancelled]"
+                obj_chat_history["bot"] += " [cancelled]"
 
             if full_response:
                 messages.append({"role": "assistant", "content": full_response})
