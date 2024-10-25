@@ -5,7 +5,6 @@ import re
 import os
 import uuid
 
-import requests
 import fitz  # PyMuPDF
 from bs4 import BeautifulSoup
 from cha import youtube, colors, utils
@@ -44,6 +43,8 @@ def process_url(url):
             content = youtube.youtube_scraper(url)
         elif valid_pdf_url(url):
             content = scrape_pdf_url(url)
+        elif youtube.valid_twitter_link(url):
+            content = youtube.twitter_video_scraper(url)
         else:
             content = remove_html(basic_scraper(url))
     except:
