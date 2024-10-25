@@ -43,8 +43,7 @@ def clean_subtitle_text(input_text):
 def generate_command(url, lang="en"):
     # https://www.reddit.com/r/youtubedl/comments/15fcrmd/transcript_extract_from_youtube_videos_ytdlp/
     root_cmd = "yt-dlp --skip-download --write-subs --write-auto-subs"
-    video_id = url.split("?")[1].split("&")[0].replace("v=", "")
-    filename = f"cha_yt_{video_id}_{uuid.uuid4()}.srt"
+    filename = f"cha_yt_{uuid.uuid4()}.srt"
     filepath = os.path.join(os.getcwd(), filename)
     cmd = f'{root_cmd} --sub-lang {lang} --sub-format ttml --convert-subs srt --output "{filepath}" "{url}"'
     return cmd, filepath, filename
@@ -118,23 +117,7 @@ def video_metadata(url):
     if proc.returncode != 0:
         return {}
 
-    content = json.loads(output)
-
-    return {
-        "title": content.get("title"),
-        "description": re.sub(
-            r"https?://\S+|www\.\S+", "", content.get("description", "")
-        ),
-        "duration": content.get("duration"),
-        "view_count": content.get("view_count"),
-        "like_count": content.get("like_count"),
-        "channel": content.get("channel"),
-        "channel_follower_count": content.get("channel_follower_count"),
-        "uploader": content.get("uploader"),
-        "upload_date": content.get("upload_date"),
-        "epoch": content.get("epoch"),
-        "fulltitle": content.get("fulltitle"),
-    }
+    return json.loads(output)
 
 
 def video_transcript(url):
@@ -163,6 +146,64 @@ def youtube_scraper(url):
         meta_data = get_meta_data.result()
         transcript = get_transcript.result()
 
-        meta_data["transcript"] = transcript
+        return {
+            "title": meta_data.get("title"),
+            # NOTE: removes urls from description
+            "description": re.sub(
+                r"https?://\S+|www\.\S+", "", meta_data.get("description", "")
+            ),
+            "duration": meta_data.get("duration"),
+            "view_count": meta_data.get("view_count"),
+            "like_count": meta_data.get("like_count"),
+            "channel": meta_data.get("channel"),
+            "channel_follower_count": meta_data.get("channel_follower_count"),
+            "uploader": meta_data.get("uploader"),
+            "upload_date": meta_data.get("upload_date"),
+            "epoch": meta_data.get("epoch"),
+            "fulltitle": meta_data.get("fulltitle"),
+            "transcript": transcript,
+        }
 
-        return meta_data
+
+def valid_twitter_link(url):
+    if url.startswith("https://www.twitter.com"):
+        return True
+    if url.startswith("https://x.com"):
+        return True
+    return False
+
+
+def twitter_video_scraper(url):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        get_meta_data = executor.submit(video_metadata, url)
+        get_transcript = executor.submit(yt_dlp_youtube_transcript_extractor, url)
+
+        meta_data = get_meta_data.result()
+        transcript = get_transcript.result()
+
+        return {
+            "platform": "Twitter/X",
+            "title": meta_data.get("title"),
+            "description": meta_data.get("description"),
+            "uploader": meta_data.get("uploader"),
+            "timestamp": meta_data.get("timestamp"),
+            "channel_id": meta_data.get("channel_id"),
+            "uploader_id": meta_data.get("uploader_id"),
+            "uploader_url": meta_data.get("uploader_url"),
+            "like_count": meta_data.get("like_count"),
+            "repost_count": meta_data.get("repost_count"),
+            "comment_count": meta_data.get("comment_count"),
+            "duration": meta_data.get("duration"),
+            "display_id": meta_data.get("display_id"),
+            "webpage_url": meta_data.get("webpage_url"),
+            "original_url": meta_data.get("original_url"),
+            "webpage_url_domain": meta_data.get("webpage_url_domain"),
+            "extractor": meta_data.get("extractor"),
+            "extractor_key": meta_data.get("extractor_key"),
+            "fulltitle": meta_data.get("fulltitle"),
+            "duration_string": meta_data.get("duration_string"),
+            "upload_date": meta_data.get("upload_date"),
+            "epoch": meta_data.get("epoch"),
+            "filename": meta_data.get("filename"),
+            "transcript": transcript,
+        }

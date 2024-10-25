@@ -3,7 +3,6 @@ import sys
 # NOTE: this exists to prevent a ugly print from showing if some cancels quickly
 try:
     import argparse
-    import json
     import time
     import os
 
