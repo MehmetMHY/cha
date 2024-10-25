@@ -314,8 +314,8 @@ def cli():
 
                 print(colors.green("Content Type:"), content_mode)
                 print(colors.green("Selected Model:"), args.model)
-                print(colors.green("Text Length:"), len(text))
-                print(colors.green("Token Count:"), token_count)
+                print(colors.green("Text Length:"), len(text), "chars")
+                print(colors.green("Token Count:"), token_count, "tokens")
             except Exception as e:
                 print(colors.red(f"Error counting tokens: {e}"))
             return
