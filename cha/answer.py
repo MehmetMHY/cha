@@ -238,4 +238,7 @@ def answer_search(
             final_output += content
             print(colors.green(content), end="", flush=True)
 
+    if final_output.endswith("\n") == False:
+        print()
+
     return final_output
