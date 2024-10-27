@@ -224,11 +224,13 @@ def answer_search(
                     break
 
     print(colors.red(colors.underline("Response:")))
+
     response = client.chat.completions.create(
         model=big_model,
         messages=[{"role": "user", "content": mega_prompt}],
         stream=True,
     )
+
     final_output = ""
     for chunk in response:
         if chunk.choices[0].delta.content is not None:
@@ -236,14 +238,4 @@ def answer_search(
             final_output += content
             print(colors.green(content), end="", flush=True)
 
-    return f"""
-PROMPT:
-``````````
-{mega_prompt}
-``````````
-
-RESPONSE:
-``````````
-{final_output}
-``````````
-"""
+    return final_output
