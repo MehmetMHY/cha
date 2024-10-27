@@ -146,11 +146,13 @@ def answer_search(
     user_input_mode=False,
 ):
     if user_input_mode or prompt == None:
-        print(colors.red(colors.underline(f"Gathering User Input")))
-        prompt = utils.safe_input(colors.blue(f"Prompt: "))
+        print(
+            colors.red(colors.underline(f"Answer Feature - Answer Prompt via Sources"))
+        )
+        prompt = utils.safe_input(colors.blue(f"QUESTION: "))
         freshness_state = utils.safe_input(
             colors.blue(
-                "Freshness:"
+                "FRESHNESS:"
                 + "".join(
                     f"\n- {f} = {config.VALID_FRESHNESS_IDS[f]}"
                     for f in config.VALID_FRESHNESS_IDS
@@ -158,9 +160,6 @@ def answer_search(
                 + "\n> "
             )
         )
-        result_count = int(utils.safe_input(colors.blue("Result Count: ")))
-
-    start_time = time.time()
 
     search_queries = generate_search_queries(client, prompt, small_model)
 
@@ -237,8 +236,14 @@ def answer_search(
             final_output += content
             print(colors.green(content), end="", flush=True)
 
-    runtime = time.time() - start_time
+    return f"""
+PROMPT:
+``````````
+{mega_prompt}
+``````````
 
-    print(colors.red(f"\n{colors.underline(f'Runtime:')} {runtime} seconds"))
-
-    return final_output
+RESPONSE:
+``````````
+{final_output}
+``````````
+"""
