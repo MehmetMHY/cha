@@ -12,6 +12,7 @@ SAVE_CHAT_HISTORY = "!s"
 EXIT_STRING_KEY = "!e"
 HELP_PRINT_OPTIONS_KEY = "!h"
 LOAD_MESSAGE_CONTENT = "!l"
+RUN_ANSWER_FEATURE = "!a"
 
 CLA_MAX_TOKENS = 1024
 
@@ -64,10 +65,32 @@ REQUEST_DEFAULT_HEADERS = {
 }
 
 REQUEST_DEFAULT_TIMEOUT_SECONDS = 10
-
 REQUEST_DEFAULT_RETRY_COUNT = 1
-
 REQUEST_BACKOFF_FACTOR = 0.1
+
+# answer feature config
+DEFAULT_SEARCH_BIG_MODEL = "gpt-4o"
+DEFAULT_SEARCH_SMALL_MODEL = "gpt-4o-mini"
+DEFAULT_SEARCH_FRESHNESS_STATE = "none"
+DEFAULT_SEARCH_MAX_TOKEN_LIMIT = 120_000
+DEFAULT_SEARCH_RESULT_COUNT = 5
+DEFAULT_SEARCH_TIME_DELAY_SECONDS = 1
+DEFAULT_GEN_SEARCH_QUERY_COUNT = 3
+VALID_FRESHNESS_IDS = {
+    "pd": "past day",
+    "pw": "past week",
+    "pm": "past month",
+    "py": "past year",
+    "none": "all time",
+}
+SEARCH_FILTER_OPTIONS = {
+    "web": "web results",
+    "news": "news articles",
+    "query": "related queries",
+    "infobox": "information boxes",
+    "discussions": "discussion forums",
+    "none": "all filter options",
+}
 
 # NOTE: do NOT modify the code below!
 # NOTE: the logic below allows you to set your only config file path and load it in
