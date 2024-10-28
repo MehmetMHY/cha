@@ -72,7 +72,12 @@ Also note, today's date in ISO 8601 format is: {datetime.now(timezone.utc).isofo
     return completion.choices[0].message.parsed.queries
 
 
-def brave_search(search_input, count=3, freshness="none"):
+def brave_search(
+    search_input,
+    count=3,
+    freshness="none",
+    result_filter="web,news,query,infobox,discussions",
+):
     # setup Brave API key: https://api.search.brave.com/app/dashboard
 
     if freshness not in list(config.VALID_FRESHNESS_IDS.keys()):
@@ -107,7 +112,7 @@ def brave_search(search_input, count=3, freshness="none"):
             # (optional) specifies if spellcheck should be applied
             "spellcheck": 1,
             # (optional) a comma-delimited string of result types to include
-            "result_filter": "web,news,query,infobox,discussions",
+            "result_filter": result_filter,
         },
     )
 
@@ -141,7 +146,7 @@ def answer_search(
     small_model=config.DEFAULT_SEARCH_SMALL_MODEL,
     result_count=config.DEFAULT_SEARCH_RESULT_COUNT,
     freshness_state=config.DEFAULT_SEARCH_FRESHNESS_STATE,
-    time_delay_seconds=config.DEFAULT_SEARCH_TIME_DELAY,
+    time_delay_seconds=config.DEFAULT_SEARCH_TIME_DELAY_SECONDS,
     token_limit=config.DEFAULT_SEARCH_MAX_TOKEN_LIMIT,
     user_input_mode=False,
 ):
@@ -149,7 +154,34 @@ def answer_search(
         print(
             colors.red(colors.underline(f"Answer Feature - Answer Prompt via Sources"))
         )
+
         prompt = utils.safe_input(colors.blue(f"QUESTION: "))
+
+        print(
+            colors.blue(
+                "FILTER OPTIONS:\n"
+                + "\n".join(
+                    f"- {k} = {config.SEARCH_FILTER_OPTIONS[k]}"
+                    for k in config.SEARCH_FILTER_OPTIONS
+                )
+            )
+        )
+        filters = ",".join(
+            [
+                f
+                for f in input(colors.blue("> ")).replace(" ", ",").split(",")
+                if f in config.SEARCH_FILTER_OPTIONS
+            ]
+        ).lower()
+        if "none" in filters or len(filters) == 0:
+            filters = ",".join(
+                [
+                    key
+                    for key, value in config.SEARCH_FILTER_OPTIONS.items()
+                    if key != "none"
+                ]
+            )
+
         freshness_state = utils.safe_input(
             colors.blue(
                 "FRESHNESS:"
@@ -160,6 +192,8 @@ def answer_search(
                 + "\n> "
             )
         )
+        if len(freshness_state) == 0:
+            freshness_state = "none"
 
     search_queries = generate_search_queries(client, prompt, small_model)
 
@@ -170,7 +204,7 @@ def answer_search(
     search_results = []
     urls = []
     for query in search_queries:
-        results = brave_search(query, result_count, freshness_state)
+        results = brave_search(query, result_count, freshness_state, filters)
 
         # TODO: this is here to prevent us from surpassing Brave's query limit
         time.sleep(time_delay_seconds)

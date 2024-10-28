@@ -65,9 +65,7 @@ REQUEST_DEFAULT_HEADERS = {
 }
 
 REQUEST_DEFAULT_TIMEOUT_SECONDS = 10
-
 REQUEST_DEFAULT_RETRY_COUNT = 1
-
 REQUEST_BACKOFF_FACTOR = 0.1
 
 # answer feature config
@@ -76,7 +74,7 @@ DEFAULT_SEARCH_SMALL_MODEL = "gpt-4o-mini"
 DEFAULT_SEARCH_FRESHNESS_STATE = "none"
 DEFAULT_SEARCH_MAX_TOKEN_LIMIT = 120_000
 DEFAULT_SEARCH_RESULT_COUNT = 5
-DEFAULT_SEARCH_TIME_DELAY = 1
+DEFAULT_SEARCH_TIME_DELAY_SECONDS = 1
 DEFAULT_GEN_SEARCH_QUERY_COUNT = 3
 VALID_FRESHNESS_IDS = {
     "pd": "past day",
@@ -84,6 +82,14 @@ VALID_FRESHNESS_IDS = {
     "pm": "past month",
     "py": "past year",
     "none": "all time",
+}
+SEARCH_FILTER_OPTIONS = {
+    "web": "web results",
+    "news": "news articles",
+    "query": "related queries",
+    "infobox": "information boxes",
+    "discussions": "discussion forums",
+    "none": "all filter options",
 }
 
 # NOTE: do NOT modify the code below!
