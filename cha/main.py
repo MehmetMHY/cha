@@ -7,7 +7,7 @@ try:
     import os
 
     from openai import OpenAI
-    from cha import scraper, colors, image, utils, config
+    from cha import scraper, colors, image, utils, config, answer
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
@@ -49,7 +49,8 @@ def title_print(selected_model):
  - '{config.IMG_GEN_MODE}' for image generation
  - '{config.SAVE_CHAT_HISTORY}' to save chat history
  - '{config.LOAD_MESSAGE_CONTENT}' to load a file into your prompt
- - '{config.HELP_PRINT_OPTIONS_KEY}' list all options"""
+ - '{config.HELP_PRINT_OPTIONS_KEY}' list all options
+ - '{config.RUN_ANSWER_FEATURE}' run answer feature"""
         ).strip()
     )
 
@@ -188,6 +189,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 )
                 if du_user.lower() == "y" or du_user.lower() == "yes":
                     message = scraper.scraped_prompt(message)
+
+            if message == config.RUN_ANSWER_FEATURE:
+                utils.check_env_variable(
+                    "BRAVE_API_KEY", "https://api.search.brave.com/app/dashboard"
+                )
+                message = answer.answer_search(client=client, user_input_mode=True)
+                messages.append({"role": "user", "content": message})
+                continue
 
             if len(message) == 0:
                 raise KeyboardInterrupt

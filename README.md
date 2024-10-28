@@ -14,6 +14,7 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 - **Interactive and Non-interactive Modes**: Tailor your experience.
 - **Image Generation**: Generate custom images using OpenAI's image models.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
+- **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution
 
 ## Getting Started
 
@@ -37,12 +38,16 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 
    - [OpenAI API key](https://platform.openai.com/api-keys)
    - [Anthropic API key](https://www.anthropic.com/)
+   - (optional) [Brave Search API key](https://brave.com/search/api/)
 
 2. **Setup your .env file**: Create a `.env` file in the root directory and add your keys
 
    ```bash
    export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
    export ANTHROPIC_API_KEY="YOUR_ANTHROPIC_API_KEY"
+
+   # (optional) this key is only needed if you want to use the Answer-Search feature
+   export BRAVE_API_KEY="YOUR_BRAVE_SEARCH_API_KEY"
    ```
 
 3. **Apply the environment variables**
