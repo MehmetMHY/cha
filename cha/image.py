@@ -47,7 +47,7 @@ def pick_img_model(client):
         response = client.models.list()
         if not response.data:
             print(colors.red("No models available. Exiting..."))
-            sys.exit(1)
+            return None
 
         openai_models = [
             (model.id, model.created) for model in response.data if "dall" in model.id
@@ -71,7 +71,7 @@ def pick_img_model(client):
 
     except Exception as e:
         print(colors.red(f"An error occurred while fetching models: {e}"))
-        sys.exit(1)
+        return None
 
 
 def get_user_input(
@@ -122,6 +122,8 @@ def get_user_open(filepaths):
 def gen_image(client):
     try:
         model = pick_img_model(client)
+        if model == None:
+            raise Exception(f"Failed to fetch and/or pick image generation model")
         prompt = get_user_input(colors.blue("Prompt: "))
         quality = get_user_input(
             colors.blue("Quality (standard/hd): "),
@@ -146,7 +148,7 @@ def gen_image(client):
                 f"\nError occurred while getting user input for image generation"
             )
         )
-        sys.exit(1)
+        return
 
     try:
         params = {
