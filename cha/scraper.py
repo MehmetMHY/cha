@@ -45,6 +45,12 @@ def process_url(url):
             content = scrape_pdf_url(url)
         elif youtube.valid_twitter_link(url):
             content = youtube.twitter_video_scraper(url)
+        elif youtube.valid_linkedin_link(url):
+            content = {"post": remove_html(basic_scraper(url))}
+            try:
+                content["video_content"] = youtube.linkedin_video_scraper(url)
+            except:
+                pass
         else:
             content = remove_html(basic_scraper(url))
     except:
