@@ -76,13 +76,15 @@ def brave_search(
     search_input,
     count=3,
     freshness="none",
-    result_filter="web,news,query,infobox,discussions",
+    result_filter=None,
 ):
-    # setup Brave API key: https://api.search.brave.com/app/dashboard
-
     if freshness not in list(config.VALID_FRESHNESS_IDS.keys()):
         raise Exception(f"Freshness '{freshness}' is NOT a valid freshness id")
 
+    if result_filter == None or type(result_filter) != str:
+        result_filter = "web,news,query,infobox,discussions"
+
+    # setup Brave API key: https://api.search.brave.com/app/dashboard
     response = requests.get(
         "https://api.search.brave.com/res/v1/web/search",
         headers={
@@ -151,15 +153,13 @@ def answer_search(
     user_input_mode=False,
 ):
     if user_input_mode or prompt == None:
-        print(
-            colors.red(colors.underline(f"Answer Feature - Answer Prompt via Sources"))
-        )
+        print(colors.red(colors.underline(f"Answer Search - User Input")))
 
-        prompt = utils.safe_input(colors.blue(f"QUESTION: "))
+        prompt = utils.safe_input(colors.blue(f"Question: "))
 
         print(
             colors.blue(
-                "FILTER OPTIONS:\n"
+                "Filter Options:\n"
                 + "\n".join(
                     f"- {k} = {config.SEARCH_FILTER_OPTIONS[k]}"
                     for k in config.SEARCH_FILTER_OPTIONS
@@ -184,7 +184,7 @@ def answer_search(
 
         freshness_state = utils.safe_input(
             colors.blue(
-                "FRESHNESS:"
+                "Freshness:"
                 + "".join(
                     f"\n- {f} = {config.VALID_FRESHNESS_IDS[f]}"
                     for f in config.VALID_FRESHNESS_IDS

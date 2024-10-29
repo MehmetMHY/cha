@@ -16,6 +16,10 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution
 
+## Vision
+
+Cha is a simple tool that provides you with access to powerful AI models in your terminal while offering as many useful features as possible without getting too complicated. Think of it like Vim versus Emacs, focusing on simplicity rather than becoming its own ecosystem/environment.
+
 ## Getting Started
 
 ### Installation

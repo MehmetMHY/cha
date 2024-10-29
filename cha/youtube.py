@@ -94,7 +94,7 @@ def valid_yt_link(link):
         return False
     if "v=" not in link:
         return False
-    if "http" not in link:
+    if "https" not in link:
         return False
     return True
 

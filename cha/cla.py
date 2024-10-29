@@ -30,7 +30,12 @@ def get_anthropic_models():
                 if "Model" in data and "Anthropic API" in data:
                     if not any(
                         phrase in data["Anthropic API"].lower()
-                        for phrase in ["coming soon", "later this year"]
+                        for phrase in [
+                            "coming soon",
+                            "later this year",
+                            "later this month",
+                            "later this week",
+                        ]
                     ):
                         output.append(
                             {"name": data["Model"], "model": data["Anthropic API"]}
