@@ -83,7 +83,8 @@ def yt_dlp_youtube_transcript_extractor(url, lang="en"):
         return processed_content
 
     except Exception as e:
-        print(colors.red(f"yt-dlp scraper failed: {e}"))
+        # # TODO: a better solution is needed here
+        # print(colors.red(f"yt-dlp scraper failed: {e}"))
         return None
 
 
@@ -203,6 +204,38 @@ def twitter_video_scraper(url):
             "fulltitle": meta_data.get("fulltitle"),
             "duration_string": meta_data.get("duration_string"),
             "upload_date": meta_data.get("upload_date"),
+            "epoch": meta_data.get("epoch"),
+            "filename": meta_data.get("filename"),
+            "transcript": transcript,
+        }
+
+
+def valid_linkedin_link(url):
+    if url.startswith("https://www.linkedin.com"):
+        return True
+    return False
+
+
+def linkedin_video_scraper(url):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        get_meta_data = executor.submit(video_metadata, url)
+        get_transcript = executor.submit(yt_dlp_youtube_transcript_extractor, url)
+
+        meta_data = get_meta_data.result()
+        transcript = get_transcript.result()
+
+        return {
+            "platform": "LinkedIn",
+            "title": meta_data.get("title"),
+            "description": meta_data.get("description"),
+            "like_count": meta_data.get("like_count"),
+            "display_id": meta_data.get("display_id"),
+            "webpage_url": meta_data.get("webpage_url"),
+            "original_url": meta_data.get("original_url"),
+            "webpage_url_domain": meta_data.get("webpage_url_domain"),
+            "extractor": meta_data.get("extractor"),
+            "extractor_key": meta_data.get("extractor_key"),
+            "fulltitle": meta_data.get("fulltitle"),
             "epoch": meta_data.get("epoch"),
             "filename": meta_data.get("filename"),
             "transcript": transcript,
