@@ -128,10 +128,6 @@ For those interested in contributing or experimenting with Cha:
 
 Any contribution is always welcomed! Please feel free to submit issues or pull requests for any bugs or features.
 
-## Changelog
-
-For a detailed list of changes, please see the [CHANGELOG.md](./CHANGELOG.md).
-
 ## License
 
 Cha is licensed under the MIT License. See [LICENSE](./LICENSE) for more details.
