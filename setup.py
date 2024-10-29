@@ -5,7 +5,7 @@ setup(
     version="0.8.1",
     packages=find_packages(),
     license="MIT",
-    description="A simple CLI chat tool for easy interaction with OpenAI's LLM models",
+    description="A simple CLI tool for easily interacting with powerful AI models",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
