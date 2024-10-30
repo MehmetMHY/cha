@@ -1,6 +1,5 @@
 # links
 OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
-ANTHROPIC_DOCS_LINK = "https://docs.anthropic.com/en/api/getting-started"
 
 # main chat short config
 INITIAL_PROMPT = "You are a helpful assistant who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details"
@@ -14,11 +13,8 @@ HELP_PRINT_OPTIONS_KEY = "!h"
 LOAD_MESSAGE_CONTENT = "!l"
 RUN_ANSWER_FEATURE = "!a"
 
-CLA_MAX_TOKENS = 1024
-
 # NOTE: last updated on 10-17-2024
 CHA_DEFAULT_MODEL = "gpt-4o"
-CLA_DEFAULT_MODEL = "claude-3-5-sonnet-20240620"
 
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
 OPENAI_MODELS_TO_KEEP = ["gpt"]
