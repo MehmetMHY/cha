@@ -126,108 +126,6 @@ def video_transcript(url):
     return output
 
 
-def youtube_scraper(url):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        get_meta_data = executor.submit(video_metadata, url)
-        get_transcript = executor.submit(video_transcript, url)
-
-        meta_data = get_meta_data.result()
-        transcript = get_transcript.result()
-
-        return {
-            "title": meta_data.get("title"),
-            # NOTE: removes urls from description
-            "description": re.sub(
-                r"https?://\S+|www\.\S+", "", meta_data.get("description", "")
-            ),
-            "duration": meta_data.get("duration"),
-            "view_count": meta_data.get("view_count"),
-            "like_count": meta_data.get("like_count"),
-            "channel": meta_data.get("channel"),
-            "channel_follower_count": meta_data.get("channel_follower_count"),
-            "uploader": meta_data.get("uploader"),
-            "upload_date": meta_data.get("upload_date"),
-            "epoch": meta_data.get("epoch"),
-            "fulltitle": meta_data.get("fulltitle"),
-            "transcript": transcript,
-        }
-
-
-def twitter_scraper(url):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        get_meta_data = executor.submit(video_metadata, url)
-        get_transcript = executor.submit(yt_dlp_transcript_extractor, url)
-
-        meta_data = get_meta_data.result()
-        transcript = get_transcript.result()
-
-        return {
-            "platform": "Twitter/X",
-            "title": meta_data.get("title"),
-            "description": meta_data.get("description"),
-            "uploader": meta_data.get("uploader"),
-            "timestamp": meta_data.get("timestamp"),
-            "channel_id": meta_data.get("channel_id"),
-            "uploader_id": meta_data.get("uploader_id"),
-            "uploader_url": meta_data.get("uploader_url"),
-            "like_count": meta_data.get("like_count"),
-            "repost_count": meta_data.get("repost_count"),
-            "comment_count": meta_data.get("comment_count"),
-            "duration": meta_data.get("duration"),
-            "display_id": meta_data.get("display_id"),
-            "webpage_url": meta_data.get("webpage_url"),
-            "original_url": meta_data.get("original_url"),
-            "webpage_url_domain": meta_data.get("webpage_url_domain"),
-            "extractor": meta_data.get("extractor"),
-            "extractor_key": meta_data.get("extractor_key"),
-            "fulltitle": meta_data.get("fulltitle"),
-            "duration_string": meta_data.get("duration_string"),
-            "upload_date": meta_data.get("upload_date"),
-            "epoch": meta_data.get("epoch"),
-            "filename": meta_data.get("filename"),
-            "transcript": transcript,
-        }
-
-
-def linkedin_scraper(url):
-    try:
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            get_meta_data = executor.submit(video_metadata, url)
-            get_transcript = executor.submit(yt_dlp_transcript_extractor, url)
-
-            meta_data = get_meta_data.result()
-            transcript = get_transcript.result()
-
-            video_content = {
-                "platform": "LinkedIn",
-                "title": meta_data.get("title"),
-                "description": meta_data.get("description"),
-                "like_count": meta_data.get("like_count"),
-                "display_id": meta_data.get("display_id"),
-                "webpage_url": meta_data.get("webpage_url"),
-                "original_url": meta_data.get("original_url"),
-                "webpage_url_domain": meta_data.get("webpage_url_domain"),
-                "extractor": meta_data.get("extractor"),
-                "extractor_key": meta_data.get("extractor_key"),
-                "fulltitle": meta_data.get("fulltitle"),
-                "epoch": meta_data.get("epoch"),
-                "filename": meta_data.get("filename"),
-                "transcript": transcript,
-            }
-    except:
-        video_content = None
-
-    try:
-        content = remove_html(basic_scraper(url))
-    except:
-        content = None
-
-    return {
-        "post": content,
-        "video": video_content,
-    }
-
-
 def extract_urls(text):
     url_pattern = r"https?://(?:www\.)?\S+"
     urls = re.findall(url_pattern, text)
@@ -356,3 +254,105 @@ def scrape_pdf_url(url):
         raise Exception(f"URL {url} is NOT a valid PDF file")
     except Exception as e:
         print(colors.red(f"Failed to load PDF URL {url} due to {e}"))
+
+
+def youtube_scraper(url):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        get_meta_data = executor.submit(video_metadata, url)
+        get_transcript = executor.submit(video_transcript, url)
+
+        meta_data = get_meta_data.result()
+        transcript = get_transcript.result()
+
+        return {
+            "title": meta_data.get("title"),
+            # NOTE: removes urls from description
+            "description": re.sub(
+                r"https?://\S+|www\.\S+", "", meta_data.get("description", "")
+            ),
+            "duration": meta_data.get("duration"),
+            "view_count": meta_data.get("view_count"),
+            "like_count": meta_data.get("like_count"),
+            "channel": meta_data.get("channel"),
+            "channel_follower_count": meta_data.get("channel_follower_count"),
+            "uploader": meta_data.get("uploader"),
+            "upload_date": meta_data.get("upload_date"),
+            "epoch": meta_data.get("epoch"),
+            "fulltitle": meta_data.get("fulltitle"),
+            "transcript": transcript,
+        }
+
+
+def twitter_scraper(url):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        get_meta_data = executor.submit(video_metadata, url)
+        get_transcript = executor.submit(yt_dlp_transcript_extractor, url)
+
+        meta_data = get_meta_data.result()
+        transcript = get_transcript.result()
+
+        return {
+            "platform": "Twitter/X",
+            "title": meta_data.get("title"),
+            "description": meta_data.get("description"),
+            "uploader": meta_data.get("uploader"),
+            "timestamp": meta_data.get("timestamp"),
+            "channel_id": meta_data.get("channel_id"),
+            "uploader_id": meta_data.get("uploader_id"),
+            "uploader_url": meta_data.get("uploader_url"),
+            "like_count": meta_data.get("like_count"),
+            "repost_count": meta_data.get("repost_count"),
+            "comment_count": meta_data.get("comment_count"),
+            "duration": meta_data.get("duration"),
+            "display_id": meta_data.get("display_id"),
+            "webpage_url": meta_data.get("webpage_url"),
+            "original_url": meta_data.get("original_url"),
+            "webpage_url_domain": meta_data.get("webpage_url_domain"),
+            "extractor": meta_data.get("extractor"),
+            "extractor_key": meta_data.get("extractor_key"),
+            "fulltitle": meta_data.get("fulltitle"),
+            "duration_string": meta_data.get("duration_string"),
+            "upload_date": meta_data.get("upload_date"),
+            "epoch": meta_data.get("epoch"),
+            "filename": meta_data.get("filename"),
+            "transcript": transcript,
+        }
+
+
+def linkedin_scraper(url):
+    try:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            get_meta_data = executor.submit(video_metadata, url)
+            get_transcript = executor.submit(yt_dlp_transcript_extractor, url)
+
+            meta_data = get_meta_data.result()
+            transcript = get_transcript.result()
+
+            video_content = {
+                "platform": "LinkedIn",
+                "title": meta_data.get("title"),
+                "description": meta_data.get("description"),
+                "like_count": meta_data.get("like_count"),
+                "display_id": meta_data.get("display_id"),
+                "webpage_url": meta_data.get("webpage_url"),
+                "original_url": meta_data.get("original_url"),
+                "webpage_url_domain": meta_data.get("webpage_url_domain"),
+                "extractor": meta_data.get("extractor"),
+                "extractor_key": meta_data.get("extractor_key"),
+                "fulltitle": meta_data.get("fulltitle"),
+                "epoch": meta_data.get("epoch"),
+                "filename": meta_data.get("filename"),
+                "transcript": transcript,
+            }
+    except:
+        video_content = None
+
+    try:
+        content = remove_html(basic_scraper(url))
+    except:
+        content = None
+
+    return {
+        "post": content,
+        "video": video_content,
+    }
