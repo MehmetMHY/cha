@@ -148,7 +148,7 @@ def gen_image(client):
                 f"\nError occurred while getting user input for image generation"
             )
         )
-        return
+        return 1
 
     try:
         params = {
@@ -180,8 +180,11 @@ def gen_image(client):
             img.save(img_filename, "PNG", pnginfo=metadata)
 
         print(colors.green(f"Created Image:"), img_filename)
-        print(colors.yellow(f"To View MetaData:"), "cha -igmd <image_path>")
+        print(colors.yellow(f"To View MetaData:"), "cha -i <image_path>")
 
         get_user_open([img_filename])
     except Exception as e:
         print(colors.red(f"Failed to generate image: {e}"))
+        return 1
+
+    return 0
