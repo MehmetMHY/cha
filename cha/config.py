@@ -79,14 +79,7 @@ VALID_FRESHNESS_IDS = {
     "py": "past year",
     "none": "all time",
 }
-SEARCH_FILTER_OPTIONS = {
-    "web": "web results",
-    "news": "news articles",
-    "query": "related queries",
-    "infobox": "information boxes",
-    "discussions": "discussion forums",
-    "none": "all filter options",
-}
+SEARCH_FILTER_OPTIONS = ["web", "news", "query", "infobox", "discussions", "none"]
 
 # NOTE: do NOT modify the code below!
 # NOTE: the logic below allows you to set your only config file path and load it in
