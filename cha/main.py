@@ -275,7 +275,12 @@ def cli():
             help="Non-interactive mode, feed a string into the model",
         )
         parser.add_argument(
-            "-igmd", "--ig_metadata", help="Print the meta data for generated images"
+            "-i",
+            "--image",
+            nargs="?",
+            const=True,
+            default=False,
+            help="Generate image (flag only) or print the metadata for generated images (provide filepath)",
         )
         parser.add_argument(
             "-t",
@@ -286,9 +291,11 @@ def cli():
 
         args = parser.parse_args()
 
-        if args.ig_metadata:
-            filepath = str(args.ig_metadata)
-            status = image.display_metadata(filepath)
+        if args.image:
+            if args.image == True:
+                status = image.gen_image(client)
+            else:
+                status = image.display_metadata(str(args.image))
             sys.exit(1 if status is None else 0)
 
         title_print_value = args.print_title

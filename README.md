@@ -68,12 +68,14 @@ cha
 Both commands support and accept additional parameters. Here are all of their respected help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-igmd IG_METADATA] [-t] [string ...]
+usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t]
+           [string ...]
 
 Chat with an OpenAI GPT model.
 
 positional arguments:
-  string                Non-interactive mode, feed a string into the model
+  string                Non-interactive mode, feed a string into the
+                        model
 
 options:
   -h, --help            show this help message and exit
@@ -81,9 +83,11 @@ options:
   -m MODEL, --model MODEL
                         Model to use for chatting
   -sm, --select_model   Select one model from OpenAI's supported models
-  -f FILE, --file FILE  Filepath to file that will be sent to the model (text only)
-  -igmd IG_METADATA, --ig_metadata IG_METADATA
-                        Print the meta data for generated images
+  -f FILE, --file FILE  Filepath to file that will be sent to the model
+                        (text only)
+  -i [IMAGE], --image [IMAGE]
+                        Generate image (flag only) or print the metadata
+                        for generated images (provide filepath)
   -t, --token_count     Count tokens for the input file or string
 ```
 
