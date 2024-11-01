@@ -157,30 +157,25 @@ def answer_search(
 
         prompt = utils.safe_input(colors.blue(f"Question: "))
 
-        print(
-            colors.blue(
-                "Filter Options:\n"
-                + "\n".join(
-                    f"- {k} = {config.SEARCH_FILTER_OPTIONS[k]}"
-                    for k in config.SEARCH_FILTER_OPTIONS
-                )
-            )
-        )
         filters = ",".join(
-            [
-                f
-                for f in input(colors.blue("> ")).replace(" ", ",").split(",")
-                if f in config.SEARCH_FILTER_OPTIONS
-            ]
-        ).lower()
-        if "none" in filters or len(filters) == 0:
-            filters = ",".join(
-                [
-                    key
-                    for key, value in config.SEARCH_FILTER_OPTIONS.items()
-                    if key != "none"
-                ]
+            f
+            for f in (
+                input(
+                    colors.blue(
+                        "Filter Options:\n- "
+                        + "\n- ".join(
+                            ", ".join(config.SEARCH_FILTER_OPTIONS[i : i + 3])
+                            for i in range(0, len(config.SEARCH_FILTER_OPTIONS), 3)
+                        )
+                        + "\n> "
+                    )
+                )
+                .replace(" ", ",")
+                .lower()
+                .split(",")
             )
+            if f in config.SEARCH_FILTER_OPTIONS
+        ) or ",".join(f for f in config.SEARCH_FILTER_OPTIONS if f != "none")
 
         freshness_state = utils.safe_input(
             colors.blue(
