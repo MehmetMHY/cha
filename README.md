@@ -1,12 +1,10 @@
 # Cha
 
-<p align="center">
-  <img src="https://mehmetmhy.com/cha_demo.gif" style="width: 100%;">
-</p>
-
 ## Overview
 
 Cha is an open-source command-line tool that simplifies interactions with AI models from OpenAI. It allows users to efficiently engage with powerful language models directly from their terminal, enhancing development workflows.
+
+[Watch the demo](https://mehmetmhy.com/cha_demo.gif) to see Cha in action!
 
 ## Features
 
