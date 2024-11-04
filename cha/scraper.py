@@ -156,9 +156,9 @@ def basic_scraper(url):
 def format_type(url):
     if url.startswith("https://www.linkedin.com"):
         return "linkedin"
-    if url.startswith("https://www.twitter.com") and url.startswith("https://x.com"):
+    if url.startswith("https://www.twitter.com") or url.startswith("https://x.com"):
         return "twitter"
-    if url.startswith("https://www.youtube.com/watch?v"):
+    if url.startswith("https://www.youtube.com"):
         return "youtube"
     if (
         url.endswith(".pdf")
