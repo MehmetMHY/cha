@@ -339,20 +339,28 @@ def cli():
         if args.select_model:
             openai_models = list_models()
             print(colors.yellow("Available OpenAI Models:"))
-            max_length = max(len(model_id) for model_id, _ in openai_models)
+
             openai_models = sorted(openai_models, key=lambda x: x[1])
-            for model_id, created in openai_models:
-                formatted_model_id = model_id.ljust(max_length)
+            max_index_length = len(str(len(openai_models)))
+            max_model_id_length = max(len(model_id) for model_id, _ in openai_models)
+            for index, (model_id, created) in enumerate(openai_models, start=1):
+                padded_index = str(index).rjust(max_index_length)
+                padded_model_id = model_id.ljust(max_model_id_length)
                 print(
                     colors.yellow(
-                        f"   > {formatted_model_id}   {utils.simple_date(created)}"
+                        f"   {padded_index}. {padded_model_id}   {utils.simple_date(created)}"
                     )
                 )
-            selected_model = utils.safe_input(
-                colors.blue("Which model do you want to use? ")
+
+            selection = utils.safe_input(
+                colors.blue(f"Select a model (1-{len(openai_models)}): ")
             )
-            if selected_model not in [model[0] for model in openai_models]:
-                print(colors.red("Invalid model selected. Exiting."))
+            if selection.isdigit():
+                selection = int(selection) - 1
+                if 0 <= selection < len(openai_models):
+                    selected_model = openai_models[selection][0]
+            else:
+                print(colors.red("Invalid number selected. Exiting."))
                 return
 
         if args.string and args.file:
