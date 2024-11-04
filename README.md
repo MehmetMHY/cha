@@ -18,7 +18,7 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 
 ## Vision
 
-Cha is a simple tool that provides you with access to powerful AI models in your terminal while offering as many useful features as possible without getting too complicated. Think of it like Vim versus Emacs, focusing on simplicity rather than becoming its own ecosystem/environment.
+Cha is a simple, lightweight CLI tool that provides access to powerful AI models directly from the terminal. Think of it like Vim versus Emacs: Cha focuses on simplicity and versatility, delivering essential functionality without overwhelming complexity. It's designed to fit seamlessly into your workflow, helping to reduce the need for developers to leave their terminals, making AI access and general knowledge querying straightforward and efficient.
 
 ## Getting Started
 
