@@ -191,11 +191,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     message = scraper.scraped_prompt(message)
 
             if message == config.RUN_ANSWER_FEATURE:
-                utils.check_env_variable(
-                    "BRAVE_API_KEY", "https://api.search.brave.com/app/dashboard"
-                )
-                message = answer.answer_search(client=client, user_input_mode=True)
-                messages.append({"role": "user", "content": message})
+                try:
+                    utils.check_env_variable(
+                        "BRAVE_API_KEY", "https://api.search.brave.com/app/dashboard"
+                    )
+                    message = answer.answer_search(client=client, user_input_mode=True)
+                    messages.append({"role": "user", "content": message})
+                except (KeyboardInterrupt, EOFError, SystemExit):
+                    pass
                 continue
 
             if len(message) == 0:
