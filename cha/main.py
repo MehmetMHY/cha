@@ -6,6 +6,7 @@ try:
     import itertools
     import threading
     import time
+    import re
     import os
 
     from openai import OpenAI
@@ -15,13 +16,13 @@ except (KeyboardInterrupt, EOFError):
 
 utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
 
-# global, in memory, variables
-CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
-loading_active = False
-
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
 )
+
+# global, in memory, variables
+CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
+loading_active = False
 
 
 def list_models():
@@ -101,14 +102,13 @@ CONTENT:
 
 
 def is_o1_model(model_name):
-    """Check if the model is an o1 model."""
-    return model_name.startswith("o1-")
+    return re.match(r"^o\d+-", model_name) is not None
 
 
 def loading_animation(text="Thinking"):
     spinner = itertools.cycle(["-", "\\", "|", "/"])
     while loading_active:
-        sys.stdout.write(colors.yellow(f"\r{text} {next(spinner)}"))
+        sys.stdout.write(colors.green(f"\r{text} {next(spinner)}"))
         sys.stdout.flush()
         time.sleep(0.1)
     # clear line without moving to the next line
@@ -211,10 +211,16 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             detected_urls = len(scraper.extract_urls(message))
             if detected_urls > 0:
+                # NOTE: determine whether scraping should happen, and then clear the input message afterwards
                 du_print = f"{detected_urls} URL{'s' if detected_urls > 1 else ''}"
-                du_user = utils.safe_input(
-                    colors.red(f"{du_print} detected, continue web scraping (y/n)? ")
-                )
+                prompt = f"{du_print} detected, continue web scraping (y/n)? "
+                sys.stdout.write(colors.red(prompt))
+                sys.stdout.flush()
+                du_user = utils.safe_input().strip()
+                sys.stdout.write("\033[F")  # move cursor up one line
+                sys.stdout.write("\033[K")  # clear the line
+                sys.stdout.flush()
+
                 if du_user.lower() == "y" or du_user.lower() == "yes":
                     # start loading animation
                     loading_active = True
