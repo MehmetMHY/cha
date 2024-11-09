@@ -3,8 +3,6 @@ import sys
 # NOTE: this exists to prevent a ugly print from showing if some cancels quickly
 try:
     import argparse
-    import itertools
-    import threading
     import time
     import re
     import os

@@ -135,6 +135,52 @@ VIDEO_SCRAPER_LINKEDIN_KEY_VALUES = [
     "transcript",
 ]
 
+HIDE_CURSOR = "\033[?25l"
+SHOW_CURSOR = "\033[?25h"
+
+# https://stackoverflow.com/questions/2685435/cooler-ascii-spinners
+LOADING_ANIMATIONS = {
+    "basic": ["|", "/", "-", "\\"],
+    "vertical_bar": [
+        "▉",
+        "▊",
+        "▋",
+        "▌",
+        "▍",
+        "▎",
+        "▏",
+        "▎",
+        "▍",
+        "▌",
+        "▋",
+        "▊",
+        "▉",
+    ],
+    "dots": ["▖", "▘", "▝", "▗"],
+    "triangles": ["◢", "◣", "◤", "◥"],
+    "rectangles": ["◰", "◳", "◲", "◱"],
+    "circles": ["◴", "◷", "◶", "◵"],
+    "halfcircles": ["◐", "◓", "◑", "◒"],
+    "braille": [
+        "⣾",
+        "⣽",
+        "⣻",
+        "⢿",
+        "⡿",
+        "⣟",
+        "⣯",
+        "⣷",
+        "⠁",
+        "⠂",
+        "⠄",
+        "⡀",
+        "⢀",
+        "⠠",
+        "⠐",
+        "⠈",
+    ],
+}
+
 # NOTE: do NOT modify the code below!
 # NOTE: the logic below allows you to set your only config file path and load it in
 
