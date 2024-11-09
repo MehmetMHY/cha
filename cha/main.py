@@ -3,6 +3,8 @@ import sys
 # NOTE: this exists to prevent a ugly print from showing if some cancels quickly
 try:
     import argparse
+    import itertools
+    import threading
     import time
     import os
 
@@ -15,6 +17,7 @@ utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
 
 # global, in memory, variables
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
+loading_active = False
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -97,8 +100,29 @@ CONTENT:
     return output
 
 
+def is_o1_model(model_name):
+    """Check if the model is an o1 model."""
+    return model_name.startswith("o1-")
+
+
+def loading_animation(text="Thinking"):
+    spinner = itertools.cycle(["-", "\\", "|", "/"])
+    while loading_active:
+        sys.stdout.write(colors.yellow(f"\r{text} {next(spinner)}"))
+        sys.stdout.flush()
+        time.sleep(0.1)
+    # clear line without moving to the next line
+    sys.stdout.write("\r" + " " * (len(text) + 10) + "\r")
+    sys.stdout.flush()
+
+
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
-    messages = [{"role": "system", "content": config.INITIAL_PROMPT}]
+    global loading_active
+
+    is_o1 = is_o1_model(selected_model)
+
+    # NOTE: for o1 models don't accept system prompts
+    messages = [] if is_o1 else [{"role": "system", "content": config.INITIAL_PROMPT}]
     multi_line_input = False
 
     if filepath or content_string:
@@ -151,7 +175,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
                 break
             elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
-                messages = [{"role": "system", "content": config.INITIAL_PROMPT}]
+                messages = (
+                    []
+                    if is_o1
+                    else [{"role": "system", "content": config.INITIAL_PROMPT}]
+                )
                 print(colors.yellow("Chat history cleared."))
                 continue
 
@@ -188,7 +216,19 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     colors.red(f"{du_print} detected, continue web scraping (y/n)? ")
                 )
                 if du_user.lower() == "y" or du_user.lower() == "yes":
-                    message = scraper.scraped_prompt(message)
+                    # start loading animation
+                    loading_active = True
+                    loading_thread = threading.Thread(
+                        target=loading_animation, args=("Scraping URLs",)
+                    )
+                    loading_thread.daemon = True
+                    loading_thread.start()
+
+                    try:
+                        message = scraper.scraped_prompt(message)
+                    finally:
+                        loading_active = False
+                        loading_thread.join()
 
             if message == config.RUN_ANSWER_FEATURE:
                 try:
@@ -213,30 +253,52 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
         }
 
         try:
-            response = client.chat.completions.create(
-                model=selected_model, messages=messages, stream=True
-            )
+            if is_o1:
+                # start loading animation
+                loading_active = True
+                loading_thread = threading.Thread(
+                    target=loading_animation, args=("Thinking",)
+                )
+                loading_thread.daemon = True
+                loading_thread.start()
 
-            full_response = ""
+                # NOTE: o1 models don't support streaming
+                response = client.chat.completions.create(
+                    model=selected_model, messages=messages
+                )
 
-            # NOTE: hit CTRL-C or CTRL-D to stop streaming early
-            try:
-                for chunk in response:
-                    chunk_message = chunk.choices[0].delta.content
-                    if chunk_message:
-                        sys.stdout.write(colors.green(chunk_message))
-                        full_response += chunk_message
-                        obj_chat_history["bot"] += chunk_message
-                        sys.stdout.flush()
-            except (KeyboardInterrupt, EOFError):
-                full_response += " [cancelled]"
-                obj_chat_history["bot"] += " [cancelled]"
+                loading_active = False
+                loading_thread.join()
+                full_response = response.choices[0].message.content
+                print(colors.green(full_response))
+                obj_chat_history["bot"] = full_response
+            else:
+                response = client.chat.completions.create(
+                    model=selected_model, messages=messages, stream=True
+                )
+
+                full_response = ""
+                try:
+                    for chunk in response:
+                        chunk_message = chunk.choices[0].delta.content
+                        if chunk_message:
+                            sys.stdout.write(colors.green(chunk_message))
+                            full_response += chunk_message
+                            obj_chat_history["bot"] += chunk_message
+                            sys.stdout.flush()
+                except (KeyboardInterrupt, EOFError):
+                    full_response += " [cancelled]"
+                    obj_chat_history["bot"] += " [cancelled]"
 
             if full_response:
                 messages.append({"role": "assistant", "content": full_response})
-                sys.stdout.write("\n")
-                sys.stdout.flush()
+                # NOTE: only print the newline for completed streamed responses
+                if not is_o1:
+                    sys.stdout.write("\n")
+                    sys.stdout.flush()
+
         except Exception as e:
+            loading_active = False
             print(colors.red(f"Error during chat: {e}"))
             break
 

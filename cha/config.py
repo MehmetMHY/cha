@@ -17,7 +17,7 @@ RUN_ANSWER_FEATURE = "!a"
 CHA_DEFAULT_MODEL = "gpt-4o"
 
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
-OPENAI_MODELS_TO_KEEP = ["gpt"]
+OPENAI_MODELS_TO_KEEP = ["gpt", "o1", "o2", "o3"]
 
 TERMINAL_THEME_CODES = {
     "reset": "\033[0m",
@@ -56,13 +56,12 @@ COMMON_IMG_GEN_RESOLUTIONS = [
     "4096x4096",
 ]
 
-REQUEST_DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-}
-
 REQUEST_DEFAULT_TIMEOUT_SECONDS = 10
 REQUEST_DEFAULT_RETRY_COUNT = 1
 REQUEST_BACKOFF_FACTOR = 0.1
+REQUEST_DEFAULT_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+}
 
 # answer feature config
 DEFAULT_SEARCH_BIG_MODEL = "gpt-4o"
@@ -72,6 +71,7 @@ DEFAULT_SEARCH_MAX_TOKEN_LIMIT = 120_000
 DEFAULT_SEARCH_RESULT_COUNT = 5
 DEFAULT_SEARCH_TIME_DELAY_SECONDS = 1
 DEFAULT_GEN_SEARCH_QUERY_COUNT = 3
+SEARCH_FILTER_OPTIONS = ["web", "news", "query", "infobox", "discussions", "none"]
 VALID_FRESHNESS_IDS = {
     "pd": "past day",
     "pw": "past week",
@@ -79,7 +79,6 @@ VALID_FRESHNESS_IDS = {
     "py": "past year",
     "none": "all time",
 }
-SEARCH_FILTER_OPTIONS = ["web", "news", "query", "infobox", "discussions", "none"]
 
 # NOTE: do NOT modify the code below!
 # NOTE: the logic below allows you to set your only config file path and load it in
