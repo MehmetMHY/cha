@@ -106,24 +106,22 @@ def is_o1_model(model_name):
 
 
 def loading_animation(text="Thinking"):
-    """Display a loading animation while waiting for a response."""
     spinner = itertools.cycle(["-", "\\", "|", "/"])
     while loading_active:
         sys.stdout.write(colors.yellow(f"\r{text} {next(spinner)}"))
         sys.stdout.flush()
         time.sleep(0.1)
-    # Just clear the line without moving to next line
-    sys.stdout.write(
-        "\r" + " " * (len(text) + 10) + "\r"
-    )  # Dynamic padding based on text length
+    # clear line without moving to the next line
+    sys.stdout.write("\r" + " " * (len(text) + 10) + "\r")
     sys.stdout.flush()
 
 
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
     global loading_active
+
     is_o1 = is_o1_model(selected_model)
 
-    # For o1 models, we don't use system prompts
+    # NOTE: for o1 models don't accept system prompts
     messages = [] if is_o1 else [{"role": "system", "content": config.INITIAL_PROMPT}]
     multi_line_input = False
 
@@ -168,7 +166,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             message = utils.safe_input(user_input_string).rstrip("\n")
 
-            # Handle special commands
             if message == config.MULI_LINE_MODE_TEXT:
                 multi_line_input = True
                 continue
@@ -196,7 +193,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 message = "\n".join(message_lines)
                 multi_line_input = False
 
-            # Handle other special commands
             if message == config.SAVE_CHAT_HISTORY:
                 cha_filepath = f"cha_{int(time.time())}.json"
                 utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
@@ -220,7 +216,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     colors.red(f"{du_print} detected, continue web scraping (y/n)? ")
                 )
                 if du_user.lower() == "y" or du_user.lower() == "yes":
-                    # Start loading animation for scraping
+                    # start loading animation
                     loading_active = True
                     loading_thread = threading.Thread(
                         target=loading_animation, args=("Scraping URLs",)
@@ -231,7 +227,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     try:
                         message = scraper.scraped_prompt(message)
                     finally:
-                        # Ensure loading animation stops even if scraping fails
                         loading_active = False
                         loading_thread.join()
 
@@ -259,7 +254,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
         try:
             if is_o1:
-                # Start loading animation in a separate thread for o1 models
+                # start loading animation
                 loading_active = True
                 loading_thread = threading.Thread(
                     target=loading_animation, args=("Thinking",)
@@ -267,25 +262,22 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 loading_thread.daemon = True
                 loading_thread.start()
 
-                # Non-streaming response for o1 models
+                # NOTE: o1 models don't support streaming
                 response = client.chat.completions.create(
                     model=selected_model, messages=messages
                 )
 
-                # Stop loading animation and print response
                 loading_active = False
                 loading_thread.join()
                 full_response = response.choices[0].message.content
                 print(colors.green(full_response))
                 obj_chat_history["bot"] = full_response
             else:
-                # Streaming response for other models
                 response = client.chat.completions.create(
                     model=selected_model, messages=messages, stream=True
                 )
 
                 full_response = ""
-
                 try:
                     for chunk in response:
                         chunk_message = chunk.choices[0].delta.content
@@ -300,12 +292,13 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if full_response:
                 messages.append({"role": "assistant", "content": full_response})
-                if not is_o1:  # Only print newline for streaming responses
+                # NOTE: only print the newline for completed streamed responses
+                if not is_o1:
                     sys.stdout.write("\n")
                     sys.stdout.flush()
 
         except Exception as e:
-            loading_active = False  # Ensure loading animation stops if there's an error
+            loading_active = False
             print(colors.red(f"Error during chat: {e}"))
             break
 
