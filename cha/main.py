@@ -10,7 +10,7 @@ try:
     import os
 
     from openai import OpenAI
-    from cha import scraper, colors, image, utils, config, answer
+    from cha import scraper, colors, image, utils, config, answer, loading
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
@@ -22,7 +22,6 @@ client = OpenAI(
 
 # global, in memory, variables
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
-loading_active = False
 
 
 def list_models():
@@ -103,17 +102,6 @@ CONTENT:
 
 def is_o1_model(model_name):
     return re.match(r"^o\d+-", model_name) is not None
-
-
-def loading_animation(text="Thinking"):
-    spinner = itertools.cycle(["-", "\\", "|", "/"])
-    while loading_active:
-        sys.stdout.write(colors.green(f"\r{text} {next(spinner)}"))
-        sys.stdout.flush()
-        time.sleep(0.1)
-    # clear line without moving to the next line
-    sys.stdout.write("\r" + " " * (len(text) + 10) + "\r")
-    sys.stdout.flush()
 
 
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
@@ -222,19 +210,12 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 sys.stdout.flush()
 
                 if du_user.lower() == "y" or du_user.lower() == "yes":
-                    # start loading animation
-                    loading_active = True
-                    loading_thread = threading.Thread(
-                        target=loading_animation, args=("Scraping URLs",)
-                    )
-                    loading_thread.daemon = True
-                    loading_thread.start()
+                    loading_thread = loading.start_loading("Scraping URLs")
 
                     try:
                         message = scraper.scraped_prompt(message)
                     finally:
-                        loading_active = False
-                        loading_thread.join()
+                        loading.stop_loading(loading_thread)
 
             if message == config.RUN_ANSWER_FEATURE:
                 try:
@@ -260,21 +241,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
         try:
             if is_o1:
-                # start loading animation
-                loading_active = True
-                loading_thread = threading.Thread(
-                    target=loading_animation, args=("Thinking",)
-                )
-                loading_thread.daemon = True
-                loading_thread.start()
+                loading_thread = loading.start_loading("Thinking")
 
                 # NOTE: o1 models don't support streaming
                 response = client.chat.completions.create(
                     model=selected_model, messages=messages
                 )
 
-                loading_active = False
-                loading_thread.join()
+                loading.stop_loading(loading_thread)
                 full_response = response.choices[0].message.content
                 print(colors.green(full_response))
                 obj_chat_history["bot"] = full_response

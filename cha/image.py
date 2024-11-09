@@ -7,7 +7,7 @@ import os
 from io import BytesIO
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
-from cha import colors, utils, config
+from cha import colors, utils, config, loading
 
 
 def display_metadata(image_path):
@@ -164,25 +164,30 @@ def gen_image(client):
             "n": int(n),
         }
 
-        response = client.images.generate(**params)
-        url = response.data[0].url
+        loading_thread = loading.start_loading("Generating Image")
 
-        img_filename = gen_img_filename(model, prompt)
-        img_data = utils.get_request(url)
-        if img_data == None:
-            print(colors.red(f"Failed to get image from {url}"))
-            return
-        img_data = img_data.content
+        try:
+            response = client.images.generate(**params)
+            url = response.data[0].url
 
-        # save config/meta_data to image
-        with Image.open(BytesIO(img_data)) as img:
-            metadata = PngInfo()
-            metadata.add_text("Prompt", prompt)
-            metadata.add_text("Model", model)
-            metadata.add_text("Quality", quality)
-            metadata.add_text("Size", size)
-            metadata.add_text("Created", str(time.time()))
-            img.save(img_filename, "PNG", pnginfo=metadata)
+            img_filename = gen_img_filename(model, prompt)
+            img_data = utils.get_request(url)
+            if img_data == None:
+                print(colors.red(f"Failed to get image from {url}"))
+                return
+            img_data = img_data.content
+
+            # save config/meta_data to image
+            with Image.open(BytesIO(img_data)) as img:
+                metadata = PngInfo()
+                metadata.add_text("Prompt", prompt)
+                metadata.add_text("Model", model)
+                metadata.add_text("Quality", quality)
+                metadata.add_text("Size", size)
+                metadata.add_text("Created", str(time.time()))
+                img.save(img_filename, "PNG", pnginfo=metadata)
+        finally:
+            loading.stop_loading(loading_thread)
 
         print(colors.green(f"Created Image:"), img_filename)
         print(colors.yellow(f"To View MetaData:"), "cha -i <image_path>")
