@@ -157,26 +157,6 @@ def answer_search(
 
         prompt = utils.safe_input(colors.blue(f"Question: "))
 
-        filters = ",".join(
-            f
-            for f in (
-                input(
-                    colors.blue(
-                        "Filter Options:\n- "
-                        + "\n- ".join(
-                            ", ".join(config.SEARCH_FILTER_OPTIONS[i : i + 3])
-                            for i in range(0, len(config.SEARCH_FILTER_OPTIONS), 3)
-                        )
-                        + "\n> "
-                    )
-                )
-                .replace(" ", ",")
-                .lower()
-                .split(",")
-            )
-            if f in config.SEARCH_FILTER_OPTIONS
-        ) or ",".join(f for f in config.SEARCH_FILTER_OPTIONS if f != "none")
-
         freshness_state = utils.safe_input(
             colors.blue(
                 "Freshness:"
@@ -189,6 +169,8 @@ def answer_search(
         )
         if len(freshness_state) == 0:
             freshness_state = "none"
+
+        filters = config.SEARCH_FILTER_OPTIONS
 
     search_queries = generate_search_queries(client, prompt, small_model)
 
