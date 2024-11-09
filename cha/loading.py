@@ -3,64 +3,17 @@ import threading
 import sys
 import time
 import random
-from cha import colors
+from cha import colors, config
 
 loading_active = False
 
-# ANSI escape codes for cursor control
-HIDE_CURSOR = "\033[?25l"
-SHOW_CURSOR = "\033[?25h"
-
-# https://stackoverflow.com/questions/2685435/cooler-ascii-spinners
-loading_animations = {
-    "basic": ["|", "/", "-", "\\"],
-    "vertical_bar": [
-        "▉",
-        "▊",
-        "▋",
-        "▌",
-        "▍",
-        "▎",
-        "▏",
-        "▎",
-        "▍",
-        "▌",
-        "▋",
-        "▊",
-        "▉",
-    ],
-    "dots": ["▖", "▘", "▝", "▗"],
-    "triangles": ["◢", "◣", "◤", "◥"],
-    "rectangles": ["◰", "◳", "◲", "◱"],
-    "circles": ["◴", "◷", "◶", "◵"],
-    "halfcircles": ["◐", "◓", "◑", "◒"],
-    "braille": [
-        "⣾",
-        "⣽",
-        "⣻",
-        "⢿",
-        "⡿",
-        "⣟",
-        "⣯",
-        "⣷",
-        "⠁",
-        "⠂",
-        "⠄",
-        "⡀",
-        "⢀",
-        "⠠",
-        "⠐",
-        "⠈",
-    ],
-}
-
 
 def loading_animation(text="Thinking"):
-    frames = random.choice(list(loading_animations.values()))
+    frames = random.choice(list(config.LOADING_ANIMATIONS.values()))
     spinner = itertools.cycle(frames)
 
     # hide cursor at start
-    sys.stdout.write(HIDE_CURSOR)
+    sys.stdout.write(config.HIDE_CURSOR)
     sys.stdout.flush()
 
     try:
@@ -73,7 +26,7 @@ def loading_animation(text="Thinking"):
         sys.stdout.flush()
     finally:
         # always show cursor before exiting, even if there's an error
-        sys.stdout.write(SHOW_CURSOR)
+        sys.stdout.write(config.SHOW_CURSOR)
         sys.stdout.flush()
 
 
