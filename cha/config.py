@@ -80,6 +80,61 @@ VALID_FRESHNESS_IDS = {
     "none": "all time",
 }
 
+VIDEO_SCRAPER_YOUTUBE_KEY_VALUES = [
+    "title",
+    "description",
+    "duration",
+    "view_count",
+    "like_count",
+    "channel",
+    "channel_follower_count",
+    "uploader",
+    "upload_date",
+    "epoch",
+    "fulltitle",
+    "transcript",
+]
+VIDEO_SCRAPER_TWITTER_KEY_VALUES = [
+    "title",
+    "description",
+    "uploader",
+    "timestamp",
+    "channel_id",
+    "uploader_id",
+    "uploader_url",
+    "like_count",
+    "repost_count",
+    "comment_count",
+    "duration",
+    "display_id",
+    "webpage_url",
+    "original_url",
+    "webpage_url_domain",
+    "extractor",
+    "extractor_key",
+    "fulltitle",
+    "duration_string",
+    "upload_date",
+    "epoch",
+    "filename",
+    "transcript",
+]
+VIDEO_SCRAPER_LINKEDIN_KEY_VALUES = [
+    "title",
+    "description",
+    "like_count",
+    "display_id",
+    "webpage_url",
+    "original_url",
+    "webpage_url_domain",
+    "extractor",
+    "extractor_key",
+    "fulltitle",
+    "epoch",
+    "filename",
+    "transcript",
+]
+
 # NOTE: do NOT modify the code below!
 # NOTE: the logic below allows you to set your only config file path and load it in
 
