@@ -351,7 +351,7 @@ def cli():
                 padded_model_id = model_id.ljust(max_model_id_length)
                 print(
                     colors.yellow(
-                        f"   {padded_index}. {padded_model_id}   {utils.simple_date(created)}"
+                        f"   {padded_index}) {padded_model_id}   {utils.simple_date(created)}"
                     )
                 )
 

@@ -55,19 +55,20 @@ def pick_img_model(client):
         openai_models = sorted(openai_models, key=lambda x: x[1], reverse=True)
 
         print(colors.yellow("Available OpenAI Models:"))
-        for model_id, created in openai_models:
-            print(colors.yellow(f"   > {model_id}   {utils.simple_date(created)}"))
+        for index, (model_id, created) in enumerate(openai_models, start=1):
+            print(
+                colors.yellow(f"   {index}) {model_id}   {utils.simple_date(created)}")
+            )
 
         while True:
-            picked_model = input(colors.blue("Model: ")).strip()
-            if picked_model in [model[0] for model in openai_models]:
-                return picked_model
-            else:
-                print(
-                    colors.red(
-                        f"Model {picked_model} is NOT a supported model by OpenAI. Please try again!"
-                    )
-                )
+            try:
+                picked_number = int(input(colors.blue("Pick a model number: ")).strip())
+                if 1 <= picked_number <= len(openai_models):
+                    return openai_models[picked_number - 1][0]
+                else:
+                    print(colors.red("Invalid number. Please try again!"))
+            except ValueError:
+                print(colors.red("Please enter a valid number."))
 
     except Exception as e:
         print(colors.red(f"An error occurred while fetching models: {e}"))
@@ -130,11 +131,15 @@ def gen_image(client):
             lambda x: x.lower() in ["standard", "hd"],
             colors.red("Please enter 'standard' or 'hd' for quality"),
         )
-        n = get_user_input(
-            colors.blue("N (number of images): "),
-            lambda x: x.isdigit() and int(x) > 0,
-            colors.red("Please enter a positive integer"),
-        )
+
+        # # NOTE: (11-8-2024) disabled user inputing n to limit cost and avoid deep errors
+        # n = get_user_input(
+        #     colors.blue("N (number of images): "),
+        #     lambda x: x.isdigit() and int(x) > 0,
+        #     colors.red("Please enter a positive integer"),
+        # )
+        n = 1
+
         size = get_user_input(
             colors.blue("Size (WidthxHeight): "),
             lambda x: x in config.COMMON_IMG_GEN_RESOLUTIONS,
