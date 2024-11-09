@@ -97,8 +97,35 @@ CONTENT:
     return output
 
 
+def is_o1_model(model_name):
+    """Check if the model is an o1 model."""
+    return model_name.startswith("o1-")
+
+
+import itertools
+import threading
+
+loading_active = False
+
+
+def loading_animation():
+    """Display a loading animation while waiting for a response."""
+    spinner = itertools.cycle(["-", "\\", "|", "/"])
+    while loading_active:
+        sys.stdout.write(colors.green(f"\rThinking {next(spinner)}"))
+        sys.stdout.flush()
+        time.sleep(0.1)
+    # Just clear the line without moving to next line
+    sys.stdout.write("\r" + " " * 20 + "\r")
+    sys.stdout.flush()
+
+
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
-    messages = [{"role": "system", "content": config.INITIAL_PROMPT}]
+    global loading_active
+    is_o1 = is_o1_model(selected_model)
+
+    # For o1 models, we don't use system prompts
+    messages = [] if is_o1 else [{"role": "system", "content": config.INITIAL_PROMPT}]
     multi_line_input = False
 
     if filepath or content_string:
@@ -142,6 +169,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             message = utils.safe_input(user_input_string).rstrip("\n")
 
+            # Handle special commands
             if message == config.MULI_LINE_MODE_TEXT:
                 multi_line_input = True
                 continue
@@ -151,7 +179,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
                 break
             elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
-                messages = [{"role": "system", "content": config.INITIAL_PROMPT}]
+                messages = (
+                    []
+                    if is_o1
+                    else [{"role": "system", "content": config.INITIAL_PROMPT}]
+                )
                 print(colors.yellow("Chat history cleared."))
                 continue
 
@@ -165,6 +197,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 message = "\n".join(message_lines)
                 multi_line_input = False
 
+            # Handle other special commands
             if message == config.SAVE_CHAT_HISTORY:
                 cha_filepath = f"cha_{int(time.time())}.json"
                 utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
@@ -213,30 +246,54 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
         }
 
         try:
-            response = client.chat.completions.create(
-                model=selected_model, messages=messages, stream=True
-            )
+            if is_o1:
+                # Start loading animation in a separate thread for o1 models
+                loading_active = True
+                loading_thread = threading.Thread(target=loading_animation)
+                loading_thread.daemon = True
+                loading_thread.start()
 
-            full_response = ""
+                # Non-streaming response for o1 models
+                response = client.chat.completions.create(
+                    model=selected_model, messages=messages
+                )
 
-            # NOTE: hit CTRL-C or CTRL-D to stop streaming early
-            try:
-                for chunk in response:
-                    chunk_message = chunk.choices[0].delta.content
-                    if chunk_message:
-                        sys.stdout.write(colors.green(chunk_message))
-                        full_response += chunk_message
-                        obj_chat_history["bot"] += chunk_message
-                        sys.stdout.flush()
-            except (KeyboardInterrupt, EOFError):
-                full_response += " [cancelled]"
-                obj_chat_history["bot"] += " [cancelled]"
+                # Stop loading animation and print response
+                loading_active = False
+                loading_thread.join()
+                full_response = response.choices[0].message.content
+                print(
+                    colors.green(full_response)
+                )  # This will now appear on the same line where "Thinking" was
+                obj_chat_history["bot"] = full_response
+            else:
+                # Streaming response for other models
+                response = client.chat.completions.create(
+                    model=selected_model, messages=messages, stream=True
+                )
+
+                full_response = ""
+
+                try:
+                    for chunk in response:
+                        chunk_message = chunk.choices[0].delta.content
+                        if chunk_message:
+                            sys.stdout.write(colors.green(chunk_message))
+                            full_response += chunk_message
+                            obj_chat_history["bot"] += chunk_message
+                            sys.stdout.flush()
+                except (KeyboardInterrupt, EOFError):
+                    full_response += " [cancelled]"
+                    obj_chat_history["bot"] += " [cancelled]"
 
             if full_response:
                 messages.append({"role": "assistant", "content": full_response})
-                sys.stdout.write("\n")
-                sys.stdout.flush()
+                if not is_o1:  # Only print newline for streaming responses
+                    sys.stdout.write("\n")
+                    sys.stdout.flush()
+
         except Exception as e:
+            loading_active = False  # Ensure loading animation stops if there's an error
             print(colors.red(f"Error during chat: {e}"))
             break
 

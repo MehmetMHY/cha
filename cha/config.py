@@ -17,7 +17,7 @@ RUN_ANSWER_FEATURE = "!a"
 CHA_DEFAULT_MODEL = "gpt-4o"
 
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
-OPENAI_MODELS_TO_KEEP = ["gpt"]
+OPENAI_MODELS_TO_KEEP = ["gpt", "o1"]
 
 TERMINAL_THEME_CODES = {
     "reset": "\033[0m",
