@@ -3,6 +3,8 @@ import sys
 # NOTE: this exists to prevent a ugly print from showing if some cancels quickly
 try:
     import argparse
+    import itertools
+    import threading
     import time
     import os
 
@@ -15,6 +17,7 @@ utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
 
 # global, in memory, variables
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
+loading_active = False
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -102,21 +105,17 @@ def is_o1_model(model_name):
     return model_name.startswith("o1-")
 
 
-import itertools
-import threading
-
-loading_active = False
-
-
-def loading_animation():
+def loading_animation(text="Thinking"):
     """Display a loading animation while waiting for a response."""
     spinner = itertools.cycle(["-", "\\", "|", "/"])
     while loading_active:
-        sys.stdout.write(colors.green(f"\rThinking {next(spinner)}"))
+        sys.stdout.write(colors.yellow(f"\r{text} {next(spinner)}"))
         sys.stdout.flush()
         time.sleep(0.1)
     # Just clear the line without moving to next line
-    sys.stdout.write("\r" + " " * 20 + "\r")
+    sys.stdout.write(
+        "\r" + " " * (len(text) + 10) + "\r"
+    )  # Dynamic padding based on text length
     sys.stdout.flush()
 
 
@@ -221,7 +220,20 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     colors.red(f"{du_print} detected, continue web scraping (y/n)? ")
                 )
                 if du_user.lower() == "y" or du_user.lower() == "yes":
-                    message = scraper.scraped_prompt(message)
+                    # Start loading animation for scraping
+                    loading_active = True
+                    loading_thread = threading.Thread(
+                        target=loading_animation, args=("Scraping URLs",)
+                    )
+                    loading_thread.daemon = True
+                    loading_thread.start()
+
+                    try:
+                        message = scraper.scraped_prompt(message)
+                    finally:
+                        # Ensure loading animation stops even if scraping fails
+                        loading_active = False
+                        loading_thread.join()
 
             if message == config.RUN_ANSWER_FEATURE:
                 try:
@@ -249,7 +261,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if is_o1:
                 # Start loading animation in a separate thread for o1 models
                 loading_active = True
-                loading_thread = threading.Thread(target=loading_animation)
+                loading_thread = threading.Thread(
+                    target=loading_animation, args=("Thinking",)
+                )
                 loading_thread.daemon = True
                 loading_thread.start()
 
@@ -262,9 +276,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 loading_active = False
                 loading_thread.join()
                 full_response = response.choices[0].message.content
-                print(
-                    colors.green(full_response)
-                )  # This will now appear on the same line where "Thinking" was
+                print(colors.green(full_response))
                 obj_chat_history["bot"] = full_response
             else:
                 # Streaming response for other models
