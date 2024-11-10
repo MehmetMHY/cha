@@ -9,7 +9,7 @@ import uuid
 import fitz  # PyMuPDF
 from bs4 import BeautifulSoup
 from youtube_transcript_api import YouTubeTranscriptApi
-from cha import colors, utils, config
+from cha import colors, utils, config, loading
 
 
 def clean_subtitle_text(input_text):
@@ -76,14 +76,15 @@ def yt_dlp_transcript_extractor(url, lang="en"):
         try:
             os.remove(subtitle_path)
         except OSError:
-            print(colors.red(f"failed to delete tmp file {subtitle_path}"))
+            loading.print_message(
+                colors.red(f"failed to delete tmp file {subtitle_path}")
+            )
             pass
 
         return processed_content
 
     except Exception as e:
-        # # TODO: a better solution is needed here
-        # print(colors.red(f"yt-dlp scraper failed: {e}"))
+        loading.print_message(colors.red(f"yt-dlp scraper failed: {e}"))
         return None
 
 
@@ -120,7 +121,9 @@ def video_transcript(url):
             output = output + line["text"] + " "
     except Exception as e:
         # yt-dlp scraper isn't as good as youtube_transcript_api, but it's better than nothing
-        print(colors.yellow(f"switching from API scraper to yt-dlp-based scraper"))
+        loading.print_message(
+            colors.yellow(f"switching from API scraper to yt-dlp-based scraper")
+        )
         output = yt_dlp_transcript_extractor(url, "en")
 
     return output
@@ -267,7 +270,7 @@ def scrape_pdf_url(url):
 
         raise Exception(f"URL {url} is NOT a valid PDF file")
     except Exception as e:
-        print(colors.red(f"Failed to load PDF URL {url} due to {e}"))
+        loading.print_message(colors.red(f"Failed to load PDF URL {url} due to {e}"))
 
 
 def unified_video_scraper(url, platform, fields=None):

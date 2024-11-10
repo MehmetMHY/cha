@@ -155,46 +155,46 @@ def gen_image(client):
         )
         return 1
 
+    params = {
+        "model": model,
+        "prompt": prompt,
+        "size": size,
+        "quality": quality,
+        "n": int(n),
+    }
+
+    loading_thread = loading.start_loading("Generating Image")
+
+    status = 0
     try:
-        params = {
-            "model": model,
-            "prompt": prompt,
-            "size": size,
-            "quality": quality,
-            "n": int(n),
-        }
+        response = client.images.generate(**params)
+        url = response.data[0].url
 
-        loading_thread = loading.start_loading("Generating Image")
+        img_filename = gen_img_filename(model, prompt)
+        img_data = utils.get_request(url)
+        if img_data == None:
+            print(colors.red(f"Failed to get image from {url}"))
+            return
+        img_data = img_data.content
 
-        try:
-            response = client.images.generate(**params)
-            url = response.data[0].url
-
-            img_filename = gen_img_filename(model, prompt)
-            img_data = utils.get_request(url)
-            if img_data == None:
-                print(colors.red(f"Failed to get image from {url}"))
-                return
-            img_data = img_data.content
-
-            # save config/meta_data to image
-            with Image.open(BytesIO(img_data)) as img:
-                metadata = PngInfo()
-                metadata.add_text("Prompt", prompt)
-                metadata.add_text("Model", model)
-                metadata.add_text("Quality", quality)
-                metadata.add_text("Size", size)
-                metadata.add_text("Created", str(time.time()))
-                img.save(img_filename, "PNG", pnginfo=metadata)
-        finally:
-            loading.stop_loading(loading_thread)
+        # save config/meta_data to image
+        with Image.open(BytesIO(img_data)) as img:
+            metadata = PngInfo()
+            metadata.add_text("Prompt", prompt)
+            metadata.add_text("Model", model)
+            metadata.add_text("Quality", quality)
+            metadata.add_text("Size", size)
+            metadata.add_text("Created", str(time.time()))
+            img.save(img_filename, "PNG", pnginfo=metadata)
 
         print(colors.green(f"Created Image:"), img_filename)
         print(colors.yellow(f"To View MetaData:"), "cha -i <image_path>")
 
         get_user_open([img_filename])
     except Exception as e:
-        print(colors.red(f"Failed to generate image: {e}"))
-        return 1
+        loading.print_message(colors.red(f"Failed to generate image: {e}"))
+        status = 1
+    finally:
+        loading.stop_loading(loading_thread)
 
-    return 0
+    return status
