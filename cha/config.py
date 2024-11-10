@@ -157,7 +157,6 @@ LOADING_ANIMATIONS = {
         "▉",
     ],
     "dots": ["▖", "▘", "▝", "▗"],
-    "triangles": ["◢", "◣", "◤", "◥"],
     "rectangles": ["◰", "◳", "◲", "◱"],
     "circles": ["◴", "◷", "◶", "◵"],
     "halfcircles": ["◐", "◓", "◑", "◒"],
