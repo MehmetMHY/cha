@@ -141,8 +141,10 @@ CLEAR_LINE = "\033[K"
 MOVE_CURSOR_ONE_LINE = "\033[F"
 
 # https://stackoverflow.com/questions/2685435/cooler-ascii-spinners
+# https://raw.githubusercontent.com/sindresorhus/cli-spinners/master/spinners.json
 LOADING_ANIMATIONS = {
     "basic": ["|", "/", "-", "\\"],
+    "star": ["✶", "✸", "✹", "✺", "✹", "✷"],
     "vertical_bar": [
         "▉",
         "▊",
