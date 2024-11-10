@@ -4,7 +4,7 @@ OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
 # main chat short config
 INITIAL_PROMPT = "You are a helpful assistant who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details"
 MULTI_LINE_SEND = "END"
-MULI_LINE_MODE_TEXT = "!m"
+MULTI_LINE_MODE_TEXT = "!m"
 CLEAR_HISTORY_TEXT = "!c"
 IMG_GEN_MODE = "!i"
 SAVE_CHAT_HISTORY = "!s"

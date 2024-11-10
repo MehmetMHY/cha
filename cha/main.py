@@ -44,7 +44,7 @@ def title_print(selected_model):
         colors.yellow(
             f"""Chatting With OpenAI's '{selected_model}' Model
  - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
- - '{config.MULI_LINE_MODE_TEXT}' for single/multi-line mode
+ - '{config.MULTI_LINE_MODE_TEXT}' for single/multi-line mode
  - '{config.MULTI_LINE_SEND}' to end in multi-line mode
  - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
  - '{config.IMG_GEN_MODE}' for image generation
@@ -150,7 +150,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             message = utils.safe_input(user_input_string).rstrip("\n")
 
-            if message == config.MULI_LINE_MODE_TEXT:
+            if message == config.MULTI_LINE_MODE_TEXT:
                 multi_line_input = True
                 continue
             elif message.replace(" ", "") == config.IMG_GEN_MODE:
