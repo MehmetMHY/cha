@@ -163,7 +163,7 @@ def gen_image(client):
         "n": int(n),
     }
 
-    loading_thread = loading.start_loading("Generating Image")
+    loading.start_loading("Generating Image", "rectangles")
 
     status = 0
     try:
@@ -186,15 +186,17 @@ def gen_image(client):
             metadata.add_text("Size", size)
             metadata.add_text("Created", str(time.time()))
             img.save(img_filename, "PNG", pnginfo=metadata)
-
-        print(colors.green(f"Created Image:"), img_filename)
-        print(colors.yellow(f"To View MetaData:"), "cha -i <image_path>")
-
-        get_user_open([img_filename])
     except Exception as e:
         loading.print_message(colors.red(f"Failed to generate image: {e}"))
         status = 1
     finally:
-        loading.stop_loading(loading_thread)
+        loading.stop_loading()
+
+    try:
+        print(colors.green(f"Created Image:"), img_filename)
+        print(colors.yellow(f"To View MetaData:"), "cha -i <image_path>")
+        get_user_open([img_filename])
+    except:
+        status = 1
 
     return status

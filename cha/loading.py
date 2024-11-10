@@ -28,8 +28,12 @@ class LoadingAnimation:
             sys.stdout.flush()
             self.last_message = message
 
-    def loading_animation(self, text="Thinking"):
-        frames = random.choice(list(config.LOADING_ANIMATIONS.values()))
+    def loading_animation(self, text="Thinking", animation_type=None):
+        if animation_type and animation_type in config.LOADING_ANIMATIONS:
+            frames = config.LOADING_ANIMATIONS[animation_type]
+        else:
+            frames = random.choice(list(config.LOADING_ANIMATIONS.values()))
+
         spinner = itertools.cycle(frames)
 
         # hide cursor at start
@@ -53,10 +57,22 @@ class LoadingAnimation:
             print(message)
             sys.stdout.flush()
 
-    def start(self, text="Thinking"):
+    def start(self, text="Thinking", animation_type=None):
+        """
+        text (str): The text to display next to the animation
+        animation_type (str): The type of animation to use. Must be one of:
+            - "basic": Simple rotating line
+            - "vertical_bar": Vertical bar moving back and forth
+            - "dots": Four dots rotating
+            - "rectangles": Four rectangles rotating
+            - "circles": Four circles rotating
+            - "halfcircles": Four half circles rotating
+            - "braille": Braille pattern animation
+            If None or invalid, a random animation will be chosen.
+        """
         self.active = True
         self.loading_thread = threading.Thread(
-            target=self.loading_animation, args=(text,)
+            target=self.loading_animation, args=(text, animation_type)
         )
         self.loading_thread.daemon = True
         self.loading_thread.start()
@@ -69,14 +85,15 @@ class LoadingAnimation:
                 self.loading_thread.join()
 
 
+# global instance(s)
 loader = LoadingAnimation()
 
 
-def start_loading(text="Thinking"):
-    return loader.start(text)
+def start_loading(text="Thinking", animation_type=None):
+    return loader.start(text, animation_type)
 
 
-def stop_loading(loading_thread):
+def stop_loading():
     loader.stop()
 
 
