@@ -206,7 +206,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 sys.stdout.flush()
 
                 if du_user.lower() == "y" or du_user.lower() == "yes":
-                    loading.start_loading("Scraping URLs", None)
+                    loading.start_loading("Scraping URLs", "star")
 
                     try:
                         message = scraper.scraped_prompt(message)
