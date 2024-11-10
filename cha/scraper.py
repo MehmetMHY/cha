@@ -13,7 +13,7 @@ from cha import colors, utils, config, loading
 
 
 def clean_subtitle_text(input_text):
-    # NOTE: this function cleans the raw transcript outputed by yt-dlp
+    # NOTE: this function cleans the raw transcript outputted by yt-dlp
     try:
         # remove empty lines
         lines = input_text.splitlines()

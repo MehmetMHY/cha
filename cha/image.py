@@ -132,7 +132,7 @@ def gen_image(client):
             colors.red("Please enter 'standard' or 'hd' for quality"),
         )
 
-        # # NOTE: (11-8-2024) disabled user inputing n to limit cost and avoid deep errors
+        # # NOTE: (11-8-2024) disabled user inputting n to limit cost and avoid deep errors
         # n = get_user_input(
         #     colors.blue("N (number of images): "),
         #     lambda x: x.isdigit() and int(x) > 0,

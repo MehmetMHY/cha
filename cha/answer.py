@@ -26,7 +26,7 @@ Instructions:
 1. Integrate your own knowledge with the context provided.
 2. Reference relevant information from the context above where appropriate.
 3. Include inline citations using square brackets, e.g., [1], in IEEE format for any referenced content. Do not include anything else (url, title, description, etc).
-4. Make there ther is a space between a word and the referenced content. Meaning, "word[1]" is NOT ok, rather it should be "word [1]"
+4. Make sure there is a space between a word and the referenced content. Meaning, "word[1]" is NOT ok, rather it should be "word [1]"
 5. Ensure all citations contain a URL and are formatted correctly.
 6. Present your final answer in markdown format.
 
