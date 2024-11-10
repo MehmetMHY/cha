@@ -206,12 +206,12 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 sys.stdout.flush()
 
                 if du_user.lower() == "y" or du_user.lower() == "yes":
-                    loading_thread = loading.start_loading("Scraping URLs")
+                    loading.start_loading("Scraping URLs", None)
 
                     try:
                         message = scraper.scraped_prompt(message)
                     finally:
-                        loading.stop_loading(loading_thread)
+                        loading.stop_loading()
 
             if message == config.RUN_ANSWER_FEATURE:
                 try:
@@ -237,14 +237,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
         try:
             if is_o1:
-                loading_thread = loading.start_loading("Thinking")
+                loading.start_loading("Thinking", "braille")
 
                 # NOTE: o1 models don't support streaming
                 response = client.chat.completions.create(
                     model=selected_model, messages=messages
                 )
 
-                loading.stop_loading(loading_thread)
+                loading.stop_loading()
                 full_response = response.choices[0].message.content
                 print(colors.green(full_response))
                 obj_chat_history["bot"] = full_response
