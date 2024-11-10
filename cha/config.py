@@ -137,6 +137,8 @@ VIDEO_SCRAPER_LINKEDIN_KEY_VALUES = [
 
 HIDE_CURSOR = "\033[?25l"
 SHOW_CURSOR = "\033[?25h"
+CLEAR_LINE = "\033[K"
+MOVE_CURSOR_ONE_LINE = "\033[F"
 
 # https://stackoverflow.com/questions/2685435/cooler-ascii-spinners
 LOADING_ANIMATIONS = {

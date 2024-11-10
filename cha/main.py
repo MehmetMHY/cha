@@ -103,8 +103,6 @@ def is_o1_model(model_name):
 
 
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
-    global loading_active
-
     is_o1 = is_o1_model(selected_model)
 
     # NOTE: for o1 models don't accept system prompts
@@ -197,14 +195,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             detected_urls = len(scraper.extract_urls(message))
             if detected_urls > 0:
-                # NOTE: determine whether scraping should happen, and then clear the input message afterwards
+                # NOTE: determine whether scraping should happen, and then clear the input text message afterwards
                 du_print = f"{detected_urls} URL{'s' if detected_urls > 1 else ''}"
                 prompt = f"{du_print} detected, continue web scraping (y/n)? "
                 sys.stdout.write(colors.red(prompt))
                 sys.stdout.flush()
                 du_user = utils.safe_input().strip()
-                sys.stdout.write("\033[F")  # move cursor up one line
-                sys.stdout.write("\033[K")  # clear the line
+                sys.stdout.write(config.MOVE_CURSOR_ONE_LINE)
+                sys.stdout.write(config.CLEAR_LINE)
                 sys.stdout.flush()
 
                 if du_user.lower() == "y" or du_user.lower() == "yes":
@@ -276,7 +274,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     sys.stdout.flush()
 
         except Exception as e:
-            loading_active = False
             print(colors.red(f"Error during chat: {e}"))
             break
 

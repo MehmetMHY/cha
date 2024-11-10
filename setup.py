@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.9.4",
+    version="0.9.5",
     packages=find_packages(),
     license="MIT",
     description="A simple CLI tool for easily interacting with powerful AI models",
