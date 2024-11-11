@@ -68,7 +68,7 @@ cha
 Both commands support and accept additional parameters. Here are all of their respected help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t]
+usage: cha [-h] [-pt] [-as] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t]
            [string ...]
 
 Chat with an OpenAI GPT model.
@@ -80,6 +80,7 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -pt, --print_title    Print initial title during interactive mode
+  -as, --answer_search  Run answer search
   -m MODEL, --model MODEL
                         Model to use for chatting
   -sm, --select_model   Select one model from OpenAI's supported models
