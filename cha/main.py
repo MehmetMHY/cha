@@ -98,12 +98,22 @@ CONTENT:
     return output
 
 
-def is_o1_model(model_name):
+def is_o_model(model_name):
     return re.match(r"^o\d+-", model_name) is not None
 
 
+def run_answer_search(client, user_input_mode=True):
+    try:
+        utils.check_env_variable(
+            "BRAVE_API_KEY", "https://api.search.brave.com/app/dashboard"
+        )
+        return answer.answer_search(client=client, user_input_mode=user_input_mode)
+    except (KeyboardInterrupt, EOFError, SystemExit):
+        return None
+
+
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
-    is_o1 = is_o1_model(selected_model)
+    is_o1 = is_o_model(selected_model)
 
     # NOTE: for o1 models don't accept system prompts
     messages = [] if is_o1 else [{"role": "system", "content": config.INITIAL_PROMPT}]
@@ -214,14 +224,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         loading.stop_loading()
 
             if message == config.RUN_ANSWER_FEATURE:
-                try:
-                    utils.check_env_variable(
-                        "BRAVE_API_KEY", "https://api.search.brave.com/app/dashboard"
-                    )
-                    message = answer.answer_search(client=client, user_input_mode=True)
+                message = run_answer_search(client, True)
+                if message != None:
                     messages.append({"role": "user", "content": message})
-                except (KeyboardInterrupt, EOFError, SystemExit):
-                    pass
                 continue
 
             if len(message) == 0:
@@ -284,12 +289,20 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
 
 def cli():
+    global client
+
     try:
         parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
         parser.add_argument(
             "-pt",
             "--print_title",
             help="Print initial title during interactive mode",
+            action="store_true",
+        )
+        parser.add_argument(
+            "-as",
+            "--answer_search",
+            help="Run answer search",
             action="store_true",
         )
         parser.add_argument(
@@ -337,6 +350,10 @@ def cli():
             else:
                 status = image.display_metadata(str(args.image))
             sys.exit(1 if status is None else 0)
+
+        if args.answer_search == True:
+            output = run_answer_search(client, True)
+            sys.exit(1 if output is None else 0)
 
         title_print_value = args.print_title
         selected_model = args.model
