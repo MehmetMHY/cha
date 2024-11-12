@@ -4,11 +4,13 @@
 
 Run Cha using Docker to access the CLI tool via your browser. This is useful if you prefer not to install all dependencies or are using Windows.
 
-## Setup Instructions
+## Setup Instructions (MacOS & Linux)
 
-1. Configure your **.env** file with the necessary API keys. See Cha's main README for details on required keys.
+1. Make sure [Docker](https://www.docker.com/) is installed
 
-2. Load your **.env** file:
+2. Configure your **.env** file with the necessary API keys. See Cha's main README for details on required keys.
+
+3. Load your **.env** file:
 
    ```bash
    # If the file is in the current directory
@@ -18,13 +20,13 @@ Run Cha using Docker to access the CLI tool via your browser. This is useful if 
    source ../.env
    ```
 
-3. Build the Docker image:
+4. Build the Docker image:
 
    ```bash
    docker build -t gotty-term .
    ```
 
-4. Run the Docker image as a container:
+5. Run the Docker image as a container:
 
    ```bash
    docker run -it -p 8080:8080 \
@@ -33,9 +35,39 @@ Run Cha using Docker to access the CLI tool via your browser. This is useful if 
        gotty-term
    ```
 
-5. Open your browser and go to: [http://localhost:8080/](http://localhost:8080/)
+6. Open your browser and go to: [http://localhost:8080/](http://localhost:8080/)
 
-6. Once opened, you should see a bash terminal. Run Cha from there:
+7. Once opened, you should see a bash terminal. Run Cha from there:
+
+   ```bash
+   cha
+   ```
+
+## Setup Instructions (Windows)
+
+1. Make sure [Docker](https://www.docker.com/) is installed
+
+2. Build the Docker image:
+
+   ```bash
+   docker build -t gotty-term .
+   ```
+
+3. Run the Docker image as a container:
+
+   - This is NOT secure but this is the easiest way to run this in Windows; ya Windows should have been Unix based lol
+
+   ```bash
+   # NOTE: enter your environment variables here!
+   docker run -it -p 8080:8080 `
+       -e "OPENAI_API_KEY=<your_openai_api_key>" `
+       -e "BRAVE_API_KEY=<your_brave_api_key>" `
+       gotty-term
+   ```
+
+4. Open your browser and go to: [http://localhost:8080/](http://localhost:8080/)
+
+5. Once opened, you should see a bash terminal. Run Cha from there:
 
    ```bash
    cha
