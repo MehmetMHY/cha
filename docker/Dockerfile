@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     git \
     ffmpeg \
     tmux \
+    curl \
     python3 \
     python3-pip \
     && ln -s /usr/bin/python3 /usr/bin/python \
@@ -33,7 +34,10 @@ RUN echo "set number\nset mouse=a\nsyntax on\nset autoindent\nset tabstop=4\nset
 # set up a basic tmux configuration
 RUN echo "set -g mouse on\nset -g history-limit 30000\nset -g status-bg black\nset -g status-fg white" > /root/.tmux.conf
 
-# create startup script to verify API keys
+# customize bash prompt to show only path
+RUN echo 'PS1="\w# "' >> /root/.bashrc
+
+# create startup script to verify API keys and prepare the shell startup
 RUN echo '#!/bin/bash\n\
 if [ -z "$OPENAI_API_KEY" ] || [ -z "$BRAVE_API_KEY" ]; then\n\
     echo "Error: Required environment variables not set!"\n\
@@ -41,13 +45,21 @@ if [ -z "$OPENAI_API_KEY" ] || [ -z "$BRAVE_API_KEY" ]; then\n\
     echo "docker run -it -p 8080:8080 -e OPENAI_API_KEY=your_key -e BRAVE_API_KEY=your_key gotty-term"\n\
     exit 1\n\
 fi\n\
+# Create a custom shell startup script\n\
+echo "#!/bin/bash" > /custom_shell.sh\n\
+echo "cha -h" >> /custom_shell.sh\n\
+echo "echo" >> /custom_shell.sh\n\
+echo "exec bash" >> /custom_shell.sh\n\
+chmod +x /custom_shell.sh\n\
 exec "$@"' > /start.sh && \
     chmod +x /start.sh
+
+WORKDIR /root
 
 # expose GoTTY's default port
 EXPOSE 8080
 
 # use the startup script as entrypoint
 ENTRYPOINT ["/start.sh"]
-CMD ["gotty", "--permit-write", "--reconnect", "/bin/bash"]
+CMD ["gotty", "--permit-write", "--reconnect", "--title-format", "cha", "/custom_shell.sh"]
 
