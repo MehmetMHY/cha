@@ -4,6 +4,18 @@
 
 Run Cha using Docker to access the CLI tool via your browser. This is useful if you prefer not to install all dependencies or are using Windows.
 
+## How To Run (Easily Steps)
+
+1. Make sure [Docker](https://www.docker.com/) is installed
+
+2. Run the main run script:
+
+   ```bash
+   bash run.sh
+   ```
+
+3. (NOTE) If this does not work, follow the steps below...
+
 ## Setup Instructions (MacOS & Linux)
 
 1. Make sure [Docker](https://www.docker.com/) is installed
