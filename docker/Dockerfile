@@ -1,43 +1,53 @@
-FROM ubuntu:22.04
+FROM debian:12-slim
 
-# disable interactive prompts during installation
+# Disable interactive prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# install system tools and development packages
-RUN apt-get update && apt-get install -y \
+# Install system tools and development packages in a single layer
+# Clean up apt cache in the same layer to reduce image size
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     bash \
-    vim \
+    vim-tiny \
     git \
     ffmpeg \
     tmux \
     curl \
     python3 \
+    python3-venv \
     python3-pip \
-    && ln -s /usr/bin/python3 /usr/bin/python \
-    && rm -rf /var/lib/apt/lists/*
+    && ln -sf /usr/bin/python3 /usr/bin/python \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# download and install gotty
+# Download and install gotty
 RUN wget https://github.com/sorenisanerd/gotty/releases/download/v1.5.0/gotty_v1.5.0_linux_amd64.tar.gz && \
     tar -xzf gotty_v1.5.0_linux_amd64.tar.gz && \
     mv gotty /usr/local/bin/ && \
     rm gotty_v1.5.0_linux_amd64.tar.gz
 
-# install Cha from GitHub
-RUN git clone https://github.com/MehmetMHY/cha.git && \
+# Create and activate virtual environment, then install Cha
+RUN python3 -m venv /opt/venv && \
+    git clone --depth 1 https://github.com/MehmetMHY/cha.git && \
+    . /opt/venv/bin/activate && \
     cd cha && \
-    pip3 install -e .
+    pip install -e . && \
+    rm -rf .git && \
+    deactivate
 
-# set up a clean and simple vim configuration
+# Add virtual environment to PATH
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Set up vim configuration
 RUN echo "set number\nset mouse=a\nsyntax on\nset autoindent\nset tabstop=4\nset shiftwidth=4\nset expandtab" > /root/.vimrc
 
-# set up a basic tmux configuration
+# Set up tmux configuration
 RUN echo "set -g mouse on\nset -g history-limit 30000\nset -g status-bg black\nset -g status-fg white" > /root/.tmux.conf
 
-# customize bash prompt to show only path
+# Customize bash prompt
 RUN echo 'PS1="\w# "' >> /root/.bashrc
 
-# create startup script to verify API keys and prepare the shell startup
+# Create startup script
 RUN echo '#!/bin/bash\n\
 if [ -z "$OPENAI_API_KEY" ] || [ -z "$BRAVE_API_KEY" ]; then\n\
     echo "Error: Required environment variables not set!"\n\
@@ -47,6 +57,7 @@ if [ -z "$OPENAI_API_KEY" ] || [ -z "$BRAVE_API_KEY" ]; then\n\
 fi\n\
 # Create a custom shell startup script\n\
 echo "#!/bin/bash" > /custom_shell.sh\n\
+echo "source /opt/venv/bin/activate" >> /custom_shell.sh\n\
 echo "cha -h" >> /custom_shell.sh\n\
 echo "echo" >> /custom_shell.sh\n\
 echo "exec bash" >> /custom_shell.sh\n\
@@ -56,10 +67,9 @@ exec "$@"' > /start.sh && \
 
 WORKDIR /root
 
-# expose GoTTY's default port
+# Expose GoTTY's default port
 EXPOSE 8080
 
-# use the startup script as entrypoint
+# Use the startup script as entrypoint
 ENTRYPOINT ["/start.sh"]
 CMD ["gotty", "--permit-write", "--reconnect", "--title-format", "cha", "/custom_shell.sh"]
-
