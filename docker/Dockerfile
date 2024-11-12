@@ -1,10 +1,9 @@
 FROM debian:12-slim
 
-# Disable interactive prompts during installation
+# disable interactive prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system tools and development packages in a single layer
-# Clean up apt cache in the same layer to reduce image size
+# install dependencies and tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     bash \
@@ -20,13 +19,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Download and install gotty
+# download and install gotty
 RUN wget https://github.com/sorenisanerd/gotty/releases/download/v1.5.0/gotty_v1.5.0_linux_amd64.tar.gz && \
     tar -xzf gotty_v1.5.0_linux_amd64.tar.gz && \
     mv gotty /usr/local/bin/ && \
     rm gotty_v1.5.0_linux_amd64.tar.gz
 
-# Create and activate virtual environment, then install Cha
+# create and activate virtual environment, then install Cha
 RUN python3 -m venv /opt/venv && \
     git clone --depth 1 https://github.com/MehmetMHY/cha.git && \
     . /opt/venv/bin/activate && \
@@ -35,19 +34,19 @@ RUN python3 -m venv /opt/venv && \
     rm -rf .git && \
     deactivate
 
-# Add virtual environment to PATH
+# add virtual environment to PATH
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Set up vim configuration
+# set up vim configuration
 RUN echo "set number\nset mouse=a\nsyntax on\nset autoindent\nset tabstop=4\nset shiftwidth=4\nset expandtab" > /root/.vimrc
 
-# Set up tmux configuration
+# set up tmux configuration
 RUN echo "set -g mouse on\nset -g history-limit 30000\nset -g status-bg black\nset -g status-fg white" > /root/.tmux.conf
 
-# Customize bash prompt
+# create a customize, simple, bash prompt
 RUN echo 'PS1="\w# "' >> /root/.bashrc
 
-# Create startup script
+# create startup script
 RUN echo '#!/bin/bash\n\
 if [ -z "$OPENAI_API_KEY" ] || [ -z "$BRAVE_API_KEY" ]; then\n\
     echo "Error: Required environment variables not set!"\n\
@@ -60,6 +59,7 @@ echo "#!/bin/bash" > /custom_shell.sh\n\
 echo "source /opt/venv/bin/activate" >> /custom_shell.sh\n\
 echo "cha -h" >> /custom_shell.sh\n\
 echo "echo" >> /custom_shell.sh\n\
+echo "cha -pt" >> /custom_shell.sh\n\
 echo "exec bash" >> /custom_shell.sh\n\
 chmod +x /custom_shell.sh\n\
 exec "$@"' > /start.sh && \
@@ -67,9 +67,9 @@ exec "$@"' > /start.sh && \
 
 WORKDIR /root
 
-# Expose GoTTY's default port
+# expose GoTTY's default port
 EXPOSE 8080
 
-# Use the startup script as entrypoint
+# use the startup script as entrypoint
 ENTRYPOINT ["/start.sh"]
 CMD ["gotty", "--permit-write", "--reconnect", "--title-format", "cha", "/custom_shell.sh"]
