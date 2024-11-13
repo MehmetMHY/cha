@@ -27,6 +27,8 @@ RUN wget https://github.com/sorenisanerd/gotty/releases/download/v1.5.0/gotty_v1
 
 # create and activate virtual environment, then install Cha
 RUN python3 -m venv /opt/venv && \
+    # add a cache-busting step to ensure the repo is always cloned
+    rm -rf cha && \
     git clone --depth 1 https://github.com/MehmetMHY/cha.git && \
     . /opt/venv/bin/activate && \
     cd cha && \
