@@ -13,8 +13,8 @@ HELP_PRINT_OPTIONS_KEY = "!h"
 LOAD_MESSAGE_CONTENT = "!l"
 RUN_ANSWER_FEATURE = "!a"
 
-# NOTE: last updated on 10-17-2024
-CHA_DEFAULT_MODEL = "gpt-4o"
+# last updated on 11-13-2024
+CHA_DEFAULT_MODEL = "chatgpt-4o-latest"
 
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o1", "o2", "o3"]
