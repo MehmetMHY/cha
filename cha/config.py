@@ -72,12 +72,12 @@ DEFAULT_SEARCH_RESULT_COUNT = 5
 DEFAULT_SEARCH_TIME_DELAY_SECONDS = 1
 DEFAULT_GEN_SEARCH_QUERY_COUNT = 3
 SEARCH_FILTER_OPTIONS = ["web", "news", "query", "infobox", "discussions", "none"]
-VALID_FRESHNESS_IDS = {
-    "pd": "past day",
-    "pw": "past week",
-    "pm": "past month",
-    "py": "past year",
-    "none": "all time",
+VALID_FRESHNESS_ALIAS = {
+    "day": "pd",
+    "week": "pw",
+    "month": "pm",
+    "year": "py",
+    "all": "none",
 }
 
 VIDEO_SCRAPER_YOUTUBE_KEY_VALUES = [

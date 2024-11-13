@@ -132,12 +132,7 @@ def gen_image(client):
             colors.red("Please enter 'standard' or 'hd' for quality"),
         )
 
-        # # NOTE: (11-8-2024) disabled user inputting n to limit cost and avoid deep errors
-        # n = get_user_input(
-        #     colors.blue("N (number of images): "),
-        #     lambda x: x.isdigit() and int(x) > 0,
-        #     colors.red("Please enter a positive integer"),
-        # )
+        # NOTE: (11-8-2024) the user having the ability to input n has been disabled to limit cost and avoid deep errors
         n = 1
 
         size = get_user_input(

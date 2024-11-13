@@ -47,7 +47,7 @@ These search engine queries are optimized towards getting the best results that 
 Each query should be optimized to capture different aspects or angles of the user's intent.
 Format the output strictly as an array of strings.
 Make sure to provide ATLEAST {min_results} good search engine queries.
-Also note, today's date in ISO 8601 format is: {datetime.now(timezone.utc).isoformat()}
+Also note, today's date in ISO 8601 format is: {str(datetime.now(timezone.utc).isoformat())} where the year is {str(datetime.now().year)}
     """
 
     # NOTE: this insures the output is always an array of strings as it should be
@@ -78,7 +78,7 @@ def brave_search(
     freshness="none",
     result_filter=None,
 ):
-    if freshness not in list(config.VALID_FRESHNESS_IDS.keys()):
+    if freshness not in list(config.VALID_FRESHNESS_ALIAS.values()):
         raise Exception(f"Freshness '{freshness}' is NOT a valid freshness id")
 
     if result_filter == None or type(result_filter) != str:
@@ -157,18 +157,22 @@ def answer_search(
 
         prompt = utils.safe_input(colors.blue(f"Question: "))
 
-        freshness_state = utils.safe_input(
-            colors.blue(
-                "Freshness:"
-                + "".join(
-                    f"\n- {f} = {config.VALID_FRESHNESS_IDS[f]}"
-                    for f in config.VALID_FRESHNESS_IDS
+        freshness_state = "none"
+        while True:
+            freshness_alias = utils.safe_input(colors.blue("Past: "))
+            freshness_alias = str(freshness_alias).lower()
+
+            if len(freshness_alias) == 0:
+                break
+            elif freshness_alias in config.VALID_FRESHNESS_ALIAS:
+                freshness_state = config.VALID_FRESHNESS_ALIAS[freshness_alias]
+                break
+
+            print(
+                colors.red(
+                    f"Valid Past(s): {', '.join(config.VALID_FRESHNESS_ALIAS.keys())}"
                 )
-                + "\n> "
             )
-        )
-        if len(freshness_state) == 0:
-            freshness_state = "none"
 
         filters = config.SEARCH_FILTER_OPTIONS
 
