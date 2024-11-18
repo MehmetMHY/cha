@@ -2,16 +2,16 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.9.8",
+    version="0.9.9",
     packages=find_packages(),
     license="MIT",
     description="A simple CLI tool for easily interacting with powerful AI models",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
-        "openai==1.54.3",
+        "openai==1.54.4",
         "beautifulsoup4==4.12.3",
-        "yt-dlp==2024.11.4",
+        "yt-dlp==2024.11.18",
         "youtube-transcript-api==0.6.2",
         "PyMuPDF==1.24.13",
         "pillow==11.0.0",

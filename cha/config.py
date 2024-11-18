@@ -19,6 +19,8 @@ CHA_DEFAULT_MODEL = "chatgpt-4o-latest"
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o1", "o2", "o3"]
 
+FILES_TO_IGNORE = [".DS_Store", ".env"]
+
 TERMINAL_THEME_CODES = {
     "reset": "\033[0m",
     "colors": {

@@ -57,7 +57,9 @@ def title_print(selected_model):
 
 
 def msg_content_load():
-    files = [f for f in os.listdir() if os.path.isfile(f)]
+    files = [
+        f for f in os.listdir() if os.path.isfile(f) and f not in config.FILES_TO_IGNORE
+    ]
 
     if len(files) == 0:
         print(colors.red(f"No files found in the current directory"), end="")
