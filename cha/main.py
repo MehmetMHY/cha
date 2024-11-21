@@ -1,12 +1,14 @@
 import sys
 
-# NOTE: this exists to prevent a ugly print from showing if some cancels quickly
 try:
+    import subprocess
+    import tempfile
     import argparse
     import time
     import re
     import os
 
+    # 3rd party packages
     from openai import OpenAI
     from cha import scraper, colors, image, utils, config, answer, loading
 except (KeyboardInterrupt, EOFError):
@@ -20,6 +22,42 @@ client = OpenAI(
 
 # global, in memory, variables
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
+
+
+def check_terminal_editors_and_edit():
+    for editor in config.SUPPORTED_TERMINAL_IDES:
+        try:
+            # check if the editor is installed
+            subprocess.run(
+                [editor, "--version"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+
+            # create a temporary file
+            with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmpfile:
+                tmpfile_name = tmpfile.name
+
+            # open the chosen editor with the temporary file
+            subprocess.run([editor, tmpfile_name])
+
+            # read the content from the temporary file
+            with open(tmpfile_name, "r") as file:
+                content = file.read()
+
+            # attempt to delete the temporary file
+            try:
+                os.remove(tmpfile_name)
+            except OSError:
+                pass
+
+            return content
+
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            continue
+
+    return None
 
 
 def list_models():
@@ -51,7 +89,8 @@ def title_print(selected_model):
  - '{config.SAVE_CHAT_HISTORY}' to save chat history
  - '{config.LOAD_MESSAGE_CONTENT}' to load a file into your prompt
  - '{config.HELP_PRINT_OPTIONS_KEY}' list all options
- - '{config.RUN_ANSWER_FEATURE}' run answer feature"""
+ - '{config.RUN_ANSWER_FEATURE}' run answer feature
+ - '{config.TEXT_EDITOR_INPUT_MODE}' for text-editor input mode"""
         ).strip()
     )
 
@@ -161,6 +200,15 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 user_input_string = colors.red("[M] ") + colors.blue("User: ")
 
             message = utils.safe_input(user_input_string).rstrip("\n")
+
+            if message == config.TEXT_EDITOR_INPUT_MODE:
+                editor_content = check_terminal_editors_and_edit()
+                if editor_content == None:
+                    print(colors.red(f"No text editor available or editing cancelled"))
+                    continue
+                message = editor_content
+                for line in message.rstrip("\n").split("\n"):
+                    print(colors.blue(">"), line)
 
             if message == config.MULTI_LINE_MODE_TEXT:
                 multi_line_input = True
