@@ -12,9 +12,12 @@ EXIT_STRING_KEY = "!e"
 HELP_PRINT_OPTIONS_KEY = "!h"
 LOAD_MESSAGE_CONTENT = "!l"
 RUN_ANSWER_FEATURE = "!a"
+TEXT_EDITOR_INPUT_MODE = "!t"
 
 # last updated on 11-19-2024
 CHA_DEFAULT_MODEL = "gpt-4o"
+
+SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
 
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o1", "o2", "o3"]
