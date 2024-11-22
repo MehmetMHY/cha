@@ -18,6 +18,7 @@ TEXT_EDITOR_INPUT_MODE = "!t"
 CHA_DEFAULT_MODEL = "gpt-4o"
 
 SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
+PREFERRED_TERMINAL_IDE = "micro"
 
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o1", "o2", "o3"]

@@ -54,9 +54,25 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
    ```
 
 3. **Apply the environment variables**
+
    ```bash
    source .env
    ```
+
+4. **Configure Micro IDE for Editor Input Mode (Optional)**:
+
+   Cha's Text-Editor Input Mode can use terminal-based text editors like vim, vi, nano, or emacs. For a simple and streamlined experience, we recommend Micro with the specific configuration below.
+
+   - Install the Micro IDE: [Micro IDE Installation Guide](https://github.com/zyedidia/micro)
+   - Edit the configuration file: `~/.config/micro/bindings.json`
+   - Add the following key-value:
+     ```json
+     {
+       "Ctrl-q": "Save,Quit"
+     }
+     ```
+
+   By making this change, you can just start writing immediately then easily save and exit the Micro editor using `Ctrl-Q` when working in Cha's Text-Editor Input Mode.
 
 ### Usage
 
@@ -102,9 +118,11 @@ Cha can be run in Docker and accessed through the browser. This is great if you 
 For those interested in contributing or experimenting with Cha:
 
 1. **Install in Editable Mode**:
+
    ```bash
    pip install -e .
    ```
+
 2. **Develop and Test**: Modify the source code and test changes using `cha`.
 
 3. **(optional) Load your Custom Configuration**: Use the `CHA_PYTHON_CUSTOM_CONFIG_PATH` environment variable to point to a custom `config.py` file that overrides default global variables. Set it using `export CHA_PYTHON_CUSTOM_CONFIG_PATH="/path/to/your/config.py"`. Make sure your defined variables is all uppercase.
