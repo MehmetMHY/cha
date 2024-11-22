@@ -4,6 +4,7 @@ import tempfile
 import base64
 import uuid
 import json
+import copy
 import sys
 import re
 import os
@@ -114,7 +115,11 @@ def simple_date(epoch_time):
 
 
 def check_terminal_editors_and_edit():
-    for editor in config.SUPPORTED_TERMINAL_IDES:
+    terminals = copy.deepcopy(config.SUPPORTED_TERMINAL_IDES)
+    if config.PREFERRED_TERMINAL_IDE != None:
+        terminals.insert(0, config.PREFERRED_TERMINAL_IDE)
+
+    for editor in terminals:
         try:
             # check if the editor is installed
             subprocess.run(
