@@ -1,8 +1,11 @@
+import subprocess
 import datetime
+import tempfile
 import base64
 import uuid
 import json
 import sys
+import re
 import os
 
 import tiktoken
@@ -10,7 +13,11 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-from cha import config, colors
+from cha import colors, utils, config, answer
+
+
+def is_o_model(model_name):
+    return re.match(r"^o\d+-", model_name) is not None
 
 
 def count_tokens(text, model_name):
@@ -104,3 +111,93 @@ def simple_date(epoch_time):
     date_time = datetime.datetime.fromtimestamp(epoch_time)
     formatted_date = date_time.strftime("%B %d, %Y")
     return formatted_date
+
+
+def check_terminal_editors_and_edit():
+    for editor in config.SUPPORTED_TERMINAL_IDES:
+        try:
+            # check if the editor is installed
+            subprocess.run(
+                [editor, "--version"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+
+            # create a temporary file
+            with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmpfile:
+                tmpfile_name = tmpfile.name
+
+            # open the chosen editor with the temporary file
+            subprocess.run([editor, tmpfile_name])
+
+            # read the content from the temporary file
+            with open(tmpfile_name, "r") as file:
+                content = file.read()
+
+            # attempt to delete the temporary file
+            try:
+                os.remove(tmpfile_name)
+            except OSError:
+                pass
+
+            return content
+
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            continue
+
+    return None
+
+
+def msg_content_load():
+    files = [
+        f for f in os.listdir() if os.path.isfile(f) and f not in config.FILES_TO_IGNORE
+    ]
+
+    if len(files) == 0:
+        print(colors.red(f"No files found in the current directory"), end="")
+        return None
+
+    print(colors.yellow(f"Current Directory:"), os.getcwd())
+    print(colors.yellow("File(s):"))
+    for i in range(len(files)):
+        print(f"   {i+1}) {files[i]}")
+
+    while True:
+        try:
+            file_pick = input(colors.yellow(f"File ID (1-{len(files)}): "))
+            file_path = files[int(file_pick) - 1]
+            break
+        except KeyboardInterrupt:
+            return None
+        except EOFError:
+            return None
+        except:
+            pass
+
+    with open(file_path, "r") as file:
+        content = file.read()
+
+    prompt = input(colors.yellow("Additional Prompt: "))
+
+    output = content
+    if len(prompt) > 0:
+        output = f"""
+PROMPT: {prompt}
+CONTENT:
+``````````
+{content}
+``````````
+"""
+
+    return output
+
+
+def run_answer_search(client, user_input_mode=True):
+    try:
+        utils.check_env_variable(
+            "BRAVE_API_KEY", "https://api.search.brave.com/app/dashboard"
+        )
+        return answer.answer_search(client=client, user_input_mode=user_input_mode)
+    except (KeyboardInterrupt, EOFError, SystemExit):
+        return None
