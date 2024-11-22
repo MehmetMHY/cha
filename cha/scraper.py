@@ -1,10 +1,10 @@
 import concurrent.futures
 import subprocess
+import tempfile
 import string
 import json
 import re
 import os
-import uuid
 
 import fitz  # PyMuPDF
 from bs4 import BeautifulSoup
@@ -46,15 +46,14 @@ def clean_subtitle_text(input_text):
 
 def yt_dlp_transcript_extractor(url, lang="en"):
     try:
-        # generate command and filepath
+        # create a temporary file for the subtitle
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".srt") as tmp_file:
+            base_filepath = tmp_file.name
+            subtitle_path = f"{base_filepath}.{lang}.srt"
+
         # https://www.reddit.com/r/youtubedl/comments/15fcrmd/transcript_extract_from_youtube_videos_ytdlp/
         root_cmd = "yt-dlp --skip-download --write-subs --write-auto-subs"
-        filename = f"cha_yt_{uuid.uuid4()}.srt"
-        filepath = os.path.join(os.getcwd(), filename)
-        cmd = f'{root_cmd} --sub-lang {lang} --sub-format ttml --convert-subs srt --output "{filepath}" "{url}"'
-
-        # expected subtitle file path
-        subtitle_path = f"{filepath}.{lang}.srt"
+        cmd = f'{root_cmd} --sub-lang {lang} --sub-format ttml --convert-subs srt --output "{base_filepath}" "{url}"'
 
         # run yt-dlp command and capture output
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -67,23 +66,30 @@ def yt_dlp_transcript_extractor(url, lang="en"):
             raise Exception(f"no subtitles found for language: {lang}")
 
         # load and process subtitle content
-        content = utils.read_file(subtitle_path)
-        content = "\n".join(content)
+        with open(subtitle_path, "r", encoding="utf-8") as file:
+            content = file.read()
 
         processed_content = clean_subtitle_text(content)
 
-        # clean up the subtitle file
+        # clean up temporary files
         try:
+            os.remove(base_filepath)
             os.remove(subtitle_path)
-        except OSError:
-            loading.print_message(
-                colors.red(f"failed to delete tmp file {subtitle_path}")
-            )
-            pass
+        except OSError as e:
+            loading.print_message(colors.red(f"failed to delete temporary files: {e}"))
 
         return processed_content
 
     except Exception as e:
+        # clean up temporary files in case of error
+        try:
+            if "base_filepath" in locals():
+                os.remove(base_filepath)
+            if "subtitle_path" in locals():
+                os.remove(subtitle_path)
+        except OSError:
+            pass
+
         loading.print_message(colors.red(f"yt-dlp scraper failed: {e}"))
         return None
 
@@ -252,21 +258,27 @@ def scrape_pdf_url(url):
             raise Exception(f"http GET request failed due to an error code or timeout")
 
         if response.headers.get("Content-Type") == "application/pdf":
-            filename = f"cha_{uuid.uuid4()}.pdf"
-            with open(filename, "wb") as file:
-                file.write(response.content)
+            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
+                tmp_file.write(response.content)
+                tmp_path = tmp_file.name
 
-            # extract text from the PDF
-            document = fitz.open(filename)
-            text = ""
-            for page_num in range(len(document)):
-                page = document.load_page(page_num)
-                text += page.get_text()
+            try:
+                document = fitz.open(tmp_path)
+                text = ""
+                for page_num in range(len(document)):
+                    page = document.load_page(page_num)
+                    text += page.get_text()
+                document.close()
+                return text
 
-            # delete the PDF file
-            os.remove(filename)
-
-            return text
+            finally:
+                # clean up temporary file
+                try:
+                    os.remove(tmp_path)
+                except OSError as e:
+                    loading.print_message(
+                        colors.red(f"Failed to delete temporary PDF file: {e}")
+                    )
 
         raise Exception(f"URL {url} is NOT a valid PDF file")
     except Exception as e:
