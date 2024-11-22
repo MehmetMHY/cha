@@ -1,16 +1,11 @@
 import sys
 
 try:
-    import subprocess
-    import tempfile
     import argparse
     import time
-    import re
     import os
-
-    # 3rd party packages
     from openai import OpenAI
-    from cha import scraper, colors, image, utils, config, answer, loading
+    from cha import scraper, colors, image, utils, config, loading
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
@@ -22,59 +17,6 @@ client = OpenAI(
 
 # global, in memory, variables
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
-
-
-def check_terminal_editors_and_edit():
-    for editor in config.SUPPORTED_TERMINAL_IDES:
-        try:
-            # check if the editor is installed
-            subprocess.run(
-                [editor, "--version"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=True,
-            )
-
-            # create a temporary file
-            with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmpfile:
-                tmpfile_name = tmpfile.name
-
-            # open the chosen editor with the temporary file
-            subprocess.run([editor, tmpfile_name])
-
-            # read the content from the temporary file
-            with open(tmpfile_name, "r") as file:
-                content = file.read()
-
-            # attempt to delete the temporary file
-            try:
-                os.remove(tmpfile_name)
-            except OSError:
-                pass
-
-            return content
-
-        except (FileNotFoundError, subprocess.CalledProcessError):
-            continue
-
-    return None
-
-
-def list_models():
-    try:
-        response = client.models.list()
-        if not response.data:
-            raise ValueError("No models available")
-
-        return [
-            (model.id, model.created)
-            for model in response.data
-            if any(substr in model.id for substr in config.OPENAI_MODELS_TO_KEEP)
-            and not any(substr in model.id for substr in config.OPENAI_MODELS_TO_IGNORE)
-        ]
-    except Exception as e:
-        print(colors.red(f"Error fetching models: {e}"))
-        sys.exit(1)
 
 
 def title_print(selected_model):
@@ -95,66 +37,25 @@ def title_print(selected_model):
     )
 
 
-def msg_content_load():
-    files = [
-        f for f in os.listdir() if os.path.isfile(f) and f not in config.FILES_TO_IGNORE
-    ]
-
-    if len(files) == 0:
-        print(colors.red(f"No files found in the current directory"), end="")
-        return None
-
-    print(colors.yellow(f"Current Directory:"), os.getcwd())
-    print(colors.yellow("File(s):"))
-    for i in range(len(files)):
-        print(f"   {i+1}) {files[i]}")
-
-    while True:
-        try:
-            file_pick = input(colors.yellow(f"File ID (1-{len(files)}): "))
-            file_path = files[int(file_pick) - 1]
-            break
-        except KeyboardInterrupt:
-            return None
-        except EOFError:
-            return None
-        except:
-            pass
-
-    with open(file_path, "r") as file:
-        content = file.read()
-
-    prompt = input(colors.yellow("Additional Prompt: "))
-
-    output = content
-    if len(prompt) > 0:
-        output = f"""
-PROMPT: {prompt}
-CONTENT:
-``````````
-{content}
-``````````
-"""
-
-    return output
-
-
-def is_o_model(model_name):
-    return re.match(r"^o\d+-", model_name) is not None
-
-
-def run_answer_search(client, user_input_mode=True):
+def list_models():
     try:
-        utils.check_env_variable(
-            "BRAVE_API_KEY", "https://api.search.brave.com/app/dashboard"
-        )
-        return answer.answer_search(client=client, user_input_mode=user_input_mode)
-    except (KeyboardInterrupt, EOFError, SystemExit):
-        return None
+        response = client.models.list()
+        if not response.data:
+            raise ValueError("No models available")
+
+        return [
+            (model.id, model.created)
+            for model in response.data
+            if any(substr in model.id for substr in config.OPENAI_MODELS_TO_KEEP)
+            and not any(substr in model.id for substr in config.OPENAI_MODELS_TO_IGNORE)
+        ]
+    except Exception as e:
+        print(colors.red(f"Error fetching models: {e}"))
+        sys.exit(1)
 
 
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
-    is_o1 = is_o_model(selected_model)
+    is_o1 = utils.is_o_model(selected_model)
 
     # NOTE: for o1 models don't accept system prompts
     messages = [] if is_o1 else [{"role": "system", "content": config.INITIAL_PROMPT}]
@@ -202,7 +103,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             message = utils.safe_input(user_input_string).rstrip("\n")
 
             if message == config.TEXT_EDITOR_INPUT_MODE:
-                editor_content = check_terminal_editors_and_edit()
+                editor_content = utils.check_terminal_editors_and_edit()
                 if editor_content == None:
                     print(colors.red(f"No text editor available or editing cancelled"))
                     continue
@@ -248,7 +149,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 continue
 
             if message == config.LOAD_MESSAGE_CONTENT:
-                message = msg_content_load()
+                message = utils.msg_content_load()
                 if message is None:
                     print()
                     continue
@@ -274,7 +175,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         loading.stop_loading()
 
             if message == config.RUN_ANSWER_FEATURE:
-                message = run_answer_search(client, True)
+                message = utils.run_answer_search(client, True)
                 if message != None:
                     messages.append({"role": "user", "content": message})
                 continue
@@ -402,7 +303,7 @@ def cli():
             sys.exit(1 if status is None else 0)
 
         if args.answer_search == True:
-            output = run_answer_search(client, True)
+            output = utils.run_answer_search(client, True)
             sys.exit(1 if output is None else 0)
 
         title_print_value = args.print_title
