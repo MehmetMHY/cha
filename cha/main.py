@@ -251,6 +251,7 @@ def cli():
             action="store_true",
         )
         parser.add_argument(
+            "-a",
             "-as",
             "--answer_search",
             help="Run answer search",
