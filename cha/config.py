@@ -77,14 +77,6 @@ DEFAULT_SEARCH_MAX_TOKEN_LIMIT = 120_000
 DEFAULT_SEARCH_RESULT_COUNT = 5
 DEFAULT_SEARCH_TIME_DELAY_SECONDS = 1
 DEFAULT_GEN_SEARCH_QUERY_COUNT = 3
-SEARCH_FILTER_OPTIONS = ["web", "news", "query", "infobox", "discussions", "none"]
-VALID_FRESHNESS_ALIAS = {
-    "day": "pd",
-    "week": "pw",
-    "month": "pm",
-    "year": "py",
-    "all": "none",
-}
 
 VIDEO_SCRAPER_YOUTUBE_KEY_VALUES = [
     "title",

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
+from duckduckgo_search import DDGS
 from pydantic import BaseModel
-import requests
 import time
 import json
 import os
@@ -72,71 +72,30 @@ Also note, today's date in ISO 8601 format is: {str(datetime.now(timezone.utc).i
     return completion.choices[0].message.parsed.queries
 
 
-def brave_search(
-    search_input,
-    count=3,
-    freshness="none",
-    result_filter=None,
-):
-    if freshness not in list(config.VALID_FRESHNESS_ALIAS.values()):
-        raise Exception(f"Freshness '{freshness}' is NOT a valid freshness id")
-
-    if result_filter == None or type(result_filter) != str:
-        result_filter = "web,news,query,infobox,discussions"
-
-    # setup Brave API key: https://api.search.brave.com/app/dashboard
-    response = requests.get(
-        "https://api.search.brave.com/res/v1/web/search",
-        headers={
-            "Accept": "application/json",
-            "Accept-Encoding": "gzip",
-            "X-Subscription-Token": os.environ.get("BRAVE_API_KEY"),
-        },
-        params={
-            # (required) the user's search query term
-            "q": search_input,
-            # (optional) the search query country
-            "country": "us",
-            # (optional) the search language preference
-            "search_lang": "en",
-            # (optional) user interface language preferred in response
-            "ui_lang": "en-US",
-            # (optional) the number of search results returned in response
-            "count": count,
-            # (optional) the zero-based offset for pagination
-            "offset": 0,
-            # (optional) filters search results for adult content
-            "safesearch": "off",
-            # (optional) filters search results by when they were discovered
-            "freshness": freshness,
-            # (optional) specifies if text decorations should be applied
-            "text_decorations": 1,
-            # (optional) specifies if spellcheck should be applied
-            "spellcheck": 1,
-            # (optional) a comma-delimited string of result types to include
-            "result_filter": result_filter,
-        },
-    )
-
-    search_results = response.json()
-
-    # simplify final output for our needs
+def duckduckgo_search(search_input, count=3):
     try:
-        if search_results.get("type") == "ErrorResponse":
-            raise Exception(str(search_results.get("error")))
-        search_results = search_results["web"]["results"]
-        content = []
-        for result in search_results:
-            content.append(
-                {
-                    "title": result.get("title"),
-                    "url": result.get("url"),
-                    "description": result.get("description"),
-                    "page_age": result.get("page_age"),
-                    "age": result.get("age"),
-                }
+        with DDGS() as ddgs:
+            search_results = list(
+                ddgs.text(
+                    keywords=search_input,
+                    max_results=count,
+                    region="wt-wt",  # NOTE: this is equivalent to Brave's {'country': 'us'}
+                )
             )
-        return content
+
+            content = []
+            for result in search_results:
+                content.append(
+                    {
+                        "title": result.get("title"),
+                        "url": result.get("href"),
+                        "description": result.get("body"),
+                        "page_age": None,
+                        "age": None,
+                    }
+                )
+            return content
+
     except Exception as e:
         return {"error": e}
 
@@ -147,7 +106,6 @@ def answer_search(
     big_model=config.DEFAULT_SEARCH_BIG_MODEL,
     small_model=config.DEFAULT_SEARCH_SMALL_MODEL,
     result_count=config.DEFAULT_SEARCH_RESULT_COUNT,
-    freshness_state=config.DEFAULT_SEARCH_FRESHNESS_STATE,
     time_delay_seconds=config.DEFAULT_SEARCH_TIME_DELAY_SECONDS,
     token_limit=config.DEFAULT_SEARCH_MAX_TOKEN_LIMIT,
     user_input_mode=False,
@@ -156,25 +114,6 @@ def answer_search(
         print(colors.red(colors.underline(f"Answer Search - User Input")))
 
         prompt = utils.safe_input(colors.blue(f"Question: "))
-
-        freshness_state = "none"
-        while True:
-            freshness_alias = utils.safe_input(colors.blue("Past: "))
-            freshness_alias = str(freshness_alias).lower()
-
-            if len(freshness_alias) == 0:
-                break
-            elif freshness_alias in config.VALID_FRESHNESS_ALIAS:
-                freshness_state = config.VALID_FRESHNESS_ALIAS[freshness_alias]
-                break
-
-            print(
-                colors.red(
-                    f"Valid Past(s): {', '.join(config.VALID_FRESHNESS_ALIAS.keys())}"
-                )
-            )
-
-        filters = config.SEARCH_FILTER_OPTIONS
 
     search_queries = generate_search_queries(client, prompt, small_model)
 
@@ -185,9 +124,9 @@ def answer_search(
     search_results = []
     urls = []
     for query in search_queries:
-        results = brave_search(query, result_count, freshness_state, filters)
+        results = duckduckgo_search(query, result_count)
 
-        # TODO: this is here to prevent us from surpassing Brave's query limit
+        # TODO: this is here to prevent us from surpassing the search engine's query limit
         time.sleep(time_delay_seconds)
 
         if isinstance(results, dict) and "error" in results:
