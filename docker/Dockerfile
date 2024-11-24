@@ -25,9 +25,12 @@ RUN wget https://github.com/sorenisanerd/gotty/releases/download/v1.5.0/gotty_v1
     mv gotty /usr/local/bin/ && \
     rm gotty_v1.5.0_linux_amd64.tar.gz
 
+# add build argument for cache busting
+ARG CACHE_DATE=unknown
+
 # create and activate virtual environment, then install Cha
 RUN python3 -m venv /opt/venv && \
-    # add a cache-busting step to ensure the repo is always cloned
+    echo "Cache bust: $CACHE_DATE" && \
     rm -rf cha && \
     git clone --depth 1 https://github.com/MehmetMHY/cha.git && \
     . /opt/venv/bin/activate && \
@@ -50,10 +53,10 @@ RUN echo 'PS1="\w# "' >> /root/.bashrc
 
 # create startup script
 RUN echo '#!/bin/bash\n\
-if [ -z "$OPENAI_API_KEY" ] || [ -z "$BRAVE_API_KEY" ]; then\n\
+if [ -z "$OPENAI_API_KEY" ]; then\n\
     echo "Error: Required environment variables not set!"\n\
     echo "Please run the container with:"\n\
-    echo "docker run -it -p 8080:8080 -e OPENAI_API_KEY=your_key -e BRAVE_API_KEY=your_key gotty-term"\n\
+    echo "docker run -it -p 8080:8080 -e OPENAI_API_KEY=your_key gotty-term"\n\
     exit 1\n\
 fi\n\
 # Create a custom shell startup script\n\
@@ -75,3 +78,4 @@ EXPOSE 8080
 # use the startup script as entrypoint
 ENTRYPOINT ["/start.sh"]
 CMD ["gotty", "--permit-write", "--reconnect", "--title-format", "cha", "/custom_shell.sh"]
+

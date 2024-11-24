@@ -43,7 +43,6 @@ Run Cha using Docker to access the CLI tool via your browser. This is useful if 
    ```bash
    docker run -it -p 8080:8080 \
        -e OPENAI_API_KEY \
-       -e BRAVE_API_KEY \
        gotty-term
    ```
 
@@ -73,7 +72,6 @@ Run Cha using Docker to access the CLI tool via your browser. This is useful if 
    # NOTE: enter your environment variables here!
    docker run -it -p 8080:8080 `
        -e "OPENAI_API_KEY=<your_openai_api_key>" `
-       -e "BRAVE_API_KEY=<your_brave_api_key>" `
        gotty-term
    ```
 

@@ -7,14 +7,17 @@ URL="http://localhost:8080/"
 # build the image if it does not exist or ask to user to rebuild it
 if [[ "$(docker images -q ${IMAGE_NAME} 2>/dev/null)" == "" ]]; then
 	echo "Docker image ${IMAGE_NAME} does not exist. Building it now."
-	docker build -t ${IMAGE_NAME} .
+	docker build --build-arg CACHE_DATE="$(date)" -t ${IMAGE_NAME} .
 else
 	echo "Do you want to rebuild it? (y/N): "
 	read build_image
 
 	build_image=$(echo "$build_image" | tr '[:upper:]' '[:lower:]')
 	if [[ "$build_image" == "y" ]]; then
-		docker build -t ${IMAGE_NAME} .
+		echo "Removing existing ${IMAGE_NAME} image..."
+		docker rmi -f ${IMAGE_NAME}
+		echo "Building new ${IMAGE_NAME} image..."
+		docker build --build-arg CACHE_DATE="$(date)" -t ${IMAGE_NAME} .
 	fi
 fi
 
@@ -32,5 +35,4 @@ fi
 # run the Docker container
 docker run -it -p 8080:8080 \
 	-e OPENAI_API_KEY \
-	-e BRAVE_API_KEY \
 	${IMAGE_NAME}
