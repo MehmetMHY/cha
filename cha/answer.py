@@ -177,22 +177,25 @@ def answer_search(
                     print(colors.yellow(f"Cleared scraped content for {url}"))
                     break
 
-    print(colors.red(colors.underline("Response:")))
-
-    response = client.chat.completions.create(
-        model=big_model,
-        messages=[{"role": "user", "content": mega_prompt}],
-        stream=True,
-    )
-
     final_output = ""
-    for chunk in response:
-        if chunk.choices[0].delta.content is not None:
-            content = chunk.choices[0].delta.content
-            final_output += content
-            print(colors.green(content), end="", flush=True)
+    try:
+        print(colors.red(colors.underline("Response:")))
 
-    if final_output.endswith("\n") == False:
+        response = client.chat.completions.create(
+            model=big_model,
+            messages=[{"role": "user", "content": mega_prompt}],
+            stream=True,
+        )
+
+        for chunk in response:
+            if chunk.choices[0].delta.content is not None:
+                content = chunk.choices[0].delta.content
+                final_output += content
+                print(colors.green(content), end="", flush=True)
+
+        if final_output.endswith("\n") == False:
+            print()
+    except (KeyboardInterrupt, EOFError):
         print()
 
     return final_output
