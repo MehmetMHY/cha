@@ -39,18 +39,12 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 
 ### Configuration
 
-1. **API Keys Setup**: Grab your API keys from the following links
-
-   - [OpenAI API key](https://platform.openai.com/api-keys)
-   - (optional) [Brave Search API key](https://brave.com/search/api/)
+1. **API Key Setup**: Cha just requires a OpenAI API which you can grab [HERE](https://platform.openai.com/api-keys)
 
 2. **Setup your .env file**: Create a `.env` file in the root directory and add your keys
 
    ```bash
    export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
-
-   # (optional) this key is only needed if you want to use the Answer-Search feature
-   export BRAVE_API_KEY="YOUR_BRAVE_SEARCH_API_KEY"
    ```
 
 3. **Apply the environment variables**

@@ -200,9 +200,7 @@ CONTENT:
 
 def run_answer_search(client, user_input_mode=True):
     try:
-        utils.check_env_variable(
-            "BRAVE_API_KEY", "https://api.search.brave.com/app/dashboard"
-        )
+        utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
         return answer.answer_search(client=client, user_input_mode=user_input_mode)
     except (KeyboardInterrupt, EOFError, SystemExit):
         return None

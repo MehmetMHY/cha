@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.9.13",
+    version="0.10.0",
     packages=find_packages(),
     license="MIT",
     description="A simple CLI tool for easily interacting with powerful AI models",
@@ -16,6 +16,7 @@ setup(
         "PyMuPDF==1.24.13",
         "pillow==11.0.0",
         "tiktoken==0.8.0",
+        "duckduckgo_search==6.3.6",
     ],
     python_requires=">=3.9.2",
     entry_points={
