@@ -22,18 +22,23 @@ CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bo
 def title_print(selected_model):
     print(
         colors.yellow(
-            f"""Chatting With OpenAI's '{selected_model}' Model
- - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
- - '{config.MULTI_LINE_MODE_TEXT}' for single/multi-line mode
- - '{config.MULTI_LINE_SEND}' to end in multi-line mode
- - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
- - '{config.IMG_GEN_MODE}' for image generation
- - '{config.SAVE_CHAT_HISTORY}' to save chat history
- - '{config.LOAD_MESSAGE_CONTENT}' to load a file into your prompt
- - '{config.HELP_PRINT_OPTIONS_KEY}' list all options
- - '{config.RUN_ANSWER_FEATURE}' run answer feature
- - '{config.TEXT_EDITOR_INPUT_MODE}' for text-editor input mode"""
-        ).strip()
+            "\n".join(
+                line.strip()
+                for line in f"""
+Chatting With OpenAI's '{selected_model}' Model
+- '{config.EXIT_STRING_KEY}' or CTRL-C to exit
+- '{config.CLEAR_HISTORY_TEXT}' to clear chat history
+- '{config.IMG_GEN_MODE}' for image generation
+- '{config.SAVE_CHAT_HISTORY}' to save chat history
+- '{config.LOAD_MESSAGE_CONTENT}' to load a file
+- '{config.HELP_PRINT_OPTIONS_KEY}' to list all options
+- '{config.RUN_ANSWER_FEATURE}' to run answer search
+- '{config.TEXT_EDITOR_INPUT_MODE}' for text-editor input mode
+- '{config.MULTI_LINE_MODE_TEXT}' for single/multi-line switching
+- '{config.MULTI_LINE_SEND}' to end in multi-line mode
+                """.strip().splitlines()
+            )
+        )
     )
 
 

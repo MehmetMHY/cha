@@ -127,8 +127,7 @@ LOADING_ANIMATIONS = {
     ],
 }
 
-# NOTE: do NOT modify the code below!
-# NOTE: the logic below allows you to set your only config file path and load it in
+# NOTE: do NOT modify the code below! It allows setting and loading of a custom config file path (if provided)!
 
 import importlib.util
 import os

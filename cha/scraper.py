@@ -12,8 +12,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from cha import colors, utils, loading
 
 
-def clean_subtitle_text(input_text):
-    # NOTE: this function cleans the raw transcript outputted by yt-dlp
+def clean_yt_dlp_transcript(input_text):
     try:
         # remove empty lines
         lines = input_text.splitlines()
@@ -69,7 +68,7 @@ def yt_dlp_transcript_extractor(url, lang="en"):
         with open(subtitle_path, "r", encoding="utf-8") as file:
             content = file.read()
 
-        processed_content = clean_subtitle_text(content)
+        processed_content = clean_yt_dlp_transcript(content)
 
         # clean up temporary files
         try:
