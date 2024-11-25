@@ -1,8 +1,8 @@
 import itertools
 import threading
-import sys
-import time
 import random
+import time
+import sys
 from cha import colors, config
 
 
@@ -60,15 +60,7 @@ class LoadingAnimation:
     def start(self, text="Thinking", animation_type=None):
         """
         text (str): The text to display next to the animation
-        animation_type (str): The type of animation to use. Must be one of:
-            - "basic": Simple rotating line
-            - "vertical_bar": Vertical bar moving back and forth
-            - "dots": Four dots rotating
-            - "rectangles": Four rectangles rotating
-            - "circles": Four circles rotating
-            - "halfcircles": Four half circles rotating
-            - "braille": Braille pattern animation
-            If None or invalid, a random animation will be chosen.
+        animation_type (str): The type of animation to use
         """
         self.active = True
         self.loading_thread = threading.Thread(
