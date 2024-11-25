@@ -9,7 +9,7 @@ import os
 import fitz  # PyMuPDF
 from bs4 import BeautifulSoup
 from youtube_transcript_api import YouTubeTranscriptApi
-from cha import colors, utils, loading
+from cha import colors, utils, loading, config
 
 
 def clean_yt_dlp_transcript(input_text):
@@ -187,49 +187,7 @@ def process_url(url):
             content["description"] = re.sub(
                 r"https?://\S+|www\.\S+", "", meta_data.get("description", "")
             )
-        elif url.endswith(".pdf") or url.startswith(
-            ("https://arxiv.org/pdf/", "http://arxiv.org/pdf/")
-        ):
-            content = scrape_pdf_url(url)
-        elif url.startswith(
-            (
-                "https://www.vimeo.com",
-                "https://vimeo.com",
-                "https://www.twitch.tv",
-                "https://twitch.tv",
-                "https://www.dailymotion.com",
-                "https://dailymotion.com",
-                "https://www.dropout.tv",
-                "https://dropout.tv",
-                "https://www.linkedin.com",
-                "https://linkedin.com",
-                "https://www.twitter.com",
-                "https://twitter.com",
-                "https://x.com",
-                "https://www.cbsnews.com",
-                "https://cbsnews.com",
-                "https://www.cnn.com",
-                "https://cnn.com",
-                "https://www.cnbc.com",
-                "https://cnbc.com",
-                "https://www.abc.com.au",
-                "https://abc.com.au",
-                "https://www.bbc.co.uk",
-                "https://bbc.co.uk",
-                "https://www.cartoonnetwork.com",
-                "https://cartoonnetwork.com",
-                "https://www.canalplus.fr",
-                "https://canalplus.fr",
-                "https://www.arte.tv",
-                "https://arte.tv",
-                "https://www.cbc.ca",
-                "https://cbc.ca",
-                "https://www.3sat.de",
-                "https://3sat.de",
-                "https://www.ard.de",
-                "https://ard.de",
-            )
-        ):
+        elif url.startswith(tuple(config.VALID_VIDEO_ROOT_URL_DOMAINS_FOR_SCRAPING)):
             meta_data = yt_dlp_scraper(url=url, always_use_yt_dlp=True)
             content = {}
             for key in meta_data:
@@ -238,6 +196,10 @@ def process_url(url):
                 if isinstance(meta_data[key], (dict, list)):
                     continue
                 content[key] = meta_data[key]
+        elif url.endswith(".pdf") or url.startswith(
+            ("https://arxiv.org/pdf/", "http://arxiv.org/pdf/")
+        ):
+            content = scrape_pdf_url(url)
         else:
             content = remove_html(basic_scraper(url))
     except:

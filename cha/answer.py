@@ -5,7 +5,7 @@ import time
 import json
 import os
 
-from cha import scraper, colors, utils, config
+from cha import scraper, colors, utils, config, loading
 
 
 def create_mega_prompt(search_results, prompt):
@@ -121,6 +121,7 @@ def answer_search(
     for url in search_queries:
         print(colors.yellow(f"- {url}"))
 
+    loading.start_loading("Browsing", "circles")
     search_results = []
     urls = []
     for query in search_queries:
@@ -137,13 +138,29 @@ def answer_search(
             if url and not any(existing["url"] == url for existing in search_results):
                 search_results.append(result)
                 urls.append(url)
+    loading.stop_loading()
+
+    # TODO: this solution sucks, but scraping videos can take minutes to process or even lead to a crash
+    not_video_urls = [
+        url
+        for url in urls
+        if not url.startswith(tuple(config.VALID_VIDEO_ROOT_URL_DOMAINS_FOR_SCRAPING))
+    ]
+    if len(not_video_urls) == 0:
+        raise Exception(f"zero non-video based urls were founded")
 
     print(colors.red(colors.underline(f"Search Query Results ({len(urls)} Total):")))
     for url in urls:
-        print(colors.yellow(f"- {url}"))
+        if url not in not_video_urls:
+            print(colors.yellow(f"x {url}"))
+        else:
+            print(colors.yellow(f"- {url}"))
 
     print(colors.red(colors.underline("Scraping Website Content:")))
-    scrapped_data = scraper.get_all_htmls(urls)
+    loading.start_loading("Scraping", "circles")
+    scrapped_data = scraper.get_all_htmls(not_video_urls)
+    loading.stop_loading()
+
     for url in scrapped_data:
         for entry in search_results:
             if url == entry["url"]:
