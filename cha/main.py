@@ -235,7 +235,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     sys.stdout.flush()
 
         except Exception as e:
-            print(colors.red(f"Error during chat: {e}"))
+            print(colors.red(f"\nError during chat: {e}"))
             break
 
         CURRENT_CHAT_HISTORY.append(obj_chat_history)
