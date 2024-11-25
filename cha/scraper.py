@@ -325,7 +325,13 @@ def yt_dlp_scraper(url, always_use_yt_dlp=False):
         get_meta_data = executor.submit(video_metadata, url)
         get_transcript = executor.submit(video_transcript, url, always_use_yt_dlp)
 
+        if always_use_yt_dlp:
+            get_web_page = executor.submit(basic_scraper, url)
+
         meta_data = get_meta_data.result()
         meta_data["transcript"] = get_transcript.result()
+
+        if always_use_yt_dlp:
+            meta_data["web_page_scrape"] = remove_html(get_web_page.result())
 
         return meta_data
