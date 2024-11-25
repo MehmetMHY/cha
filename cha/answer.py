@@ -3,7 +3,6 @@ from duckduckgo_search import DDGS
 from pydantic import BaseModel
 import time
 import json
-import os
 
 from cha import scraper, colors, utils, config, loading
 
@@ -198,14 +197,22 @@ def answer_search(
     try:
         print(colors.red(colors.underline("Response:")))
 
+        loading.start_loading("Crafting", "circles")
+
         response = client.chat.completions.create(
             model=big_model,
             messages=[{"role": "user", "content": mega_prompt}],
             stream=True,
         )
 
+        received_first_chunk = False
         for chunk in response:
             if chunk.choices[0].delta.content is not None:
+                # stop loading animation after stream starts
+                if not received_first_chunk:
+                    loading.stop_loading()
+                    received_first_chunk = True
+
                 content = chunk.choices[0].delta.content
                 final_output += content
                 print(colors.green(content), end="", flush=True)
@@ -214,5 +221,7 @@ def answer_search(
             print()
     except (KeyboardInterrupt, EOFError):
         print()
+    finally:
+        loading.stop_loading()
 
     return final_output
