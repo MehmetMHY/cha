@@ -94,8 +94,8 @@ def duckduckgo_search(search_input, count=3):
                         "age": None,
                     }
                 )
-            return content
 
+            return content
     except Exception as e:
         return {"error": e}
 
