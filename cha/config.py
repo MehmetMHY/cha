@@ -83,6 +83,46 @@ SHOW_CURSOR = "\033[?25h"
 CLEAR_LINE = "\033[K"
 MOVE_CURSOR_ONE_LINE = "\033[F"
 
+VALID_VIDEO_ROOT_URL_DOMAINS_FOR_SCRAPING = [
+    "https://www.youtube.com",
+    "https://youtube.com",
+    "https://www.vimeo.com",
+    "https://vimeo.com",
+    "https://www.twitch.tv",
+    "https://twitch.tv",
+    "https://www.dailymotion.com",
+    "https://dailymotion.com",
+    "https://www.dropout.tv",
+    "https://dropout.tv",
+    "https://www.linkedin.com",
+    "https://linkedin.com",
+    "https://www.twitter.com",
+    "https://twitter.com",
+    "https://x.com",
+    "https://www.cbsnews.com",
+    "https://cbsnews.com",
+    "https://www.cnn.com",
+    "https://cnn.com",
+    "https://www.cnbc.com",
+    "https://cnbc.com",
+    "https://www.abc.com.au",
+    "https://abc.com.au",
+    "https://www.bbc.co.uk",
+    "https://bbc.co.uk",
+    "https://www.cartoonnetwork.com",
+    "https://cartoonnetwork.com",
+    "https://www.canalplus.fr",
+    "https://canalplus.fr",
+    "https://www.arte.tv",
+    "https://arte.tv",
+    "https://www.cbc.ca",
+    "https://cbc.ca",
+    "https://www.3sat.de",
+    "https://3sat.de",
+    "https://www.ard.de",
+    "https://ard.de",
+]
+
 # https://stackoverflow.com/questions/2685435/cooler-ascii-spinners
 # https://raw.githubusercontent.com/sindresorhus/cli-spinners/master/spinners.json
 LOADING_ANIMATIONS = {
