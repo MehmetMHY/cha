@@ -9,7 +9,7 @@ import os
 import fitz  # PyMuPDF
 from bs4 import BeautifulSoup
 from youtube_transcript_api import YouTubeTranscriptApi
-from cha import colors, utils, config, loading
+from cha import colors, utils, loading
 
 
 def clean_subtitle_text(input_text):
@@ -90,7 +90,7 @@ def yt_dlp_transcript_extractor(url, lang="en"):
         except OSError:
             pass
 
-        loading.print_message(colors.red(f"yt-dlp scraper failed: {e}"))
+        loading.print_message(colors.red(f"yt-dlp scraper failed - {e}"))
         return None
 
 
@@ -115,21 +115,24 @@ def video_metadata(url):
     return json.loads(output)
 
 
-def video_transcript(url):
+def video_transcript(url, always_use_yt_dlp=False):
     output = ""
     try:
-        video_id = url.replace(" ", "").split("v=")[1]
+        if not always_use_yt_dlp:
+            video_id = url.replace(" ", "").split("v=")[1]
 
-        # https://github.com/jdepoix/youtube-transcript-api
-        content = YouTubeTranscriptApi.get_transcript(video_id)
+            # https://github.com/jdepoix/youtube-transcript-api
+            content = YouTubeTranscriptApi.get_transcript(video_id)
 
-        for line in content:
-            output = output + line["text"] + " "
+            for line in content:
+                output = output + line["text"] + " "
+        else:
+            raise Exception("Forcing use of yt-dlp-based scraper")
     except Exception as e:
-        # yt-dlp scraper isn't as good as youtube_transcript_api, but it's better than nothing
-        loading.print_message(
-            colors.yellow(f"switching from API scraper to yt-dlp-based scraper")
-        )
+        if not always_use_yt_dlp:
+            loading.print_message(
+                colors.yellow("Switching from API scraper to yt-dlp-based scraper")
+            )
         output = yt_dlp_transcript_extractor(url, "en")
 
     return output
@@ -162,48 +165,80 @@ def basic_scraper(url):
         return f"An error occurred: {e}"
 
 
-def format_type(url):
-    if url.startswith("https://www.linkedin.com"):
-        return "linkedin"
-    if url.startswith("https://www.twitter.com") or url.startswith("https://x.com"):
-        return "twitter"
-    if url.startswith("https://www.youtube.com"):
-        return "youtube"
-    if (
-        url.endswith(".pdf")
-        or url.startswith("https://arxiv.org/pdf/")
-        or url.startswith("http://arxiv.org/pdf/")
-    ):
-        return "pdf"
-    return "unknown"
-
-
 def process_url(url):
     try:
-        video_format = format_type(url)
-
-        if video_format == "youtube":
-            content = unified_video_scraper(
-                url,
-                video_format,
-                config.VIDEO_SCRAPER_YOUTUBE_KEY_VALUES,
+        if url.startswith(("https://www.youtube.com", "https://youtube.com")):
+            meta_data = yt_dlp_scraper(url)
+            content = {
+                field: meta_data.get(field)
+                for field in [
+                    "title",
+                    "duration",
+                    "view_count",
+                    "like_count",
+                    "channel",
+                    "channel_follower_count",
+                    "uploader",
+                    "upload_date",
+                    "epoch",
+                    "fulltitle",
+                    "transcript",
+                ]
+            }
+            content["description"] = re.sub(
+                r"https?://\S+|www\.\S+", "", meta_data.get("description", "")
             )
-            if content != None:
-                content["description"] = re.sub(
-                    r"https?://\S+|www\.\S+", "", content.get("description", "")
-                )
-        elif video_format == "pdf":
+        elif url.endswith(".pdf") or url.startswith(
+            ("https://arxiv.org/pdf/", "http://arxiv.org/pdf/")
+        ):
             content = scrape_pdf_url(url)
-        elif video_format == "twitter":
-            content = unified_video_scraper(
-                url, video_format, config.VIDEO_SCRAPER_TWITTER_KEY_VALUES
+        elif url.startswith(
+            (
+                "https://www.vimeo.com",
+                "https://vimeo.com",
+                "https://www.twitch.tv",
+                "https://twitch.tv",
+                "https://www.dailymotion.com",
+                "https://dailymotion.com",
+                "https://www.dropout.tv",
+                "https://dropout.tv",
+                "https://www.linkedin.com",
+                "https://linkedin.com",
+                "https://www.twitter.com",
+                "https://twitter.com",
+                "https://x.com",
+                "https://www.cbsnews.com",
+                "https://cbsnews.com",
+                "https://www.cnn.com",
+                "https://cnn.com",
+                "https://www.cnbc.com",
+                "https://cnbc.com",
+                "https://www.abc.com.au",
+                "https://abc.com.au",
+                "https://www.bbc.co.uk",
+                "https://bbc.co.uk",
+                "https://www.cartoonnetwork.com",
+                "https://cartoonnetwork.com",
+                "https://www.canalplus.fr",
+                "https://canalplus.fr",
+                "https://www.arte.tv",
+                "https://arte.tv",
+                "https://www.cbc.ca",
+                "https://cbc.ca",
+                "https://www.3sat.de",
+                "https://3sat.de",
+                "https://www.ard.de",
+                "https://ard.de",
             )
-        elif video_format == "linkedin":
-            content = unified_video_scraper(
-                url,
-                video_format,
-                config.VIDEO_SCRAPER_LINKEDIN_KEY_VALUES,
-            )
+        ):
+            meta_data = yt_dlp_scraper(url=url, always_use_yt_dlp=True)
+            content = {}
+            for key in meta_data:
+                if key.startswith("_") or meta_data[key] is None:
+                    continue
+                if isinstance(meta_data[key], (dict, list)):
+                    continue
+                content[key] = meta_data[key]
         else:
             content = remove_html(basic_scraper(url))
     except:
@@ -285,44 +320,12 @@ def scrape_pdf_url(url):
         loading.print_message(colors.red(f"Failed to load PDF URL {url} due to {e}"))
 
 
-def unified_video_scraper(url, platform, fields=None):
-    platform = platform.lower()
+def yt_dlp_scraper(url, always_use_yt_dlp=False):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        get_meta_data = executor.submit(video_metadata, url)
+        get_transcript = executor.submit(video_transcript, url, always_use_yt_dlp)
 
-    try:
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            get_meta_data = executor.submit(video_metadata, url)
+        meta_data = get_meta_data.result()
+        meta_data["transcript"] = get_transcript.result()
 
-            if platform == "youtube":
-                get_transcript = executor.submit(video_transcript, url)
-            else:
-                get_transcript = executor.submit(yt_dlp_transcript_extractor, url)
-
-            meta_data = get_meta_data.result()
-            transcript = get_transcript.result()
-
-        result = {}
-        if fields:
-            for field in fields:
-                if field == "transcript":
-                    result["transcript"] = transcript
-                else:
-                    result[field] = meta_data.get(field)
-        else:
-            result = meta_data
-            result["transcript"] = transcript
-
-        if platform == "linkedin":
-            try:
-                post_content = remove_html(basic_scraper(url))
-            except:
-                post_content = None
-
-            return {
-                "post": post_content,
-                "video": result if any(result.values()) else None,
-            }
-
-        return result
-
-    except Exception as e:
-        return None
+        return meta_data
