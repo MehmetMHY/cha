@@ -12,10 +12,11 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 - **Interactive & Non-interactive Modes**: Interact with models via chat interface, command-line arguments, or file input.
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI.
 - **Text-Editor Input Mode**: Use your system's terminal based text editor instead of Python's `input()`, allowing easier input of complex and long prompts.
-- **Web and YouTube Scraping**: Extract YouTube video transcripts, web pdfs, and general web content.
+- **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
 - **Image Generation**: Generate custom images using OpenAI's image models.
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
+- **Back to Command Line**: Temporarily exit to the system shell from within the chat interface, execute shell commands, and return to the chat without closing the application.
 
 ## Vision
 
