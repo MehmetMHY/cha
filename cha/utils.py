@@ -204,3 +204,22 @@ def run_answer_search(client, user_input_mode=True):
         return answer.answer_search(client=client, user_input_mode=user_input_mode)
     except (KeyboardInterrupt, EOFError, SystemExit):
         return None
+
+
+def get_default_shell():
+    if sys.platform.startswith("win"):
+        return os.getenv("COMSPEC", "cmd.exe")
+
+    shell = os.getenv("SHELL")
+    if not shell:
+        try:
+            shell = (
+                subprocess.check_output(["getent", "passwd", os.getlogin()])
+                .decode()
+                .split(":")[-1]
+                .strip()
+            )
+        except Exception:
+            shell = "/bin/sh"
+
+    return shell
