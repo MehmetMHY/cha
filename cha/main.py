@@ -1,8 +1,8 @@
 import sys
 
 try:
-    import argparse
     import subprocess
+    import argparse
     import time
     import os
     from openai import OpenAI
@@ -153,20 +153,24 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if message == config.BACK_TO_COMMAND_LINE:
                 default_shell = utils.get_default_shell()
-                print(
-                    colors.red(
-                        f"Running Subprocess Shell {default_shell} - Enter CTRL-D to return to Cha!"
-                    )
-                )
+
+                # show a clear and noticeable warning message without being excessively large
+                message = f"Running Subprocess Shell {default_shell} - Enter CTRL-D to return to Cha!"
+                print(colors.red("*" * ((len("*** ") + len(message) + len(" ***")))))
+                print(colors.red(f"*** {message} ***"))
+                print(colors.red("*" * ((len("*** ") + len(message) + len(" ***")))))
+
                 cmd_option = "/c" if sys.platform.startswith("win") else "-c"
                 process = subprocess.run(
                     [default_shell, cmd_option, default_shell], shell=True
                 )
+
                 print(
                     colors.red(
                         f"Existed Subprocess Shell With Exist Code {process.returncode}"
                     )
                 )
+
                 continue
 
             if message == config.HELP_PRINT_OPTIONS_KEY:
