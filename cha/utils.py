@@ -161,28 +161,30 @@ def check_terminal_editors_and_edit():
     return None
 
 
-def load_most_files(file_path, client, model_name="gpt-4o"):
+def load_most_files(file_path, client, model_name="gpt-4o", prompt=None):
     file_ext = os.path.splitext(file_path)[1].lower()
 
     if file_ext in [".jpg", ".jpeg", ".png"]:
         with open(file_path, "rb") as image_file:
             base64_image = base64.b64encode(image_file.read()).decode("utf-8")
 
+        chat_history = [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+                    }
+                ],
+            }
+        ]
+
+        if type(prompt) == str:
+            chat_history.append({"role": "user", "content": prompt})
+
         response = client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}"
-                            },
-                        }
-                    ],
-                }
-            ],
+            model=model_name, messages=chat_history
         )
 
         return response.choices[0].message.content
@@ -256,19 +258,20 @@ def msg_content_load(client):
         except:
             pass
 
+    prompt = input(colors.yellow("Additional Prompt: "))
+
     try:
         loading.start_loading("Loading Content", "rectangles")
         content = load_most_files(
             client=client,
             file_path=file_path,
             model_name=config.CHA_DEFAULT_IMAGE_MODEL,
+            prompt=prompt,
         )
     except:
         raise Exception(f"failed to load file {file_path}")
     finally:
         loading.stop_loading()
-
-    prompt = input(colors.yellow("Additional Prompt: "))
 
     output = content
     if len(prompt) > 0:
