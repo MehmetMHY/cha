@@ -436,7 +436,8 @@ def cli():
         print()
     except Exception as err:
         if str(err):
-            print(colors.red(f"An error occurred: {err}"))
+            # NOTE: a newline is needed to prevent text overlap during streaming cancelation
+            print(colors.red(f"\nAn error occurred: {err}"))
         else:
             print(colors.red("Exited unexpectedly"))
         sys.exit(1)
