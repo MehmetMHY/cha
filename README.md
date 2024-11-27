@@ -6,6 +6,10 @@
 
 Cha is an open-source command-line tool that simplifies interactions with AI models from OpenAI. It allows users to efficiently engage with powerful language models directly from their terminal, enhancing development workflows. Check out the detailed demo [here](https://youtu.be/7zG8iFZjKtM?si=sOenMYNUb7XSWAsi).
 
+## Vision
+
+Cha is a simple, lightweight CLI tool that provides access to powerful AI models directly from the terminal. Think of it like Vim versus Emacs: Cha focuses on simplicity and versatility, delivering essential functionality without overwhelming complexity. It's designed to fit seamlessly into your workflow, helping to reduce the need for developers to leave their terminals, making AI access and general knowledge querying straightforward and efficient.
+
 ## Features
 
 - **CLI Chat Interface**: Communicate with OpenAI's models via commands `cha`
@@ -17,10 +21,7 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Back to Command Line**: Temporarily exit to the system shell from within the chat interface, execute shell commands, and return to the chat without closing the application.
-
-## Vision
-
-Cha is a simple, lightweight CLI tool that provides access to powerful AI models directly from the terminal. Think of it like Vim versus Emacs: Cha focuses on simplicity and versatility, delivering essential functionality without overwhelming complexity. It's designed to fit seamlessly into your workflow, helping to reduce the need for developers to leave their terminals, making AI access and general knowledge querying straightforward and efficient.
+- **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 
 ## Getting Started
 
