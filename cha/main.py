@@ -81,14 +81,16 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             print(
                 colors.yellow(
-                    f"Feeding the following file content to {selected_model}:"
+                    colors.underline(
+                        f"Feeding the following file content to {selected_model}:"
+                    )
                 )
             )
-            print(colors.yellow(f"   > {filepath}"))
+            print(colors.yellow(f"{filepath}"))
             print()
 
             try:
-                # loading.start_loading("Loading Image", "rectangles")
+                loading.start_loading("Loading Image", "rectangles")
                 content = utils.load_most_files(
                     client=client,
                     file_path=filepath,
@@ -97,7 +99,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             except:
                 raise Exception(f"failed to load file {filepath}")
             finally:
-                # loading.stop_loading()
+                loading.stop_loading()
                 pass
         else:
             content = content_string

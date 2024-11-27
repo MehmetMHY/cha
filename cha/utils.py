@@ -205,13 +205,23 @@ def load_most_files(file_path, client, model_name="gpt-4o"):
         text = ""
         for sheet in workbook:
             text += f"Sheet: {sheet.title}\n"
+            consecutive_empty_rows = 0
             for row in sheet.iter_rows(values_only=True):
-                # use list comprehension to handle cells
                 formatted_row = "\t".join(
                     [str(cell).strip() if cell is not None else "" for cell in row]
                 )
-                # strip the joined row to remove any extra whitespace
-                text += formatted_row.strip() + "\n"
+                # check if the row is empty (only contains tabs)
+                if all(cell == "" for cell in formatted_row.split("\t")):
+                    consecutive_empty_rows += 1
+                else:
+                    if consecutive_empty_rows > 0:
+                        # add only one empty line if there were consecutive empty rows
+                        text += "\t\n"
+                        consecutive_empty_rows = 0
+                    text += formatted_row + "\n"
+            # reset counter at the end of the sheet, if it ended with empty rows
+            if consecutive_empty_rows > 0:
+                text += "\t\n"
         text = text.strip()
         return text
 
