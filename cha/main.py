@@ -62,6 +62,8 @@ def list_models():
 
 
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
+    global client
+
     is_o1 = utils.is_o_model(selected_model)
 
     # NOTE: for o1 models don't accept system prompts
@@ -85,7 +87,18 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             print(colors.yellow(f"   > {filepath}"))
             print()
 
-            content = "\n".join(utils.read_file(filepath))
+            try:
+                # loading.start_loading("Loading Image", "rectangles")
+                content = utils.load_most_files(
+                    client=client,
+                    file_path=filepath,
+                    model_name=config.CHA_DEFAULT_IMAGE_MODEL,
+                )
+            except:
+                raise Exception(f"failed to load file {filepath}")
+            finally:
+                # loading.stop_loading()
+                pass
         else:
             content = content_string
 
@@ -178,7 +191,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 continue
 
             if message == config.LOAD_MESSAGE_CONTENT:
-                message = utils.msg_content_load()
+                try:
+                    message = utils.msg_content_load(client)
+                except:
+                    message = None
                 if message is None:
                     print()
                     continue
