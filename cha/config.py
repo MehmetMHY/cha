@@ -18,6 +18,9 @@ BACK_TO_COMMAND_LINE = "!b"
 # last updated on 11-19-2024
 CHA_DEFAULT_MODEL = "gpt-4o"
 
+# last updated on 11-26-2024
+CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
+
 SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
 PREFERRED_TERMINAL_IDE = "micro"
 

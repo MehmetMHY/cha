@@ -9,12 +9,19 @@ import sys
 import re
 import os
 
+import fitz
+import base64
+from openai import OpenAI
+from pdf2image import convert_from_path
+from docx import Document
+import openpyxl
+
 import tiktoken
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-from cha import colors, utils, config, answer
+from cha import colors, utils, config, answer, loading
 
 
 def is_o_model(model_name):
@@ -154,7 +161,66 @@ def check_terminal_editors_and_edit():
     return None
 
 
-def msg_content_load():
+def load_most_files(file_path, client, model_name="gpt-4o"):
+    file_ext = os.path.splitext(file_path)[1].lower()
+
+    if file_ext in [".jpg", ".jpeg", ".png"]:
+        with open(file_path, "rb") as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode("utf-8")
+
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}"
+                            },
+                        }
+                    ],
+                }
+            ],
+        )
+
+        return response.choices[0].message.content
+
+    elif file_ext == ".pdf":
+        document = fitz.open(file_path)
+        text = ""
+        for page_num in range(document.page_count):
+            page = document[page_num]
+            text += page.get_text()
+        document.close()
+        return text
+
+    elif file_ext in [".doc", ".docx"]:
+        doc = Document(file_path)
+        return "\n".join([paragraph.text for paragraph in doc.paragraphs])
+
+    elif file_ext in [".xls", ".xlsx"]:
+        workbook = openpyxl.load_workbook(file_path, data_only=True)
+        text = ""
+        for sheet in workbook:
+            text += f"Sheet: {sheet.title}\n"
+            for row in sheet.iter_rows(values_only=True):
+                # use list comprehension to handle cells
+                formatted_row = "\t".join(
+                    [str(cell).strip() if cell is not None else "" for cell in row]
+                )
+                # strip the joined row to remove any extra whitespace
+                text += formatted_row.strip() + "\n"
+        text = text.strip()
+        return text
+
+    else:
+        with open(file_path, "r") as file:
+            return file.read()
+
+
+def msg_content_load(client):
     files = [
         f for f in os.listdir() if os.path.isfile(f) and f not in config.FILES_TO_IGNORE
     ]
@@ -180,8 +246,17 @@ def msg_content_load():
         except:
             pass
 
-    with open(file_path, "r") as file:
-        content = file.read()
+    try:
+        loading.start_loading("Loading Content", "rectangles")
+        content = load_most_files(
+            client=client,
+            file_path=file_path,
+            model_name=config.CHA_DEFAULT_IMAGE_MODEL,
+        )
+    except:
+        raise Exception(f"failed to load file {file_path}")
+    finally:
+        loading.stop_loading()
 
     prompt = input(colors.yellow("Additional Prompt: "))
 
