@@ -55,21 +55,6 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
    source .env
    ```
 
-4. **Configure Micro IDE for Editor Input Mode (Optional)**:
-
-   Cha's Text-Editor Input Mode can use terminal-based text editors like vim, vi, nano, or emacs. For a simple and streamlined experience, we recommend Micro with the specific configuration below.
-
-   - Install the Micro IDE: [Micro IDE Installation Guide](https://github.com/zyedidia/micro)
-   - Edit the configuration file: `~/.config/micro/bindings.json`
-   - Add the following key-value:
-     ```json
-     {
-       "Ctrl-q": "Save,Quit"
-     }
-     ```
-
-   By making this change, you can just start writing immediately then easily save and exit the Micro editor using `Ctrl-Q` when working in Cha's Text-Editor Input Mode.
-
 ### Usage
 
 To start using **cha**, run the following simple command:
