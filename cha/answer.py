@@ -96,7 +96,7 @@ def duckduckgo_search(search_input, count=3):
 
             return content
     except Exception as e:
-        return {"error": e}
+        return {"error": str(e)}
 
 
 def answer_search(
