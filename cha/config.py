@@ -22,7 +22,7 @@ CHA_DEFAULT_MODEL = "gpt-4o"
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
 
 SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
-PREFERRED_TERMINAL_IDE = "micro"
+PREFERRED_TERMINAL_IDE = "vim"
 
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o1", "o2", "o3"]
