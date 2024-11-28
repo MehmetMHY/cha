@@ -130,6 +130,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     print(colors.red(f"No text editor available or editing cancelled"))
                     continue
                 message = editor_content
+                if len(message) == 0:
+                    continue
                 for line in message.rstrip("\n").split("\n"):
                     print(colors.blue(">"), line)
 
