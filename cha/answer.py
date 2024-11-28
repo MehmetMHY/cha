@@ -146,6 +146,7 @@ def answer_search(
         if not url.startswith(tuple(config.VALID_VIDEO_ROOT_URL_DOMAINS_FOR_SCRAPING))
     ]
     if len(not_video_urls) == 0:
+        # TODO: this solution really sucks, we need to build a better solution for this edge case
         raise Exception(f"zero non-video based urls were founded")
 
     print(colors.red(colors.underline(f"Search Query Results ({len(urls)} Total):")))
