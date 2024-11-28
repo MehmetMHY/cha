@@ -111,7 +111,6 @@ def answer_search(
 ):
     if user_input_mode or prompt == None:
         print(colors.red(colors.underline(f"Answer Search - User Input")))
-
         prompt = utils.safe_input(colors.blue(f"Question: "))
 
     search_queries = generate_search_queries(client, prompt, small_model)
@@ -121,6 +120,7 @@ def answer_search(
         print(colors.yellow(f"- {url}"))
 
     loading.start_loading("Browsing", "circles")
+
     search_results = []
     urls = []
     for query in search_queries:
@@ -137,6 +137,7 @@ def answer_search(
             if url and not any(existing["url"] == url for existing in search_results):
                 search_results.append(result)
                 urls.append(url)
+
     loading.stop_loading()
 
     # TODO: this solution sucks, but scraping videos can take minutes to process or even lead to a crash
@@ -147,7 +148,8 @@ def answer_search(
     ]
     if len(not_video_urls) == 0:
         # TODO: this solution really sucks, we need to build a better solution for this edge case
-        raise Exception(f"zero non-video based urls were founded")
+        print(colors.red(f"zero non-video based urls were founded"))
+        return ""
 
     print(colors.red(colors.underline(f"Search Query Results ({len(urls)} Total):")))
     for url in urls:
