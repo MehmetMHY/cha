@@ -4,10 +4,10 @@ import json
 import sys
 import os
 
-from io import BytesIO
-from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 from cha import colors, utils, config, loading
+from io import BytesIO
+from PIL import Image
 
 
 def display_metadata(image_path):

@@ -3,6 +3,7 @@ import threading
 import random
 import time
 import sys
+
 from cha import colors, config
 
 
