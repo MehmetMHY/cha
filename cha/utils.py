@@ -9,17 +9,15 @@ import sys
 import re
 import os
 
-import fitz
-import base64
-from openai import OpenAI
-from pdf2image import convert_from_path
 from docx import Document
 import openpyxl
+import base64
+import fitz
 
+from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 import tiktoken
 import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
 from cha import colors, utils, config, answer, loading
 
@@ -183,6 +181,7 @@ def load_most_files(file_path, client, model_name="gpt-4o", prompt=None):
         if type(prompt) == str:
             chat_history.append({"role": "user", "content": prompt})
 
+        # NOTE: client in this case is an OpenAI client from OpenAI's Python SDK
         response = client.chat.completions.create(
             model=model_name, messages=chat_history
         )

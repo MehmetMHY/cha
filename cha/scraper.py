@@ -6,9 +6,10 @@ import json
 import re
 import os
 
-import fitz  # PyMuPDF
-from bs4 import BeautifulSoup
 from youtube_transcript_api import YouTubeTranscriptApi
+from bs4 import BeautifulSoup
+import fitz  # PyMuPDF
+
 from cha import colors, utils, loading, config
 
 
