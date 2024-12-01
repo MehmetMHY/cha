@@ -1,12 +1,11 @@
-import subprocess
-import argparse
-import time
 import sys
-import os
-
-from openai import OpenAI
 
 try:
+    import subprocess
+    import argparse
+    import time
+    import os
+    from openai import OpenAI
     from cha import scraper, colors, image, utils, config, loading
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
