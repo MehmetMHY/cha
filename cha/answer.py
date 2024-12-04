@@ -1,8 +1,10 @@
+from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime, timezone
 from duckduckgo_search import DDGS
 from pydantic import BaseModel
 import time
 import json
+import os
 
 from cha import scraper, colors, utils, config, loading
 
@@ -160,7 +162,10 @@ def answer_search(
 
     print(colors.red(colors.underline("Scraping Website Content:")))
     loading.start_loading("Scraping", "circles")
-    scrapped_data = scraper.get_all_htmls(not_video_urls)
+    # TODO: suppress all untrackable print statements by muting all stdout prints
+    with open(os.devnull, "w") as fnull:
+        with redirect_stdout(fnull), redirect_stderr(fnull):
+            scrapped_data = scraper.get_all_htmls(not_video_urls)
     loading.stop_loading()
 
     for url in scrapped_data:
