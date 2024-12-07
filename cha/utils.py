@@ -159,7 +159,9 @@ def check_terminal_editors_and_edit():
     return None
 
 
-def load_most_files(file_path, client, model_name="gpt-4o", prompt=None):
+def load_most_files(
+    file_path, client, model_name=config.CHA_DEFAULT_IMAGE_MODEL, prompt=None
+):
     file_ext = os.path.splitext(file_path)[1].lower()
 
     if file_ext in [".jpg", ".jpeg", ".png"]:
@@ -291,22 +293,3 @@ def run_answer_search(client, user_input_mode=True):
         return answer.answer_search(client=client, user_input_mode=user_input_mode)
     except (KeyboardInterrupt, EOFError, SystemExit):
         return None
-
-
-def get_default_shell():
-    if sys.platform.startswith("win"):
-        return os.getenv("COMSPEC", "cmd.exe")
-
-    shell = os.getenv("SHELL")
-    if not shell:
-        try:
-            shell = (
-                subprocess.check_output(["getent", "passwd", os.getlogin()])
-                .decode()
-                .split(":")[-1]
-                .strip()
-            )
-        except Exception:
-            shell = "/bin/sh"
-
-    return shell

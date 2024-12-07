@@ -1,7 +1,6 @@
 import sys
 
 try:
-    import subprocess
     import argparse
     import time
     import os
@@ -27,7 +26,6 @@ def title_print(selected_model):
                 line.strip()
                 for line in f"""
 Chatting With OpenAI's '{selected_model}' Model
-- '{config.BACK_TO_COMMAND_LINE}' go back to the shell (subprocess)
 - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
 - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
 - '{config.IMG_GEN_MODE}' for image generation
@@ -166,28 +164,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 cha_filepath = f"cha_{int(time.time())}.json"
                 utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
                 print(colors.red(f"Saved current saved history to {cha_filepath}"))
-                continue
-
-            if message == config.BACK_TO_COMMAND_LINE:
-                default_shell = utils.get_default_shell()
-
-                # show a clear and noticeable warning message without being excessively large
-                message = f"Running Subprocess Shell {default_shell} - Enter CTRL-D to return to Cha!"
-                print(colors.red("*" * ((len("*** ") + len(message) + len(" ***")))))
-                print(colors.red(f"*** {message} ***"))
-                print(colors.red("*" * ((len("*** ") + len(message) + len(" ***")))))
-
-                cmd_option = "/c" if sys.platform.startswith("win") else "-c"
-                process = subprocess.run(
-                    [default_shell, cmd_option, default_shell], shell=True
-                )
-
-                print(
-                    colors.red(
-                        f"Existed Subprocess Shell With Exist Code {process.returncode}"
-                    )
-                )
-
                 continue
 
             if message == config.HELP_PRINT_OPTIONS_KEY:
