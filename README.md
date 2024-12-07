@@ -20,7 +20,6 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Image Generation**: Generate custom images using OpenAI's image models.
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
-- **Back to Command Line**: Temporarily exit to the system shell from within the chat interface, execute shell commands, and return to the chat without closing the application.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 
 ## Getting Started
