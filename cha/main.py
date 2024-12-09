@@ -340,8 +340,7 @@ def cli():
 
             if args.file:
                 content_mode = "FILE"
-                with open(args.file, "r", encoding="utf-8") as file:
-                    text = file.read()
+                text = utils.load_most_files(args.file, client)
             elif args.string:
                 content_mode = "STRING"
                 text = " ".join(args.string)

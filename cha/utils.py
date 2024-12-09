@@ -11,6 +11,7 @@ import os
 
 from docx import Document
 import openpyxl
+import chardet
 import base64
 import fitz
 
@@ -229,7 +230,13 @@ def load_most_files(
         return text
 
     else:
-        with open(file_path, "r") as file:
+        # get exact file encoding
+        with open(file_path, "rb") as file:
+            raw_data = file.read()
+            result = chardet.detect(raw_data)
+            encoding = result["encoding"]
+
+        with open(file_path, "r", encoding=encoding, errors="replace") as file:
             return file.read()
 
 
