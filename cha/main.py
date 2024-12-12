@@ -205,8 +205,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     messages.append({"role": "user", "content": message})
                 continue
 
-            if len(message) == 0:
-                raise KeyboardInterrupt
+            if len("".join(str(message)).split()) == 0:
+                continue
 
             messages.append({"role": "user", "content": message})
 
