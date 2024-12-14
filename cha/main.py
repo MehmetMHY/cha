@@ -15,8 +15,14 @@ client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
 )
 
-# global, in memory, variables
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
+
+substring_targets = utils.read_json(
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "substrs.json",
+    )
+)
 
 
 def title_print(selected_model):
@@ -59,7 +65,13 @@ def list_models():
         sys.exit(1)
 
 
-def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
+def chatbot(
+    selected_model,
+    print_title=True,
+    filepath=None,
+    content_string=None,
+    auto_detect_mode=False,
+):
     global client
 
     is_o1 = utils.is_o_model(selected_model)
@@ -179,6 +191,56 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     print()
                     continue
 
+            # simple action router logic
+            if auto_detect_mode:
+                auto_detected_option = None
+                for key, targets in substring_targets.items():
+                    if any(sub_str.lower() in message.lower() for sub_str in targets):
+                        auto_detected_option = key
+                        break
+
+                if auto_detected_option == "image_generation":
+                    prompt = f"Do you want to create an image (y/n)? "
+                    sys.stdout.write(colors.red(prompt))
+                    sys.stdout.flush()
+                    du_user = utils.safe_input().strip()
+                    sys.stdout.write(config.MOVE_CURSOR_ONE_LINE)
+                    sys.stdout.write(config.CLEAR_LINE)
+                    sys.stdout.flush()
+
+                    if du_user.lower() in ["yes", "y"]:
+                        image.gen_image(
+                            client=client,
+                            model=config.DEFAULT_IMAGE_MODEL,
+                            prompt=message,
+                            quality=config.DEFAULT_IMAGE_QUALITY,
+                            n=config.DEFAULT_IMAGE_N,
+                            size=config.DEFAULT_IMAGE_SIZE,
+                        )
+                        continue
+
+                if auto_detected_option == "answer_search":
+                    prompt = f"Do you want me to search the web (y/n)? "
+                    sys.stdout.write(colors.red(prompt))
+                    sys.stdout.flush()
+                    du_user = utils.safe_input().strip()
+                    sys.stdout.write(config.MOVE_CURSOR_ONE_LINE)
+                    sys.stdout.write(config.CLEAR_LINE)
+                    sys.stdout.flush()
+
+                    if du_user.lower() in ["yes", "y"]:
+                        adas_message = utils.auto_detect_answer_search(
+                            client=client, message=message
+                        )
+                        if adas_message != None:
+                            messages.append({"role": "user", "content": message})
+                            continue
+                        print(
+                            colors.red(
+                                f"Error(s) occurred while browsing, so the prompt will be fed into the model"
+                            )
+                        )
+
             detected_urls = len(scraper.extract_urls(message))
             if detected_urls > 0:
                 # NOTE: determine whether scraping should happen, and then clear the input text message afterwards
@@ -200,7 +262,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         loading.stop_loading()
 
             if message == config.RUN_ANSWER_FEATURE:
-                message = utils.run_answer_search(client, True)
+                message = utils.run_answer_search(
+                    client=client, prompt=None, user_input_mode=True
+                )
                 if message != None:
                     messages.append({"role": "user", "content": message})
                 continue
@@ -318,18 +382,26 @@ def cli():
             help="Count tokens for the input file or string",
             action="store_true",
         )
+        parser.add_argument(
+            "-ad",
+            "--auto_detect",
+            help="Enable auto-detect mode for interaction mode for certain sub-features",
+            action="store_true",
+        )
 
         args = parser.parse_args()
 
         if args.image:
             if args.image == True:
-                status = image.gen_image(client)
+                status = image.gen_image(client=client)
             else:
                 status = image.display_metadata(str(args.image))
             sys.exit(1 if status is None else 0)
 
         if args.answer_search == True:
-            output = utils.run_answer_search(client, True)
+            output = utils.run_answer_search(
+                client=client, prompt=None, user_input_mode=True
+            )
             sys.exit(1 if output is None else 0)
 
         title_print_value = args.print_title
@@ -407,7 +479,11 @@ def cli():
                 selected_model, title_print_value, content_string=" ".join(args.string)
             )
         else:
-            chatbot(selected_model, title_print_value)
+            chatbot(
+                selected_model=selected_model,
+                print_title=title_print_value,
+                auto_detect_mode=(args.auto_detect),
+            )
 
     except (KeyboardInterrupt, EOFError):
         print()

@@ -120,35 +120,36 @@ def get_user_open(filepaths):
             open_file_default_app(filepath)
 
 
-def gen_image(client):
-    try:
-        model = pick_img_model(client)
-        if model == None:
-            raise Exception(f"Failed to fetch and/or pick image generation model")
-        prompt = get_user_input(colors.blue("Prompt: "))
-        quality = get_user_input(
-            colors.blue("Quality (standard/hd): "),
-            lambda x: x.lower() in ["standard", "hd"],
-            colors.red("Please enter 'standard' or 'hd' for quality"),
-        )
-
-        # NOTE: (11-8-2024) the user having the ability to input n has been disabled to limit cost and avoid deep errors
-        n = 1
-
-        size = get_user_input(
-            colors.blue("Size (WidthxHeight): "),
-            lambda x: x in config.COMMON_IMG_GEN_RESOLUTIONS,
-            colors.red(
-                f"Valid Size(s): {', '.join(config.COMMON_IMG_GEN_RESOLUTIONS)}"
-            ),
-        )
-    except:
-        print(
-            colors.red(
-                f"\nError occurred while getting user input for image generation"
+def gen_image(client, model=None, prompt=None, quality=None, n=None, size=None):
+    if model == None or prompt == None or quality == None or n == None or size == None:
+        try:
+            model = pick_img_model(client)
+            if model == None:
+                raise Exception(f"Failed to fetch and/or pick image generation model")
+            prompt = get_user_input(colors.blue("Prompt: "))
+            quality = get_user_input(
+                colors.blue("Quality (standard/hd): "),
+                lambda x: x.lower() in ["standard", "hd"],
+                colors.red("Please enter 'standard' or 'hd' for quality"),
             )
-        )
-        return 1
+
+            # NOTE: (11-8-2024) the user having the ability to input n has been disabled to limit cost and avoid deep errors
+            n = 1
+
+            size = get_user_input(
+                colors.blue("Size (WidthxHeight): "),
+                lambda x: x in config.COMMON_IMG_GEN_RESOLUTIONS,
+                colors.red(
+                    f"Valid Size(s): {', '.join(config.COMMON_IMG_GEN_RESOLUTIONS)}"
+                ),
+            )
+        except:
+            print(
+                colors.red(
+                    f"\nError occurred while getting user input for image generation"
+                )
+            )
+            return 1
 
     params = {
         "model": model,
