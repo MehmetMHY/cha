@@ -21,7 +21,6 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
-- **Simple Action Router**: Automatically detects user intentions for image creation or answer search without requiring specific option keys, making Cha pleasant to use without effecting speed and efficiency.
 
 ## Getting Started
 

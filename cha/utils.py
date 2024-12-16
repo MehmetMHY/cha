@@ -303,20 +303,3 @@ def run_answer_search(client, prompt=None, user_input_mode=True):
         )
     except (KeyboardInterrupt, EOFError, SystemExit):
         return None
-
-
-def auto_detect_answer_search(client, message):
-    try:
-        # NOTE: (12-13-2024) IpInfo is used to obtain the user's current location, but note, this might not be accurate if you are using a VPN and/or proxy
-        users_location = get_request("https://ipinfo.io/json")
-        if users_location != None:
-            users_location = json.dumps(users_location.json())
-        else:
-            users_location = "?"
-        current_date_utc = dt.now(timezone.utc).strftime("%B %d, %Y %H:%M:%S %Z")
-        deep_message = f"Today's date is {current_date_utc} and I am located at {users_location}. Knowing this, answer my question: {message}"
-        return utils.run_answer_search(
-            client=client, prompt=deep_message, user_input_mode=False
-        )
-    except Exception as err:
-        return None
