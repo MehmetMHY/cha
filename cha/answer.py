@@ -114,6 +114,9 @@ def answer_search(
     if user_input_mode or prompt == None:
         print(colors.red(colors.underline(f"Answer Search - User Input")))
         prompt = utils.safe_input(colors.blue(f"Question: "))
+    else:
+        print(colors.red(colors.underline("Question Prompt:")))
+        print(prompt)
 
     search_queries = generate_search_queries(client, prompt, small_model)
 
