@@ -198,12 +198,24 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     finally:
                         loading.stop_loading()
 
-            if message == config.RUN_ANSWER_FEATURE:
+            if message.startswith(config.RUN_ANSWER_FEATURE):
+                user_input_mode = True
+                answer_prompt = None
+                if len(message) > len(config.RUN_ANSWER_FEATURE):
+                    answer_prompt_draft = message[
+                        len(config.RUN_ANSWER_FEATURE) :
+                    ].strip()
+                    if len(answer_prompt_draft) > 10:
+                        user_input_mode = False
+                        answer_prompt = answer_prompt_draft
+
                 message = utils.run_answer_search(
-                    client=client, prompt=None, user_input_mode=True
+                    client=client, prompt=answer_prompt, user_input_mode=user_input_mode
                 )
+
                 if message != None:
                     messages.append({"role": "user", "content": message})
+
                 continue
 
             if len("".join(str(message)).split()) == 0:
