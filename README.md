@@ -65,27 +65,24 @@ cha
 Both commands support and accept additional parameters. Here are all of their respected help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-as] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t]
-           [string ...]
+usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t] [string ...]
 
 Chat with an OpenAI GPT model.
 
 positional arguments:
-  string                Non-interactive mode, feed a string into the
-                        model
+  string                Non-interactive mode, feed a string into the model
 
 options:
   -h, --help            show this help message and exit
   -pt, --print_title    Print initial title during interactive mode
-  -as, --answer_search  Run answer search
+  -a, -as, --answer_search
+                        Run answer search
   -m MODEL, --model MODEL
                         Model to use for chatting
   -sm, --select_model   Select one model from OpenAI's supported models
-  -f FILE, --file FILE  Filepath to file that will be sent to the model
-                        (text only)
+  -f FILE, --file FILE  Filepath to file that will be sent to the model (text only)
   -i [IMAGE], --image [IMAGE]
-                        Generate image (flag only) or print the metadata
-                        for generated images (provide filepath)
+                        Generate image (flag only) or print the metadata for generated images (provide filepath)
   -t, --token_count     Count tokens for the input file or string
 ```
 
@@ -114,12 +111,3 @@ Any contribution is always welcomed! Please feel free to submit issues or pull r
 ## License
 
 Cha is licensed under the MIT License. See [LICENSE](./LICENSE) for more details.
-
-## Acknowledgments
-
-Cha is inspired and/or made possible thanks to:
-
-- [OpenAI Documentation](https://platform.openai.com/docs/overview)
-- [ChatBlade](https://github.com/npiv/chatblade)
-- [ChatGPT by OpenAI (GPT-4)](https://chat.openai.com/)
-- [Claude 3.5 Sonnet](https://claude.ai/chats)
