@@ -94,7 +94,7 @@ Cha can be run in Docker and accessed through the browser. This is great if you 
 
 For those interested in contributing or experimenting with Cha:
 
-1. **Install in Editable Mode**:
+1. **Install Cha in Editable Mode**:
 
    ```bash
    pip install -e .
@@ -103,6 +103,12 @@ For those interested in contributing or experimenting with Cha:
 2. **Develop and Test**: Modify the source code and test changes using `cha`.
 
 3. **(optional) Load your Custom Configuration**: Use the `CHA_PYTHON_CUSTOM_CONFIG_PATH` environment variable to point to a custom `config.py` file that overrides default global variables. Set it using `export CHA_PYTHON_CUSTOM_CONFIG_PATH="/path/to/your/config.py"`. Make sure your defined variables is all uppercase.
+
+4. **(optional) Update Cha's "setup.py" File**: To do this, be in the same directory where Cha's code is located (this repo). Then, run the command listed below
+
+   ```bash
+   python3 update.py
+   ```
 
 ## Contributing
 
