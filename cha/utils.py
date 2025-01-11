@@ -257,39 +257,48 @@ def msg_content_load(client):
 
     while True:
         try:
-            file_pick = input(colors.yellow(f"File ID (1-{len(files)}): "))
-            file_path = files[int(file_pick) - 1]
-            break
+            file_pick = input(colors.yellow(f"File ID(s) (e.g. 1,2,3): "))
+            file_indices = [
+                int(x.strip()) - 1 for x in file_pick.replace(" ", "").split(",")
+            ]
+            if all(0 <= idx < len(files) for idx in file_indices):
+                file_paths = [files[idx] for idx in file_indices]
+                break
         except KeyboardInterrupt:
             return None
         except EOFError:
             return None
-        except:
+        except ValueError:
             pass
+        print(colors.red("Invalid input, please try again."))
 
     prompt = input(colors.yellow("Additional Prompt: "))
 
+    contents = []
     try:
-        loading.start_loading("Loading Content", "rectangles")
-        content = load_most_files(
-            client=client,
-            file_path=file_path,
-            model_name=config.CHA_DEFAULT_IMAGE_MODEL,
-            prompt=prompt,
-        )
-    except:
-        raise Exception(f"failed to load file {file_path}")
+        for file_path in file_paths:
+            loading.start_loading(f"Loading {file_path}", "rectangles")
+            content = load_most_files(
+                client=client,
+                file_path=file_path,
+                model_name=config.CHA_DEFAULT_IMAGE_MODEL,
+                prompt=prompt,
+            )
+            contents.append((file_path, content))
+    except Exception as e:
+        raise Exception(f"Failed to load files: {e}")
     finally:
         loading.stop_loading()
 
-    output = content
+    output = "\n".join(
+        f"CONTENT FOR {file_path}:\n``````````\n{content}\n``````````\n"
+        for file_path, content in contents
+    )
+
     if len(prompt) > 0:
         output = f"""
 PROMPT: {prompt}
-CONTENT:
-``````````
-{content}
-``````````
+{output}
 """
 
     return output
