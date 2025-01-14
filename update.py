@@ -1,6 +1,8 @@
 # NOTE: the goal of this script is to easily update the dependencies in Cha's "setup.py" file
+# NOTE: make sure to run this script in the root directory of the Cha project
 
 import subprocess
+import os
 import re
 
 if __name__ == "__main__":
@@ -14,6 +16,8 @@ if __name__ == "__main__":
         current_version = version_match.group(1)
         print(f"Current version: {current_version}")
         new_version = input("Enter new version: ").strip()
+        if len(new_version) == 0 or "." not in new_version:
+            new_version = current_version
         content = content.replace(
             f'version="{current_version}"', f'version="{new_version}"'
         )
@@ -52,6 +56,13 @@ if __name__ == "__main__":
         f.write(content)
     print(f"Updated setup.py file!")
 
-    print(f"Run ONE of the following commands to update Cha locally:")
-    print(f"- pip3 install -e .")
-    print(f"- pip3 install .")
+    # (optional) reinstall Cha
+    user_input = input("Do you like to reinstall Cha (Y/n)? ")
+    if user_input.lower() in ["y", "yes"]:
+        user_input = input('Install without "-e" option (Y/n)? ')
+        if user_input.lower() in ["y", "yes"]:
+            print('> Installing Cha WITHOUT "-e" Option!')
+            os.system("pip3 install .")
+        else:
+            print('> Installing Cha WITH "-e" Option!')
+            os.system("pip3 install -e .")
