@@ -2,8 +2,18 @@
 # NOTE: make sure to run this script in the root directory of the Cha project
 
 import subprocess
+import sys
 import os
 import re
+
+
+def save_input(starting_text):
+    try:
+        return input(starting_text)
+    except (KeyboardInterrupt, EOFError):
+        print()
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     # read the current setup.py
@@ -15,7 +25,7 @@ if __name__ == "__main__":
     if version_match:
         current_version = version_match.group(1)
         print(f"Current version: {current_version}")
-        new_version = input("Enter new version: ").strip()
+        new_version = save_input("Enter new version: ").strip()
         if len(new_version) == 0 or "." not in new_version:
             new_version = current_version
         content = content.replace(
@@ -57,9 +67,9 @@ if __name__ == "__main__":
     print(f"Updated setup.py file!")
 
     # (optional) reinstall Cha
-    user_input = input("Do you like to reinstall Cha (Y/n)? ")
+    user_input = save_input("Do you like to reinstall Cha (Y/n)? ")
     if user_input.lower() in ["y", "yes"]:
-        user_input = input('Install without "-e" option (Y/n)? ')
+        user_input = save_input('Install without "-e" option (Y/n)? ')
         if user_input.lower() in ["y", "yes"]:
             print('> Installing Cha WITHOUT "-e" Option!')
             os.system("pip3 install .")
