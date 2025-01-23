@@ -25,7 +25,7 @@ from cha import colors, utils, config, answer, loading
 
 
 def is_o_model(model_name):
-    return re.match(r"^o\d+-", model_name) is not None
+    return re.match(r"^o\d+", model_name) is not None
 
 
 def count_tokens(text, model_name):
