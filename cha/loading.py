@@ -24,7 +24,7 @@ class LoadingAnimation:
             # clear the current line first
             self._clear_current_line()
             # write the new message
-            message = f"{text} {spinner_char}"
+            message = f"{text}  {spinner_char}"
             sys.stdout.write(colors.green(message))
             sys.stdout.flush()
             self.last_message = message
