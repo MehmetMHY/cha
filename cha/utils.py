@@ -56,7 +56,7 @@ def get_request(
     try:
         response = session.get(url, timeout=timeout, headers=headers)
         response.raise_for_status()
-        # NOTE: this returns a requests OBJECT not a dict or string!
+        # NOTE: this returns a request's OBJECT not a dict or string!
         return response
     except requests.exceptions.RequestException as e:
         if debug_mode:
