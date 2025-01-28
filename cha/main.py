@@ -63,7 +63,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
     is_o1 = utils.is_o_model(selected_model)
 
-    # NOTE: for o1 models don't accept system prompts
+    # NOTE: for o-models that don't accept system prompts
     messages = [] if is_o1 else [{"role": "system", "content": config.INITIAL_PROMPT}]
     multi_line_input = False
 
@@ -428,7 +428,7 @@ def cli():
         print()
     except Exception as err:
         if str(err):
-            # NOTE: a newline is needed to prevent text overlap during streaming cancelation
+            # NOTE: a newline is needed to prevent text overlap during streaming cancellation
             print(colors.red(f"\nAn error occurred: {err}"))
         else:
             print(colors.red("Exited unexpectedly"))

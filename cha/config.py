@@ -16,17 +16,15 @@ TEXT_EDITOR_INPUT_MODE = "!t"
 
 # last updated on 11-19-2024
 CHA_DEFAULT_MODEL = "gpt-4o"
-
-# last updated on 11-26-2024
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
 
 SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
 PREFERRED_TERMINAL_IDE = "vim"
 
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
-OPENAI_MODELS_TO_KEEP = ["gpt", "o1", "o2", "o3", "o4"]
+OPENAI_MODELS_TO_KEEP = ["gpt", "o1", "o2", "o3", "o4", "o5", "o6"]
 
-FILES_TO_IGNORE = [".DS_Store", ".env"]
+FILES_TO_IGNORE = [".DS_Store", ".env", ".env.local"]
 
 TERMINAL_THEME_CODES = {
     "reset": "\033[0m",
@@ -53,7 +51,7 @@ TERMINAL_THEME_CODES = {
     },
 }
 
-# NOTE: These sizes are valid for most image-generation models, but OpenAI's models support only a few
+# NOTE: these sizes are valid for most image-generation models, but OpenAI's models support only a few
 COMMON_IMG_GEN_RESOLUTIONS = [
     "256x256",
     "512x512",
@@ -81,15 +79,15 @@ DEFAULT_SEARCH_RESULT_COUNT = 5
 DEFAULT_SEARCH_TIME_DELAY_SECONDS = 1
 DEFAULT_GEN_SEARCH_QUERY_COUNT = 5
 
-DEFAULT_IMAGE_MODEL = "dall-e-3"
 DEFAULT_IMAGE_QUALITY = "standard"
-DEFAULT_IMAGE_N = 1
 DEFAULT_IMAGE_SIZE = "1024x1024"
+DEFAULT_IMAGE_MODEL = "dall-e-3"
+DEFAULT_IMAGE_N = 1
 
+MOVE_CURSOR_ONE_LINE = "\033[F"
 HIDE_CURSOR = "\033[?25l"
 SHOW_CURSOR = "\033[?25h"
 CLEAR_LINE = "\033[K"
-MOVE_CURSOR_ONE_LINE = "\033[F"
 
 VALID_VIDEO_ROOT_URL_DOMAINS_FOR_SCRAPING = [
     "https://www.youtube.com",

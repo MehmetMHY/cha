@@ -47,7 +47,7 @@ You are a helpful assistant that generates three distinct search engine queries 
 These search engine queries are optimized towards getting the best results that can best answer the user's prompt
 Each query should be optimized to capture different aspects or angles of the user's intent.
 Format the output strictly as an array of strings.
-Make sure to provide ATLEAST {min_results} good search engine queries.
+Make sure to provide AT-LEAST {min_results} good search engine queries.
 Also note, today's date in ISO 8601 format is: {str(datetime.now(timezone.utc).isoformat())} where the year is {str(datetime.now().year)}
     """
 
