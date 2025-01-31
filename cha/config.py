@@ -15,7 +15,7 @@ RUN_ANSWER_FEATURE = "!a"
 TEXT_EDITOR_INPUT_MODE = "!t"
 
 # last updated on 11-19-2024
-CHA_DEFAULT_MODEL = "gpt-4o"
+CHA_DEFAULT_MODEL = "gpt-4o-mini"
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
 
 SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
