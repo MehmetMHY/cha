@@ -16,7 +16,7 @@ setup(
         "yt-dlp==2025.1.26",
         "youtube-transcript-api==0.6.3",
         "PyMuPDF==1.25.2",
-        "pillow==11.1.0",
+        "pillow>=10.3.0,<11.0.0",
         "tiktoken==0.8.0",
         "duckduckgo_search==7.3.0",
         "pdf2image==1.17.0",
@@ -26,6 +26,10 @@ setup(
     ],
     python_requires=">=3.9.2",
     entry_points={
-        "console_scripts": ["cha = cha.main:cli", "cla = cha.cla:cli"],
+        "console_scripts": [
+            "cha = cha.main:cli",
+            "cla = cha.cla:cli",
+            "tai = cha.tai:cli",
+        ],
     },
 )
