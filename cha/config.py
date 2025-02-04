@@ -1,7 +1,10 @@
-# links
-OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
+# cla configurations
+ANTHROPIC_DOCS_LINK = "https://docs.anthropic.com/en/api/getting-started"
+CLA_DEFAULT_MODEL = "claude-3-5-sonnet-20241022"
+CLA_MAX_TOKENS = 1024
 
 # main chat short config
+OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
 INITIAL_PROMPT = "You are a helpful assistant who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details"
 MULTI_LINE_SEND = "END"
 MULTI_LINE_MODE_TEXT = "!m"
