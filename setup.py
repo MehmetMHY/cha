@@ -10,7 +10,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=[
         "openai==1.61.0",
-        "beautifulsoup4==4.12.3",
+        "beautifulsoup4==4.13.1",
         "yt-dlp==2025.1.26",
         "youtube-transcript-api==0.6.3",
         "PyMuPDF==1.25.2",
