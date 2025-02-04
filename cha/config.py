@@ -2,6 +2,13 @@
 ANTHROPIC_DOCS_LINK = "https://docs.anthropic.com/en/api/getting-started"
 CLA_DEFAULT_MODEL = "claude-3-5-sonnet-20241022"
 CLA_MAX_TOKENS = 1024
+TOGETHER_DEFAULT_MODEL = "deepseek-ai/DeepSeek-V3"
+TOGETHER_MAX_TOKENS = 12792
+TOGETHER_TEMPERATURE = 0.7
+TOGETHER_TOP_P = 0.7
+TOGETHER_TOP_K = 50
+TOGETHER_REPETITION_PENALTY = 1
+TOGETHER_DOCS_LINK = "https://docs.together.xyz"
 
 # main chat short config
 OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
