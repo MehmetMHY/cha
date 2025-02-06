@@ -3,9 +3,10 @@ import sys
 try:
     import argparse
     import time
+    import json
     import os
     from openai import OpenAI
-    from cha import scraper, colors, image, utils, config, loading
+    from cha import scraper, colors, image, utils, config, loading, platforms
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
@@ -334,6 +335,14 @@ def cli():
             help="Count tokens for the input file or string",
             action="store_true",
         )
+        parser.add_argument(
+            "-p",
+            "--platform",
+            nargs="?",
+            const=True,
+            default=None,
+            help="Specify the platform name or leave empty to default to OpenAI",
+        )
 
         args = parser.parse_args()
 
@@ -352,6 +361,42 @@ def cli():
 
         title_print_value = args.print_title
         selected_model = args.model
+
+        new_client_config = None
+        if args.platform != None or args.platform == True:
+            try:
+                platform_name = None
+                platform_model_name = None
+                if args.platform != True:
+                    platform_values = str(args.platform).split("|")
+                    platform_name = str(platform_values[0]).lower()
+                    if len(platform_values) == 2:
+                        platform_model_name = platform_values[1]
+
+                new_client_config = platforms.user_select_platform(
+                    platforms=platforms.platforms,
+                    chosen_platform=platform_name,
+                    chosen_model=platform_model_name,
+                )
+
+                selected_model = new_client_config["picked_model"]
+                client = OpenAI(
+                    api_key=os.environ.get(new_client_config["env_name"]),
+                    base_url=new_client_config["base_url"],
+                )
+
+                for key in new_client_config:
+                    print(
+                        colors.underline(colors.red(f"{key.upper()}:")),
+                        new_client_config[key],
+                    )
+            except Exception as e:
+                print(
+                    colors.red(
+                        f"Error occurred well selecting a different platform: {e}"
+                    )
+                )
+                return
 
         if args.token_count:
             text, content_mode = None, None
