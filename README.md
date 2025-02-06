@@ -21,7 +21,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
-- **Platform Flexibility**: Seamlessly switch between different AI platform providers offering OpenAI-compatible APIs using the `-p` or `--platform` argument.
+- **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
 
 ## Getting Started
 
@@ -89,46 +89,6 @@ options:
                         Use a different provider, set this like this: "<base_url>|<api_key_env_name>"
 ```
 
-## Different Platforms - OpenAI Compatibility Platforms/APIs
-
-Cha now supports the option to switch between different AI platforms by using the `--platform` argument. This feature allows you to interoperate with other services offering OpenAI-compatible APIs.
-
-### Example Command
-
-Use the `platform` argument to specify the provider's API and the corresponding environment variable for the API key.
-
-Example call:
-
-```bash
-export TOGETHER_API_KEY="..."
-
-cha -p "https://api.together.xyz/v1|TOGETHER_API_KEY" -m "deepseek-ai/DeepSeek-V3"
-```
-
-### Possible Platforms
-
-#### Perplexity AI API
-
-- API's Documentation: [Perplexity AI Docs](https://docs.perplexity.ai/guides/getting-started)
-- Supported Models: [Perplexity AI Models](https://docs.perplexity.ai/guides/model-cards)
-
-#### DeepSeek API
-
-- API's Documentation: [DeepSeek API Docs](https://api-docs.deepseek.com/)
-- Supported Models: [DeepSeek Models](https://api-docs.deepseek.com/quick_start/pricing)
-
-#### Groq API
-
-- API's Documentation: [Groq API Docs](https://console.groq.com/docs/openai)
-- Supported Models: [Groq Models](https://console.groq.com/docs/models)
-
-#### Together AI API
-
-- API's Documentation: [Together AI Docs](https://docs.together.ai/docs/openai-api-compatibility)
-- Supported Models:
-  - [Together AI Models - 1](https://docs.together.ai/reference/models-1)
-  - [Together AI Models](https://www.together.ai/models)
-
 ## Development
 
 For those interested in contributing or experimenting with Cha:
@@ -148,6 +108,40 @@ For those interested in contributing or experimenting with Cha:
    ```bash
    python3 update.py
    ```
+
+## Different Platforms - OpenAI Compatibility Platforms/APIs
+
+Cha now supports the option to switch between different AI platforms by using the `--platform` argument. This feature allows you to interoperate with other services offering OpenAI-compatible APIs.
+
+### Example Command
+
+Use the `platform` argument to specify the provider's API and the corresponding environment variable for the API key. Here is an example call you can make:
+
+```bash
+# get and set the provider's API key env variable
+export TOGETHER_API_KEY="..."
+
+# run cha with a different provider/platform
+cha -p "https://api.together.xyz/v1|TOGETHER_API_KEY" -m "deepseek-ai/DeepSeek-V3"
+```
+
+### Possible Platforms (February 6, 2025)
+
+#### Perplexity AI API
+
+Check out [Perplexity.AI's Docs](https://docs.perplexity.ai/guides/getting-started) to figure out how to get your API key and checkout [Perplexity.AI's Models](https://docs.perplexity.ai/guides/model-cards) to see what models you can call.
+
+#### DeepSeek API
+
+Check out [DeepSeek's API Docs](https://api-docs.deepseek.com/) to figure out how to get your API key and checkout [DeepSeek's Models](https://api-docs.deepseek.com/quick_start/pricing) to see what models you can call.
+
+#### Groq API
+
+Check out [Groq's API Docs](https://console.groq.com/docs/openai) to figure out how to get your API key and checkout [Groq's Models](https://console.groq.com/docs/models) to see what models you can call.
+
+#### Together AI API
+
+Check out [Together.AI's Docs](https://docs.together.ai/docs/openai-api-compatibility) to figure out how to get your API key and checkout [this](https://docs.together.ai/reference/models-1) documentation or [this](https://www.together.ai/models) by Together.AI to see what models you can call.
 
 ## Contributing
 
