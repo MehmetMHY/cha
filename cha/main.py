@@ -250,7 +250,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 full_response = ""
                 try:
                     for chunk in response:
-                        chunk_message = chunk.choices[0].delta.content
+                        try:
+                            chunk_message = chunk.choices[0].delta.content
+                        except:
+                            break
                         if chunk_message:
                             sys.stdout.write(colors.green(chunk_message))
                             full_response += chunk_message
