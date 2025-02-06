@@ -2,15 +2,15 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.11.6",
+    version="0.12.0",
     packages=find_packages(),
     license="MIT",
     description="A simple CLI tool for chatting, web scraping, and image generation with OpenAI's models",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
-        "openai==1.61.0",
-        "beautifulsoup4==4.13.1",
+        "openai==1.61.1",
+        "beautifulsoup4==4.13.3",
         "yt-dlp==2025.1.26",
         "youtube-transcript-api==0.6.3",
         "PyMuPDF==1.25.2",
