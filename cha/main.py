@@ -12,6 +12,11 @@ except (KeyboardInterrupt, EOFError):
 
 utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
 
+# NOTE: (2-6-2025) this exists because image generation and answer-search are ONLY designed to work with OpenAI's client
+openai_client = client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
+
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
 )
@@ -137,7 +142,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 multi_line_input = True
                 continue
             elif message.replace(" ", "") == config.IMG_GEN_MODE:
-                image.gen_image(client=client)
+                image.gen_image(client=openai_client)
                 continue
             elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
                 break
@@ -211,7 +216,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         answer_prompt = answer_prompt_draft
 
                 message = utils.run_answer_search(
-                    client=client, prompt=answer_prompt, user_input_mode=user_input_mode
+                    client=openai_client,
+                    prompt=answer_prompt,
+                    user_input_mode=user_input_mode,
                 )
 
                 if message != None:
@@ -348,14 +355,14 @@ def cli():
 
         if args.image:
             if args.image == True:
-                status = image.gen_image(client=client)
+                status = image.gen_image(client=openai_client)
             else:
                 status = image.display_metadata(str(args.image))
             sys.exit(1 if status is None else 0)
 
         if args.answer_search == True:
             output = utils.run_answer_search(
-                client=client, prompt=None, user_input_mode=True
+                client=openai_client, prompt=None, user_input_mode=True
             )
             sys.exit(1 if output is None else 0)
 
@@ -363,15 +370,17 @@ def cli():
         selected_model = args.model
 
         new_client_config = None
-        if args.platform != None or args.platform == True:
+        if args.platform:
             try:
-                platform_name = None
-                platform_model_name = None
-                if args.platform != True:
-                    platform_values = str(args.platform).split("|")
-                    platform_name = str(platform_values[0]).lower()
-                    if len(platform_values) == 2:
-                        platform_model_name = platform_values[1]
+                platform_values = (
+                    str(args.platform).split("|")
+                    if args.platform != True
+                    else ["default"]
+                )
+                platform_name = platform_values[0].lower()
+                platform_model_name = (
+                    platform_values[1] if len(platform_values) > 1 else None
+                )
 
                 new_client_config = platforms.user_select_platform(
                     platforms=platforms.platforms,
@@ -385,15 +394,20 @@ def cli():
                     base_url=new_client_config["base_url"],
                 )
 
-                for key in new_client_config:
-                    print(
-                        colors.underline(colors.red(f"{key.upper()}:")),
-                        new_client_config[key],
+                print(
+                    colors.red(
+                        f"Changing platforms might/will break some features in Cha so please use Cha cautiously!"
                     )
+                )
+                print(
+                    colors.yellow(
+                        f"Switched from platform OPENAI to {platform_name.upper()}, using model {platform_model_name}"
+                    )
+                )
             except Exception as e:
                 print(
                     colors.red(
-                        f"Error occurred well selecting a different platform: {e}"
+                        f"Error occurred while selecting a different platform: {e}"
                     )
                 )
                 return
