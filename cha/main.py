@@ -334,6 +334,13 @@ def cli():
             help="Count tokens for the input file or string",
             action="store_true",
         )
+        parser.add_argument(
+            "-p",
+            "--platform",
+            nargs="?",
+            default=None,
+            help='Use a different provider, set this like this: "<base_url>|<api_key_env_name>"',
+        )
 
         args = parser.parse_args()
 
@@ -352,6 +359,22 @@ def cli():
 
         title_print_value = args.print_title
         selected_model = args.model
+
+        if args.platform:
+            try:
+                platform_values = str(args.platform).split("|")
+                client = OpenAI(
+                    api_key=os.environ.get(platform_values[1]),
+                    base_url=platform_values[0],
+                )
+                print(
+                    colors.red(
+                        f"Warning! The platform switched to {platform_values[0]}"
+                    )
+                )
+            except Exception as e:
+                print(colors.red(f"Failed to switch platform due to {e}"))
+                return
 
         if args.token_count:
             text, content_mode = None, None
