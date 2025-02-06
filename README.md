@@ -21,6 +21,11 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
+- **Platform Support**: (optional) Switch between different AI platforms using the `-platform` option to leverage diverse AI capabilities.
+  - **Groq**: To use Groq, set the environment variable `GROQ_API_KEY` with your API key. To get your API key checkout their [docs](https://console.groq.com/docs/overview).
+  - **DeepSeek**: To access DeepSeek, ensure you set `DEEP_SEEK_API_KEY` as your environment variable. To get your API key checkout their [docs](https://api-docs.deepseek.com/).
+  - **Together AI**: For Together AI, configure `TOGETHER_API_KEY` as an environment variable. To get your API key checkout their [docs](https://docs.together.ai/docs/introduction).
+  - **Perplexity AI**: Utilize Perplexity AI by setting `PERPLEXITY_AI_API_KEY` as the environment variable. To get your API key checkout their [docs](https://docs.perplexity.ai/home).
 
 ## Getting Started
 
@@ -65,7 +70,7 @@ cha
 Both commands support and accept additional parameters. Here are all of their respected help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t] [string ...]
+usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t] [-p [PLATFORM]] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -84,6 +89,8 @@ options:
   -i [IMAGE], --image [IMAGE]
                         Generate image (flag only) or print the metadata for generated images (provide filepath)
   -t, --token_count     Count tokens for the input file or string
+  -p [PLATFORM], --platform [PLATFORM]
+                        Specify the platform name or leave empty to default to OpenAI
 ```
 
 ## Development
