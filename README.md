@@ -41,9 +41,9 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 
 ### Configuration
 
-1. **API Key Setup**: Cha just requires a OpenAI API which you can grab [HERE](https://platform.openai.com/api-keys)
+1. **API Key Setup**: Cha requires an OpenAI API key, which you can obtain [here](https://platform.openai.com/api-keys).
 
-2. **Setup your .env file**: Create a `.env` file in the root directory and add your keys
+2. **Setup your .env file**: Create a `.env` file in the root directory and add your keys:
 
    ```bash
    export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
@@ -63,7 +63,7 @@ To start using **cha**, run the following simple command:
 cha
 ```
 
-Both commands support and accept additional parameters. Here are all of their respected help page for reference:
+Both commands support and accept additional parameters. Here is the help page for reference:
 
 ```bash
 usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t] [-p [PLATFORM]] [string ...]
@@ -101,9 +101,9 @@ For those interested in contributing or experimenting with Cha:
 
 2. **Develop and Test**: Modify the source code and test changes using `cha`.
 
-3. **(optional) Load your Custom Configuration**: Use the `CHA_PYTHON_CUSTOM_CONFIG_PATH` environment variable to point to a custom `config.py` file that overrides default global variables. Set it using `export CHA_PYTHON_CUSTOM_CONFIG_PATH="/path/to/your/config.py"`. Make sure your defined variables is all uppercase.
+3. **(optional) Load your Custom Configuration**: Use the `CHA_PYTHON_CUSTOM_CONFIG_PATH` environment variable to point to a custom `config.py` file that overrides default global variables. Set it using `export CHA_PYTHON_CUSTOM_CONFIG_PATH="/path/to/your/config.py"`. Ensure your defined variables are in uppercase.
 
-4. **(optional) Update Cha's "setup.py" File**: To do this, be in the same directory where Cha's code is located (this repo). Then, run the command listed below
+4. **(optional) Update Cha's "setup.py" File**: Run the following command in the same directory as Cha's code:
 
    ```bash
    python3 update.py
@@ -111,41 +111,81 @@ For those interested in contributing or experimenting with Cha:
 
 ## Different Platforms - OpenAI Compatibility Platforms/APIs
 
-Cha now supports the option to switch between different AI platforms by using the `--platform` argument. This feature allows you to interoperate with other services offering OpenAI-compatible APIs.
+Cha now supports switching between different AI platforms using the `--platform` argument. This feature allows interoperability with other services offering OpenAI-compatible APIs.
+
+### Platform Details (February 6, 2025)
+
+<u>**Groq API**</u> <!-- MAIN SUB HEADER FOR THIS SECTION -->
+
+**Base URL**: `https://api.groq.com/openai/v1`
+
+**Environment Variable**: `GROQ_API_KEY`
+
+**Docs**: [Groq's API Docs](https://console.groq.com/docs/overview)
+
+**Get Models**:
+
+```bash
+curl -s -X GET "https://api.groq.com/openai/v1/models" -H "Authorization: Bearer $GROQ_API_KEY" -H "Content-Type: application/json" | jq -r '.data[].id' | sort | uniq
+```
+
+<u>**DeepSeek API**</u> <!-- MAIN SUB HEADER FOR THIS SECTION -->
+
+**Base URL**: `https://api.deepseek.com`
+
+**Environment Variable**: `DEEP_SEEK_API_KEY`
+
+**Docs**: [DeepSeek's API Docs](https://api-docs.deepseek.com/)
+
+**Get Models**:
+
+```bash
+curl -s --request GET --url https://api.deepseek.com/models --header 'Accept: application/json' --header "Authorization: Bearer $DEEP_SEEK_API_KEY" | jq -r '.data[].id' | sort | uniq
+```
+
+<u>**Together.AI API**</u> <!-- MAIN SUB HEADER FOR THIS SECTION -->
+
+**Base URL**: `https://api.together.xyz/v1`
+
+**Environment Variable**: `TOGETHER_API_KEY`
+
+**Docs**: [Together.AI's Docs](https://docs.together.ai/docs/introduction)
+
+**Get Models**:
+
+```bash
+curl -s --request GET --url https://api.together.xyz/v1/models --header 'accept: application/json' --header "authorization: Bearer $TOGETHER_API_KEY" | jq '.[] | select(.type == "chat") | .id' | tr -d '"' | sort | uniq
+```
+
+<u>**Perplexity.AI API**</u> <!-- MAIN SUB HEADER FOR THIS SECTION -->
+
+**Base URL**: `https://api.perplexity.ai`
+
+**Environment Variable**: `PERPLEXITY_AI_API_KEY`
+
+**Docs**: [Perplexity.AI's Docs](https://docs.perplexity.ai/home)
+
+**Get Models**:
+
+```bash
+curl -s https://docs.perplexity.ai/guides/model-cards | tr "{\|}" "\n" | grep "              children: " | awk '{print $3}' | tr -d '\\\|"n' | sort -r | uniq
+```
 
 ### Example Command
 
-Use the `platform` argument to specify the provider's API and the corresponding environment variable for the API key. Here is an example call you can make:
+To use a different provider/platform:
 
 ```bash
-# get and set the provider's API key env variable
+# Get and set the provider's API key env variable
 export TOGETHER_API_KEY="..."
 
-# run cha with a different provider/platform
+# Run cha with a different provider/platform
 cha -p "https://api.together.xyz/v1|TOGETHER_API_KEY" -m "deepseek-ai/DeepSeek-V3"
 ```
 
-### Possible Platforms (February 6, 2025)
-
-#### Perplexity AI API
-
-Check out [Perplexity.AI's Docs](https://docs.perplexity.ai/guides/getting-started) to figure out how to get your API key and checkout [Perplexity.AI's Models](https://docs.perplexity.ai/guides/model-cards) to see what models you can call.
-
-#### DeepSeek API
-
-Check out [DeepSeek's API Docs](https://api-docs.deepseek.com/) to figure out how to get your API key and checkout [DeepSeek's Models](https://api-docs.deepseek.com/quick_start/pricing) to see what models you can call.
-
-#### Groq API
-
-Check out [Groq's API Docs](https://console.groq.com/docs/openai) to figure out how to get your API key and checkout [Groq's Models](https://console.groq.com/docs/models) to see what models you can call.
-
-#### Together AI API
-
-Check out [Together.AI's Docs](https://docs.together.ai/docs/openai-api-compatibility) to figure out how to get your API key and checkout [this](https://docs.together.ai/reference/models-1) documentation or [this](https://www.together.ai/models) by Together.AI to see what models you can call.
-
 ## Contributing
 
-Any contribution is always welcomed! Please feel free to submit issues or pull requests for any bugs or features.
+Any contribution is welcomed! Please feel free to submit issues or pull requests for any bugs or features.
 
 ## License
 
