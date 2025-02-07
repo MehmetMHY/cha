@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.12.0",
+    version="0.12.1",
     packages=find_packages(),
     license="MIT",
     description="A simple CLI tool for chatting, web scraping, and image generation with OpenAI's models",
@@ -13,10 +13,10 @@ setup(
         "beautifulsoup4==4.13.3",
         "yt-dlp==2025.1.26",
         "youtube-transcript-api==0.6.3",
-        "PyMuPDF==1.25.2",
+        "PyMuPDF==1.25.3",
         "pillow==11.1.0",
         "tiktoken==0.8.0",
-        "duckduckgo_search==7.3.0",
+        "duckduckgo_search==7.3.1",
         "pdf2image==1.17.0",
         "python-docx==1.1.2",
         "openpyxl==3.1.5",
