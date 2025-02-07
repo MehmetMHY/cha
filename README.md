@@ -168,7 +168,7 @@ curl -s --request GET --url https://api.together.xyz/v1/models --header 'accept:
 **Get Models**:
 
 ```bash
-curl -s https://docs.perplexity.ai/guides/model-cards | tr "{\|}" "\n" | grep "              children: " | awk '{print $3}' | tr -d '\\\|"n' | sort -r | uniq
+curl -s https://docs.perplexity.ai/guides/model-cards | tr "{\|}" "\n" | grep "              children: " | awk '{print $3}' | tr "\\" "\n" | awk 'length >= 2' | tr -d '"' | sort -r | uniq
 ```
 
 ### Example Command
@@ -181,6 +181,12 @@ export TOGETHER_API_KEY="..."
 
 # Run cha with a different provider/platform
 cha -p "https://api.together.xyz/v1|TOGETHER_API_KEY" -m "deepseek-ai/DeepSeek-V3"
+```
+
+Run this command to grab all the platform details from this README:
+
+```bash
+cat README.md | grep "curl\|Environment Variable\|Base URL" | sed 'G;G'
 ```
 
 ## Contributing
