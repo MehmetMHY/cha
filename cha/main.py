@@ -266,7 +266,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if full_response:
                 messages.append({"role": "assistant", "content": full_response})
                 # NOTE: only print the newline for completed streamed responses
-                if not is_o1:
+                if not is_o1 and full_response.endswith("\n") == False:
                     sys.stdout.write("\n")
                     sys.stdout.flush()
 
