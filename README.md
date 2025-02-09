@@ -171,6 +171,20 @@ curl -s --request GET --url https://api.together.xyz/v1/models --header 'accept:
 curl -s https://docs.perplexity.ai/guides/model-cards | tr "{\|}" "\n" | grep "              children: " | awk '{print $3}' | tr "\\" "\n" | awk 'length >= 2' | tr -d '"' | sort -r | uniq
 ```
 
+<u>**Gemini API**</u> <!-- MAIN SUB HEADER FOR THIS SECTION -->
+
+**Base URL**: `https://generativelanguage.googleapis.com/v1beta/openai/`
+
+**Environment Variable**: `GEMINI_API_KEY`
+
+**Docs**: [Gemini API Docs](https://ai.google.dev/gemini-api/docs)
+
+**Get Models**:
+
+```bash
+curl -s "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_API_KEY" -H 'Content-Type: application/json' | jq '.models[].name' | tr -d '"' | sort | uniq
+```
+
 ### Example Command
 
 To use a different provider/platform:
