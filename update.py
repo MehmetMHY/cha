@@ -35,6 +35,10 @@ if __name__ == "__main__":
     # find all dependencies
     deps = re.findall(r'"([^"]+)==([^"]+)"', content)
 
+    print("Scanning dependencies...")
+
+    changed_count = 0
+
     # update each dependency
     for package, current_version in deps:
         try:
@@ -50,11 +54,15 @@ if __name__ == "__main__":
             for line in result.stdout.split("\n"):
                 if "Available versions:" in line:
                     latest_version = line.split(":")[1].strip().split(",")[0].strip()
-                    print(f"Updating {package}: {current_version} -> {latest_version}")
-                    content = content.replace(
-                        f'"{package}=={current_version}"',
-                        f'"{package}=={latest_version}"',
-                    )
+                    if latest_version != current_version:
+                        print(
+                            f"Updating {package}: {current_version} -> {latest_version}"
+                        )
+                        content = content.replace(
+                            f'"{package}=={current_version}"',
+                            f'"{package}=={latest_version}"',
+                        )
+                        changed_count += 1
                     break
 
         except subprocess.CalledProcessError:
@@ -66,8 +74,10 @@ if __name__ == "__main__":
         f.write(content)
     print(f"Updated setup.py file!")
 
+    print(f"A total of {changed_count} package versions got changed!")
+
     # (optional) reinstall Cha
-    user_input = save_input("Do you like to reinstall Cha (Y/n)? ")
+    user_input = save_input(f"Do you like to reinstall Cha (Y/n)? ")
     if user_input.lower() in ["y", "yes"]:
         user_input = save_input('Install without "-e" option (Y/n)? ')
         if user_input.lower() in ["y", "yes"]:

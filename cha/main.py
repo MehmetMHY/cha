@@ -335,6 +335,11 @@ def cli():
             action="store_true",
         )
         parser.add_argument(
+            "-ocr",
+            "--ocr",
+            help="Given a file path, print the content of that file as text though Cha's main file loading logic",
+        )
+        parser.add_argument(
             "-p",
             "--platform",
             nargs="?",
@@ -343,6 +348,17 @@ def cli():
         )
 
         args = parser.parse_args()
+
+        if args.ocr != None:
+            try:
+                filepath = str(args.ocr)
+                if "/" not in filepath:
+                    filepath = "./" + filepath
+                content = utils.load_most_files(file_path=filepath, client=client)
+                print(content)
+            except Exception as e:
+                print(colors.red(f"Failed to load file {filepath} due to {e}"))
+            return
 
         if args.image:
             if args.image == True:

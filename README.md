@@ -66,7 +66,7 @@ cha
 Both commands support and accept additional parameters. Here is the help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t] [-p [PLATFORM]] [string ...]
+usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t] [-ocr OCR] [-p [PLATFORM]] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -85,6 +85,7 @@ options:
   -i [IMAGE], --image [IMAGE]
                         Generate image (flag only) or print the metadata for generated images (provide filepath)
   -t, --token_count     Count tokens for the input file or string
+  -ocr OCR, --ocr OCR   Given a file path, print the content of that file as text though Cha's main file loading logic
   -p [PLATFORM], --platform [PLATFORM]
                         Use a different provider, set this like this: "<base_url>|<api_key_env_name>"
 ```
