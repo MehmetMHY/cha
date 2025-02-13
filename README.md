@@ -35,6 +35,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
    ```
 
 2. **Install the Package**:
+
    ```bash
    pip3 install --upgrade .
    ```
@@ -151,12 +152,6 @@ export TOGETHER_API_KEY="..."
 
 # Run cha with a different provider/platform
 cha -p "https://api.together.xyz/v1|TOGETHER_API_KEY" -m "deepseek-ai/DeepSeek-V3"
-```
-
-Run this command to grab all the platform details from this README:
-
-```bash
-cat README.md | grep "curl\|Environment Variable\|Base URL" | sed 'G;G'
 ```
 
 Or, refer to the [config.py](./cha/config.py) file and the `THIRD_PARTY_PLATFORMS` variable to figure out what environment variables you need to set, then just run this command the pick what platform and model you want to use:
