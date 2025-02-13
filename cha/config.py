@@ -1,3 +1,5 @@
+import os
+
 # links
 OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
 
@@ -88,6 +90,65 @@ MOVE_CURSOR_ONE_LINE = "\033[F"
 HIDE_CURSOR = "\033[?25l"
 SHOW_CURSOR = "\033[?25h"
 CLEAR_LINE = "\033[K"
+
+# last updated on 02-12-2025
+SCRAPE_MODEL_NAME_FOR_PLATFORMS = "gpt-4o-mini"
+THIRD_PARTY_PLATFORMS = {
+    "groq": {
+        "models": {
+            "url": "https://api.groq.com/openai/v1/models",
+            "headers": {
+                "Authorization": f"Bearer {os.environ.get('GROQ_API_KEY')}",
+                "Content-Type": "application/json",
+            },
+        },
+        "base_url": "https://api.groq.com/openai/v1",
+        "env_name": "GROQ_API_KEY",
+        "docs": "https://console.groq.com/docs/overview",
+    },
+    "deepseek": {
+        "models": {
+            "url": "https://api.deepseek.com/models",
+            "headers": {
+                "Accept": "application/json",
+                "Authorization": f"Bearer {os.environ.get('DEEP_SEEK_API_KEY')}",
+            },
+        },
+        "base_url": "https://api.deepseek.com",
+        "env_name": "DEEP_SEEK_API_KEY",
+        "docs": "https://api-docs.deepseek.com/",
+    },
+    "together_ai": {
+        "models": {
+            "url": "https://api.together.xyz/v1/models",
+            "headers": {
+                "accept": "application/json",
+                "authorization": f"Bearer {os.environ.get('TOGETHER_API_KEY')}",
+            },
+        },
+        "base_url": "https://api.together.xyz/v1",
+        "env_name": "TOGETHER_API_KEY",
+        "docs": "https://docs.together.ai/docs/introduction",
+    },
+    "perplexity_ai": {
+        "models": {
+            "url": "https://docs.perplexity.ai/guides/model-cards",
+            "headers": {},
+        },
+        "base_url": "https://api.perplexity.ai",
+        "env_name": "PERPLEXITY_AI_API_KEY",
+        "docs": "https://docs.perplexity.ai/home",
+    },
+    "gemini": {
+        "models": {
+            "url": f"https://generativelanguage.googleapis.com/v1beta/models?key={os.environ.get('GEMINI_API_KEY')}",
+            "headers": {},
+        },
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "env_name": "GEMINI_API_KEY",
+        "docs": "https://ai.google.dev/gemini-api/docs",
+    },
+}
 
 VALID_VIDEO_ROOT_URL_DOMAINS_FOR_SCRAPING = [
     "https://www.youtube.com",
