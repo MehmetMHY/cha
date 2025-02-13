@@ -39,6 +39,7 @@ Chatting With OpenAI's '{selected_model}' Model
 - '{config.TEXT_EDITOR_INPUT_MODE}' for text-editor input mode
 - '{config.MULTI_LINE_MODE_TEXT}' for single/multi-line switching
 - '{config.MULTI_LINE_SEND}' to end in multi-line mode
+- '{config.SWITCH_MODEL_TEXT}' switch between models during a session
                 """.strip().splitlines()
             )
         )
@@ -62,15 +63,33 @@ def list_models():
         sys.exit(1)
 
 
+def cleanly_print_models(openai_models):
+    print(colors.yellow("Available OpenAI Models:"))
+    openai_models = sorted(openai_models, key=lambda x: x[1])
+    max_index_length = len(str(len(openai_models)))
+    max_model_id_length = max(len(model_id) for model_id, _ in openai_models)
+    for index, (model_id, created) in enumerate(openai_models, start=1):
+        padded_index = str(index).rjust(max_index_length)
+        padded_model_id = model_id.ljust(max_model_id_length)
+        print(
+            colors.yellow(
+                f"   {padded_index}) {padded_model_id}   {utils.simple_date(created)}"
+            )
+        )
+    return openai_models
+
+
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
     global client
+    global CURRENT_CHAT_HISTORY
 
     is_o1 = utils.is_o_model(selected_model)
 
-    # NOTE: for o-models that don't accept system prompts
+    # For models (e.g. "o1") that do NOT accept system prompts, skip the system message
     messages = [] if is_o1 else [{"role": "system", "content": config.INITIAL_PROMPT}]
     multi_line_input = False
 
+    # handle file input or direct content string (non-interactive mode)
     if filepath or content_string:
         if filepath:
             if "/" not in filepath:
@@ -91,7 +110,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             print()
 
             try:
-                loading.start_loading("Loading Image", "rectangles")
+                loading.start_loading("Loading", "rectangles")
                 content = utils.load_most_files(
                     client=openai_client,
                     file_path=filepath,
@@ -101,20 +120,23 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 raise Exception(f"failed to load file {filepath}")
             finally:
                 loading.stop_loading()
-                pass
         else:
             content = content_string
 
         messages.append({"role": "user", "content": content})
         single_response = True
+
     else:
+        # interactive mode
         if print_title:
             title_print(selected_model)
         single_response = False
 
+    # main loop: read user input, handle commands, or pass input to model
     while True:
         if not single_response:
             user_input_string = colors.blue("User: ")
+
             if multi_line_input:
                 print(
                     colors.yellow(
@@ -125,9 +147,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             message = utils.safe_input(user_input_string).rstrip("\n")
 
+            # handle text-editor input
             if message == config.TEXT_EDITOR_INPUT_MODE:
                 editor_content = utils.check_terminal_editors_and_edit()
-                if editor_content == None:
+                if editor_content is None:
                     print(colors.red(f"No text editor available or editing cancelled"))
                     continue
                 message = editor_content
@@ -136,14 +159,57 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 for line in message.rstrip("\n").split("\n"):
                     print(colors.blue(">"), line)
 
+            if message.startswith(config.SWITCH_MODEL_TEXT):
+                parts = message.strip().split(maxsplit=1)
+
+                if len(parts) == 1:
+                    openai_models = cleanly_print_models(openai_models=list_models())
+
+                    selection = utils.safe_input(
+                        colors.blue(f"Select a model (1-{len(openai_models)}): ")
+                    )
+                    if selection.isdigit():
+                        idx = int(selection) - 1
+                        if 0 <= idx < len(openai_models):
+                            selected_model = openai_models[idx][0]
+                            print(
+                                colors.magenta(f"Switched to model: {selected_model}")
+                            )
+                            is_o1 = utils.is_o_model(selected_model)
+                        else:
+                            print(colors.red("Invalid model number."))
+                    else:
+                        print(colors.red("Invalid input."))
+
+                else:
+                    user_wants_model = parts[1].strip()
+                    all_models = [m[0] for m in list_models()]
+
+                    if user_wants_model in all_models:
+                        selected_model = user_wants_model
+                        print(colors.magenta(f"Switched to model: {selected_model}"))
+                        is_o1 = utils.is_o_model(selected_model)
+                    else:
+                        print(
+                            colors.red(
+                                f"Model '{user_wants_model}' not recognized. Please pick from the list."
+                            )
+                        )
+
+                # skip sending "!sm" to the model
+                continue
+
             if message == config.MULTI_LINE_MODE_TEXT:
                 multi_line_input = True
                 continue
+
             elif message.replace(" ", "") == config.IMG_GEN_MODE:
                 image.gen_image(client=openai_client)
                 continue
+
             elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
                 break
+
             elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
                 messages = (
                     []
@@ -154,6 +220,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 continue
 
             if multi_line_input:
+                # keep appending lines until user types the MULTI_LINE_SEND text
                 message_lines = [message]
                 while True:
                     line = utils.safe_input().rstrip("\n")
@@ -163,16 +230,19 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 message = "\n".join(message_lines)
                 multi_line_input = False
 
+            # save chat history to a JSON file
             if message == config.SAVE_CHAT_HISTORY:
                 cha_filepath = f"cha_{int(time.time())}.json"
                 utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
-                print(colors.red(f"Saved current saved history to {cha_filepath}"))
+                print(colors.red(f"Saved current chat history to {cha_filepath}"))
                 continue
 
+            # print help
             if message == config.HELP_PRINT_OPTIONS_KEY:
                 title_print(selected_model)
                 continue
 
+            # prompt user to load a file
             if message == config.LOAD_MESSAGE_CONTENT:
                 try:
                     message = utils.msg_content_load(openai_client)
@@ -182,9 +252,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     print()
                     continue
 
+            # check for URLs -> scraping
             detected_urls = len(scraper.extract_urls(message))
             if detected_urls > 0:
-                # NOTE: determine whether scraping should happen, and then clear the input text message afterwards
                 du_print = f"{detected_urls} URL{'s' if detected_urls > 1 else ''}"
                 prompt = f"{du_print} detected, continue web scraping (y/n)? "
                 sys.stdout.write(colors.red(prompt))
@@ -194,14 +264,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 sys.stdout.write(config.CLEAR_LINE)
                 sys.stdout.flush()
 
-                if du_user.lower() == "y" or du_user.lower() == "yes":
+                if du_user.lower() in ["y", "yes"]:
                     loading.start_loading("Scraping URLs", "star")
-
                     try:
                         message = scraper.scraped_prompt(message)
                     finally:
                         loading.stop_loading()
 
+            # check for an answer-search command
             if message.startswith(config.RUN_ANSWER_FEATURE):
                 user_input_mode = True
                 answer_prompt = None
@@ -219,40 +289,41 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     user_input_mode=user_input_mode,
                 )
 
-                if message != None:
+                if message is not None:
                     messages.append({"role": "user", "content": message})
 
                 continue
 
+            # skip if user typed something blank
             if len("".join(str(message)).split()) == 0:
                 continue
 
+            # add user's message
             messages.append({"role": "user", "content": message})
 
+        # prepare a chat record for local usage
         obj_chat_history = {
             "time": time.time(),
             "user": messages[-1]["content"],
             "bot": "",
         }
 
+        # attempt to send the user's prompt to the selected model
         try:
             if is_o1:
                 loading.start_loading("Thinking", "braille")
-
-                # NOTE: o1 models don't support streaming
                 response = client.chat.completions.create(
                     model=selected_model, messages=messages
                 )
-
                 loading.stop_loading()
                 full_response = response.choices[0].message.content
                 print(colors.green(full_response))
                 obj_chat_history["bot"] = full_response
+
             else:
                 response = client.chat.completions.create(
                     model=selected_model, messages=messages, stream=True
                 )
-
                 full_response = ""
                 try:
                     for chunk in response:
@@ -271,8 +342,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if full_response:
                 messages.append({"role": "assistant", "content": full_response})
-                # NOTE: only print the newline for completed streamed responses
-                if not is_o1 and full_response.endswith("\n") == False:
+                if not is_o1 and not full_response.endswith("\n"):
                     sys.stdout.write("\n")
                     sys.stdout.flush()
 
@@ -444,20 +514,7 @@ def cli():
             return
 
         if args.select_model:
-            openai_models = list_models()
-            print(colors.yellow("Available OpenAI Models:"))
-
-            openai_models = sorted(openai_models, key=lambda x: x[1])
-            max_index_length = len(str(len(openai_models)))
-            max_model_id_length = max(len(model_id) for model_id, _ in openai_models)
-            for index, (model_id, created) in enumerate(openai_models, start=1):
-                padded_index = str(index).rjust(max_index_length)
-                padded_model_id = model_id.ljust(max_model_id_length)
-                print(
-                    colors.yellow(
-                        f"   {padded_index}) {padded_model_id}   {utils.simple_date(created)}"
-                    )
-                )
+            openai_models = cleanly_print_models(openai_models=list_models())
 
             selection = utils.safe_input(
                 colors.blue(f"Select a model (1-{len(openai_models)}): ")
