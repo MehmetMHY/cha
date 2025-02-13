@@ -400,8 +400,6 @@ def cli():
                     BASE_URL_VALUE = platform_values["base_url"]
                     selected_model = platform_values["picked_model"]
 
-                print(API_KEY_NAME, BASE_URL_VALUE)
-
                 client = OpenAI(
                     api_key=os.environ.get(API_KEY_NAME),
                     base_url=BASE_URL_VALUE,
@@ -437,7 +435,6 @@ def cli():
                 token_count = utils.count_tokens(text, selected_model)
                 if token_count is None:
                     raise Exception("Failed to calculate token count")
-
                 print(colors.green("Content Type:"), content_mode)
                 print(colors.green("Selected Model:"), args.model)
                 print(colors.green("Text Length:"), len(text), "chars")
