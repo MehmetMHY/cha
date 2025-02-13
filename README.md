@@ -22,6 +22,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
+- **Switch Between Models**: Easily switch between models during a conversation.
 
 ## Getting Started
 
