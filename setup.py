@@ -9,7 +9,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
-        "openai==1.62.0",
+        "openai==1.63.0",
         "beautifulsoup4==4.13.3",
         "yt-dlp==2025.1.26",
         "youtube-transcript-api==0.6.3",
