@@ -42,14 +42,22 @@ Make sure to clearly refer to each citation in the body of your response. Your a
 def generate_search_queries(
     client, user_prompt, model_name, min_results=config.DEFAULT_GEN_SEARCH_QUERY_COUNT
 ):
-    system_prompt = f"""
-You are a helpful assistant that generates three distinct search engine queries from a user's prompt.
-These search engine queries are optimized towards getting the best results that can best answer the user's prompt
-Each query should be optimized to capture different aspects or angles of the user's intent.
-Format the output strictly as an array of strings.
-Make sure to provide AT-LEAST {min_results} good search engine queries.
-Also note, today's date in ISO 8601 format is: {str(datetime.now(timezone.utc).isoformat())} where the year is {str(datetime.now().year)}
-    """
+    prompt = f"""
+Today's date, in ISO 8601 format, is: {datetime.now(timezone.utc).isoformat()}.
+
+Your task is to generate at least {min_results} distinct search engine queries based on the user's prompt provided below:
+```md
+{user_prompt}
+```
+
+Instructions:
+1. Create search engine queries that extract the most relevant results for the user's prompt.
+2. Ensure each query is optimized to explore different aspects or angles of the user's intent.
+3. Format the queries as an array of strings.
+
+Example Format:
+- ["Query 1", "Query 2", "Query 3"]
+"""
 
     # NOTE: this insures the output is always an array of strings as it should be
     class SearchQueries(BaseModel):
@@ -59,12 +67,8 @@ Also note, today's date in ISO 8601 format is: {str(datetime.now(timezone.utc).i
         model=model_name,
         messages=[
             {
-                "role": "system",
-                "content": system_prompt,
-            },
-            {
                 "role": "user",
-                "content": user_prompt,
+                "content": prompt,
             },
         ],
         response_format=SearchQueries,

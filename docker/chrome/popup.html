@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Localhost Iframe</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+      }
+
+      .iframe-container {
+        width: 400px;
+        height: 600px;
+        background-color: #f0f0f0;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      iframe {
+        border: none;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="iframe-container">
+      <iframe id="my-iframe"></iframe>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>
