@@ -87,7 +87,8 @@ options:
   -t, --token_count     Count tokens for the input file or string
   -ocr OCR, --ocr OCR   Given a file path, print the content of that file as text though Cha's main file loading logic
   -p [PLATFORM], --platform [PLATFORM]
-                        Use a different provider, set this like this: "<base_url>|<api_key_env_name>"
+                        Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag
+                        with "-p" for True
 ```
 
 ## Development
@@ -114,81 +115,35 @@ For those interested in contributing or experimenting with Cha:
 
 Cha now supports switching between different AI platforms using the `--platform` argument. This feature allows interoperability with other services offering OpenAI-compatible APIs.
 
-### Platform Details (February 6, 2025)
+### Platform Details (February 12, 2025)
 
-<u>**Groq API**</u> <!-- MAIN SUB HEADER FOR THIS SECTION -->
+#### DeepSeek API
 
-**Base URL**: `https://api.groq.com/openai/v1`
+- Base URL: https://api.deepseek.com
 
-**Environment Variable**: `GROQ_API_KEY`
+- Environment Variable: DEEP_SEEK_API_KEY
 
-**Docs**: [Groq's API Docs](https://console.groq.com/docs/overview)
+- Docs: https://api-docs.deepseek.com/
 
-**Get Models**:
+- Get Models Command: `curl -s --request GET --url https://api.deepseek.com/models --header 'Accept: application/json' --header "Authorization: Bearer $DEEP_SEEK_API_KEY" | jq -r '.data[].id' | sort | uniq`
 
-```bash
-curl -s -X GET "https://api.groq.com/openai/v1/models" -H "Authorization: Bearer $GROQ_API_KEY" -H "Content-Type: application/json" | jq -r '.data[].id' | sort | uniq
-```
+#### Together.AI API
 
-<u>**DeepSeek API**</u> <!-- MAIN SUB HEADER FOR THIS SECTION -->
+- Base URL: https://api.together.xyz/v1
 
-**Base URL**: `https://api.deepseek.com`
+- Environment Variable: TOGETHER_API_KEY
 
-**Environment Variable**: `DEEP_SEEK_API_KEY`
+- Docs: https://docs.together.ai/docs/introduction
 
-**Docs**: [DeepSeek's API Docs](https://api-docs.deepseek.com/)
+- Get Models Command: `curl -s --request GET --url https://api.together.xyz/v1/models --header 'accept: application/json' --header "authorization: Bearer $TOGETHER_API_KEY" | jq '.[] | select(.type == "chat") | .id' | tr -d '"' | sort | uniq`
 
-**Get Models**:
+#### All Current Options
 
-```bash
-curl -s --request GET --url https://api.deepseek.com/models --header 'Accept: application/json' --header "Authorization: Bearer $DEEP_SEEK_API_KEY" | jq -r '.data[].id' | sort | uniq
-```
-
-<u>**Together.AI API**</u> <!-- MAIN SUB HEADER FOR THIS SECTION -->
-
-**Base URL**: `https://api.together.xyz/v1`
-
-**Environment Variable**: `TOGETHER_API_KEY`
-
-**Docs**: [Together.AI's Docs](https://docs.together.ai/docs/introduction)
-
-**Get Models**:
-
-```bash
-curl -s --request GET --url https://api.together.xyz/v1/models --header 'accept: application/json' --header "authorization: Bearer $TOGETHER_API_KEY" | jq '.[] | select(.type == "chat") | .id' | tr -d '"' | sort | uniq
-```
-
-<u>**Perplexity.AI API**</u> <!-- MAIN SUB HEADER FOR THIS SECTION -->
-
-**Base URL**: `https://api.perplexity.ai`
-
-**Environment Variable**: `PERPLEXITY_AI_API_KEY`
-
-**Docs**: [Perplexity.AI's Docs](https://docs.perplexity.ai/home)
-
-**Get Models**:
-
-```bash
-curl -s https://docs.perplexity.ai/guides/model-cards | tr "{\|}" "\n" | grep "              children: " | awk '{print $3}' | tr "\\" "\n" | awk 'length >= 2' | tr -d '"' | sort -r | uniq
-```
-
-<u>**Gemini API**</u> <!-- MAIN SUB HEADER FOR THIS SECTION -->
-
-**Base URL**: `https://generativelanguage.googleapis.com/v1beta/openai/`
-
-**Environment Variable**: `GEMINI_API_KEY`
-
-**Docs**: [Gemini API Docs](https://ai.google.dev/gemini-api/docs)
-
-**Get Models**:
-
-```bash
-curl -s "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_API_KEY" -H 'Content-Type: application/json' | jq '.models[].name' | tr -d '"' | sort | uniq
-```
+You can refer to the [config.py](./cha/config.py) file and the `THIRD_PARTY_PLATFORMS` variable to see all the other platforms you can try and/or use.
 
 ### Example Command
 
-To use a different provider/platform:
+Manually use a different provider/platform:
 
 ```bash
 # Get and set the provider's API key env variable
@@ -202,6 +157,12 @@ Run this command to grab all the platform details from this README:
 
 ```bash
 cat README.md | grep "curl\|Environment Variable\|Base URL" | sed 'G;G'
+```
+
+Or, refer to the [config.py](./cha/config.py) file and the `THIRD_PARTY_PLATFORMS` variable to figure out what environment variables you need to set, then just run this command the pick what platform and model you want to use:
+
+```bash
+cha -p
 ```
 
 ## Contributing

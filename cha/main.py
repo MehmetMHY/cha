@@ -5,11 +5,15 @@ try:
     import time
     import os
     from openai import OpenAI
-    from cha import scraper, colors, image, utils, config, loading
+    from cha import scraper, colors, image, utils, config, loading, platforms
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
 utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
+
+openai_client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -43,7 +47,7 @@ Chatting With OpenAI's '{selected_model}' Model
 
 def list_models():
     try:
-        response = client.models.list()
+        response = openai_client.models.list()
         if not response.data:
             raise ValueError("No models available")
 
@@ -89,7 +93,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             try:
                 loading.start_loading("Loading Image", "rectangles")
                 content = utils.load_most_files(
-                    client=client,
+                    client=openai_client,
                     file_path=filepath,
                     model_name=config.CHA_DEFAULT_IMAGE_MODEL,
                 )
@@ -136,7 +140,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 multi_line_input = True
                 continue
             elif message.replace(" ", "") == config.IMG_GEN_MODE:
-                image.gen_image(client=client)
+                image.gen_image(client=openai_client)
                 continue
             elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
                 break
@@ -171,7 +175,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if message == config.LOAD_MESSAGE_CONTENT:
                 try:
-                    message = utils.msg_content_load(client)
+                    message = utils.msg_content_load(openai_client)
                 except:
                     message = None
                 if message is None:
@@ -210,7 +214,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         answer_prompt = answer_prompt_draft
 
                 message = utils.run_answer_search(
-                    client=client, prompt=answer_prompt, user_input_mode=user_input_mode
+                    client=openai_client,
+                    prompt=answer_prompt,
+                    user_input_mode=user_input_mode,
                 )
 
                 if message != None:
@@ -343,8 +349,8 @@ def cli():
             "-p",
             "--platform",
             nargs="?",
-            default=None,
-            help='Use a different provider, set this like this: "<base_url>|<api_key_env_name>"',
+            const=True,
+            help='Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag with "-p" for True',
         )
 
         args = parser.parse_args()
@@ -354,7 +360,9 @@ def cli():
                 filepath = str(args.ocr)
                 if "/" not in filepath:
                     filepath = "./" + filepath
-                content = utils.load_most_files(file_path=filepath, client=client)
+                content = utils.load_most_files(
+                    file_path=filepath, client=openai_client
+                )
                 print(content)
             except Exception as e:
                 print(colors.red(f"Failed to load file {filepath} due to {e}"))
@@ -362,32 +370,44 @@ def cli():
 
         if args.image:
             if args.image == True:
-                status = image.gen_image(client=client)
+                status = image.gen_image(client=openai_client)
             else:
                 status = image.display_metadata(str(args.image))
             sys.exit(1 if status is None else 0)
 
         if args.answer_search == True:
             output = utils.run_answer_search(
-                client=client, prompt=None, user_input_mode=True
+                client=openai_client, prompt=None, user_input_mode=True
             )
             sys.exit(1 if output is None else 0)
 
         title_print_value = args.print_title
         selected_model = args.model
 
-        if args.platform:
+        if args.platform or args.platform == True:
             try:
-                platform_values = str(args.platform).split("|")
-                client = OpenAI(
-                    api_key=os.environ.get(platform_values[1]),
-                    base_url=platform_values[0],
-                )
-                print(
-                    colors.red(
-                        f"Warning! The platform switched to {platform_values[0]}"
+                API_KEY_NAME = None
+                BASE_URL_VALUE = None
+                if type(args.platform) == str:
+                    platform_values = str(args.platform).split("|")
+                    API_KEY_NAME = platform_values[1]
+                    BASE_URL_VALUE = platform_values[0]
+                if args.platform == True:
+                    platform_values = platforms.auto_select_a_platform(
+                        client=openai_client
                     )
+                    API_KEY_NAME = platform_values["env_name"]
+                    BASE_URL_VALUE = platform_values["base_url"]
+                    selected_model = platform_values["picked_model"]
+
+                print(API_KEY_NAME, BASE_URL_VALUE)
+
+                client = OpenAI(
+                    api_key=os.environ.get(API_KEY_NAME),
+                    base_url=BASE_URL_VALUE,
                 )
+
+                print(colors.red(f"Warning! The platform switched to {BASE_URL_VALUE}"))
             except Exception as e:
                 print(colors.red(f"Failed to switch platform due to {e}"))
                 return
@@ -397,7 +417,7 @@ def cli():
 
             if args.file:
                 content_mode = "FILE"
-                text = utils.load_most_files(args.file, client)
+                text = utils.load_most_files(args.file, openai_client)
             elif args.string:
                 content_mode = "STRING"
                 text = " ".join(args.string)
