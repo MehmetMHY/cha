@@ -85,7 +85,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
     is_o1 = utils.is_o_model(selected_model)
 
-    # For models (e.g. "o1") that do NOT accept system prompts, skip the system message
+    # for models (e.g. "o1") that do NOT accept system prompts, skip the system message
     messages = [] if is_o1 else [{"role": "system", "content": config.INITIAL_PROMPT}]
     multi_line_input = False
 
@@ -132,7 +132,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             title_print(selected_model)
         single_response = False
 
-    # main loop: read user input, handle commands, or pass input to model
+    # main loop for chatting
     while True:
         if not single_response:
             user_input_string = colors.blue("User: ")
@@ -182,21 +182,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         print(colors.red("Invalid input."))
 
                 else:
-                    user_wants_model = parts[1].strip()
-                    all_models = [m[0] for m in list_models()]
+                    # NOTE: this is not user-safe and can cause an error if the user inputs a model name wrong, but it's much faster to do this
+                    selected_model = parts[1].strip()
+                    print(colors.magenta(f"Switched to model: {selected_model}"))
+                    is_o1 = utils.is_o_model(selected_model)
 
-                    if user_wants_model in all_models:
-                        selected_model = user_wants_model
-                        print(colors.magenta(f"Switched to model: {selected_model}"))
-                        is_o1 = utils.is_o_model(selected_model)
-                    else:
-                        print(
-                            colors.red(
-                                f"Model '{user_wants_model}' not recognized. Please pick from the list."
-                            )
-                        )
-
-                # skip sending "!sm" to the model
                 continue
 
             if message == config.MULTI_LINE_MODE_TEXT:
