@@ -92,17 +92,3 @@ Run Cha using Docker to access the CLI tool via your browser. This is useful if 
    ```bash
    cha
    ```
-
-## Use As Chrome Extension
-
-1. Run the docker container for this project, follow the instructions above
-
-2. Open up your instance of the Google Chrome Browser
-
-3. Go to this url/setting: chrome://extensions/
-
-4. Enable "Developer mode"
-
-5. Click the "Load unpacked" button and load Cha's extension from the ./docker/chrome/ directory
-
-6. Click the puzzle looking icon close to the top left corner of the browser and "pin" the "Cha" extension
