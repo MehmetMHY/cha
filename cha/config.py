@@ -131,15 +131,6 @@ THIRD_PARTY_PLATFORMS = {
         "env_name": "TOGETHER_API_KEY",
         "docs": "https://docs.together.ai/docs/introduction",
     },
-    "perplexity_ai": {
-        "models": {
-            "url": "https://docs.perplexity.ai/guides/model-cards",
-            "headers": {},
-        },
-        "base_url": "https://api.perplexity.ai",
-        "env_name": "PERPLEXITY_AI_API_KEY",
-        "docs": "https://docs.perplexity.ai/home",
-    },
     "gemini": {
         "models": {
             "url": f"https://generativelanguage.googleapis.com/v1beta/models?key={os.environ.get('GEMINI_API_KEY')}",
