@@ -86,7 +86,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
     is_o1 = utils.is_o_model(selected_model)
 
     # for models (e.g. "o1") that do NOT accept system prompts, skip the system message
-    messages = [] if is_o1 else [{"role": "system", "content": config.INITIAL_PROMPT}]
+    messages = [] if is_o1 else [{"role": "user", "content": config.INITIAL_PROMPT}]
     multi_line_input = False
 
     # handle file input or direct content string (non-interactive mode)
@@ -204,7 +204,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 messages = (
                     []
                     if is_o1
-                    else [{"role": "system", "content": config.INITIAL_PROMPT}]
+                    else [{"role": "user", "content": config.INITIAL_PROMPT}]
                 )
                 print(colors.yellow("Chat history cleared."))
                 continue
@@ -460,12 +460,21 @@ def cli():
                     BASE_URL_VALUE = platform_values["base_url"]
                     selected_model = platform_values["picked_model"]
 
+                # NOTE: (2-13-2025) this exists to account for cases like this: https://ollama.com/blog/openai-compatibility
+                API_KEY_VALUE = API_KEY_NAME
+                if API_KEY_VALUE in os.environ:
+                    API_KEY_VALUE = os.environ.get(API_KEY_NAME)
+
                 client = OpenAI(
-                    api_key=os.environ.get(API_KEY_NAME),
+                    api_key=API_KEY_VALUE,
                     base_url=BASE_URL_VALUE,
                 )
 
-                print(colors.red(f"Warning! The platform switched to {BASE_URL_VALUE}"))
+                print(
+                    colors.magenta(
+                        f"Warning! The platform switched to {BASE_URL_VALUE}"
+                    )
+                )
             except Exception as e:
                 print(colors.red(f"Failed to switch platform due to {e}"))
                 return

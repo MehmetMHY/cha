@@ -149,6 +149,13 @@ THIRD_PARTY_PLATFORMS = {
         "env_name": "GEMINI_API_KEY",
         "docs": "https://ai.google.dev/gemini-api/docs",
     },
+    "ollama": {
+        "models": {"url": "http://localhost:11434/api/tags", "headers": {}},
+        "base_url": "http://localhost:11434/v1",
+        # NOTE: this environment variable and api_key value is required but unused
+        "env_name": "OPENAI_API_KEY",
+        "docs": "https://github.com/ollama/ollama/blob/main/docs/api.md",
+    },
 }
 
 VALID_VIDEO_ROOT_URL_DOMAINS_FOR_SCRAPING = [
