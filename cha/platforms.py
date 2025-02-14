@@ -18,7 +18,7 @@ def brute_force_models_list(client, url, headers, model_name):
         messages=[
             {
                 "role": "system",
-                "content": "Given text from a web scrape, extract the model name/id the API supports",
+                "content": "Given text from a web scrape, extract the model id(s) the API supports",
             },
             {
                 "role": "user",
