@@ -153,7 +153,7 @@ THIRD_PARTY_PLATFORMS = {
         "models": {"url": "http://localhost:11434/api/tags", "headers": {}},
         "base_url": "http://localhost:11434/v1",
         # NOTE: this environment variable and api_key value is required but unused
-        "env_name": "OPENAI_API_KEY",
+        "env_name": "ollama",
         "docs": "https://github.com/ollama/ollama/blob/main/docs/api.md",
     },
 }
