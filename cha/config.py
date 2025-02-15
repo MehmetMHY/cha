@@ -1,3 +1,5 @@
+# NOTE: do NOT modify any of the "import" lines below, just the variables!
+import importlib.util
 import os
 
 # links
@@ -21,14 +23,27 @@ SWITCH_MODEL_TEXT = "!sm"
 CHA_DEFAULT_MODEL = "gpt-4o"
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
 
-SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
-PREFERRED_TERMINAL_IDE = "vim"
+# answer feature config
+DEFAULT_SEARCH_BIG_MODEL = "gpt-4o"
+DEFAULT_SEARCH_SMALL_MODEL = "gpt-4o-mini"
+DEFAULT_SEARCH_FRESHNESS_STATE = "none"
+DEFAULT_SEARCH_MAX_TOKEN_LIMIT = 120_000
+DEFAULT_SEARCH_RESULT_COUNT = 5
+DEFAULT_SEARCH_TIME_DELAY_SECONDS = 1
+DEFAULT_GEN_SEARCH_QUERY_COUNT = 5
 
+# other random configs
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o1", "o2", "o3", "o4", "o5", "o6"]
-
 FILES_TO_IGNORE = [".DS_Store", ".env", ".env.local"]
 
+# terminal/console config
+SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
+PREFERRED_TERMINAL_IDE = "vim"
+MOVE_CURSOR_ONE_LINE = "\033[F"
+HIDE_CURSOR = "\033[?25l"
+SHOW_CURSOR = "\033[?25h"
+CLEAR_LINE = "\033[K"
 TERMINAL_THEME_CODES = {
     "reset": "\033[0m",
     "colors": {
@@ -54,7 +69,11 @@ TERMINAL_THEME_CODES = {
     },
 }
 
-# NOTE: these sizes are valid for most image-generation models, but OpenAI's models support only a few
+# image generation configs
+DEFAULT_IMAGE_QUALITY = "standard"
+DEFAULT_IMAGE_SIZE = "1024x1024"
+DEFAULT_IMAGE_MODEL = "dall-e-3"
+DEFAULT_IMAGE_N = 1
 COMMON_IMG_GEN_RESOLUTIONS = [
     "256x256",
     "512x512",
@@ -66,6 +85,7 @@ COMMON_IMG_GEN_RESOLUTIONS = [
     "4096x4096",
 ]
 
+# http request configs
 REQUEST_DEFAULT_TIMEOUT_SECONDS = 10
 REQUEST_DEFAULT_RETRY_COUNT = 1
 REQUEST_BACKOFF_FACTOR = 0.1
@@ -73,27 +93,8 @@ REQUEST_DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 }
 
-# answer feature config
-DEFAULT_SEARCH_BIG_MODEL = "gpt-4o"
-DEFAULT_SEARCH_SMALL_MODEL = "gpt-4o-mini"
-DEFAULT_SEARCH_FRESHNESS_STATE = "none"
-DEFAULT_SEARCH_MAX_TOKEN_LIMIT = 120_000
-DEFAULT_SEARCH_RESULT_COUNT = 5
-DEFAULT_SEARCH_TIME_DELAY_SECONDS = 1
-DEFAULT_GEN_SEARCH_QUERY_COUNT = 5
-
-DEFAULT_IMAGE_QUALITY = "standard"
-DEFAULT_IMAGE_SIZE = "1024x1024"
-DEFAULT_IMAGE_MODEL = "dall-e-3"
-DEFAULT_IMAGE_N = 1
-
-MOVE_CURSOR_ONE_LINE = "\033[F"
-HIDE_CURSOR = "\033[?25l"
-SHOW_CURSOR = "\033[?25h"
-CLEAR_LINE = "\033[K"
-
 # last updated on 02-12-2025
-SCRAPE_MODEL_NAME_FOR_PLATFORMS = "gpt-4o-mini"
+SCRAPE_MODEL_NAME_FOR_PLATFORMS = DEFAULT_SEARCH_SMALL_MODEL
 THIRD_PARTY_PLATFORMS = {
     "groq": {
         "models": {
@@ -143,12 +144,12 @@ THIRD_PARTY_PLATFORMS = {
     "ollama": {
         "models": {"url": "http://localhost:11434/api/tags", "headers": {}},
         "base_url": "http://localhost:11434/v1",
-        # NOTE: this environment variable and api_key value is required but unused
         "env_name": "ollama",
         "docs": "https://github.com/ollama/ollama/blob/main/docs/api.md",
     },
 }
 
+# urls that contain video data that can be scrapped using cha's scraper
 VALID_VIDEO_ROOT_URL_DOMAINS_FOR_SCRAPING = [
     "https://www.youtube.com",
     "https://youtube.com",
@@ -189,8 +190,9 @@ VALID_VIDEO_ROOT_URL_DOMAINS_FOR_SCRAPING = [
     "https://ard.de",
 ]
 
-# https://stackoverflow.com/questions/2685435/cooler-ascii-spinners
-# https://raw.githubusercontent.com/sindresorhus/cli-spinners/master/spinners.json
+# ascii, text based, terminal animations for loading animations
+# - https://stackoverflow.com/questions/2685435/cooler-ascii-spinners
+# - https://raw.githubusercontent.com/sindresorhus/cli-spinners/master/spinners.json
 LOADING_ANIMATIONS = {
     "basic": ["|", "/", "-", "\\"],
     "star": ["✶", "✸", "✹", "✺", "✹", "✷"],
@@ -234,10 +236,6 @@ LOADING_ANIMATIONS = {
 }
 
 # NOTE: do NOT modify the code below! It allows setting and loading of a custom config file path (if provided)!
-
-import importlib.util
-import os
-
 CUSTOM_CONFIG_PATH = os.environ.get("CHA_PYTHON_CUSTOM_CONFIG_PATH")
 if CUSTOM_CONFIG_PATH and os.path.exists(CUSTOM_CONFIG_PATH):
     spec = importlib.util.spec_from_file_location("external_config", CUSTOM_CONFIG_PATH)
