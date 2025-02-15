@@ -1,4 +1,4 @@
-# NOTE: the goal of this script is to easily update the dependencies in Cha's "setup.py" file
+# NOTE: the goal of this script is to easily update the dependencies in Cha's SETUP file
 # NOTE: make sure to run this script in the root directory of the Cha project
 
 import subprocess
@@ -16,8 +16,18 @@ def save_input(starting_text):
 
 
 if __name__ == "__main__":
-    # read the current setup.py
-    with open("setup.py", "r") as f:
+    # path to setup file
+    PYTHON_SETUP_FILE_PATH = "/".join(
+        os.path.dirname(os.path.abspath(__file__)).split("/")[:-1] + ["setup.py"]
+    )
+
+    # make sure the setup file exists
+    if os.path.isfile(PYTHON_SETUP_FILE_PATH) == False:
+        print("Failed to load 'setup.py' file because it does not exist!")
+        sys.exit(1)
+
+    # read the current setup file
+    with open(PYTHON_SETUP_FILE_PATH, "r") as f:
         content = f.read()
 
     # get and update version
@@ -70,9 +80,9 @@ if __name__ == "__main__":
             continue
 
     # write updated content
-    with open("setup.py", "w") as f:
+    with open(PYTHON_SETUP_FILE_PATH, "w") as f:
         f.write(content)
-    print(f"Updated setup.py file!")
+    print(f"Updated setup file!")
 
     print(f"A total of {changed_count} package versions got changed!")
 
