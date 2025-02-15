@@ -312,3 +312,26 @@ def run_answer_search(client, prompt=None, user_input_mode=True):
         )
     except (KeyboardInterrupt, EOFError, SystemExit):
         return None
+
+
+def act_as_ocr(client, filepath, prompt=None):
+    default_prompt = f"""
+Analyze the provided image and perform the following tasks:
+1. Extract all visible text accurately, including any embedded or obscured text.
+2. Interpret the contextual meaning of the image by examining visual elements, symbols, and any implied narratives or themes.
+3. Identify relationships between the text and visual components, noting any cultural, historical, or emotional subtleties.
+Provide a comprehensive report combining literal text extraction with nuanced interpretations of the image's symbolic and contextual messages.
+Also note, that the file name is named "{filepath}" which might or might not provide more context of the image.
+"""
+    try:
+        current_prompt = default_prompt
+        if type(prompt) == None:
+            current_prompt = default_prompt
+        if "/" not in filepath:
+            filepath = "./" + filepath
+        content = utils.load_most_files(
+            file_path=filepath, client=client, prompt=current_prompt
+        )
+        return str(content)
+    except Exception as e:
+        return None
