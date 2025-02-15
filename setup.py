@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.12.7",
+    version="0.12.8",
     packages=find_packages(),
     license="MIT",
     description="A simple CLI tool for chatting, web scraping, and image generation with OpenAI's models",

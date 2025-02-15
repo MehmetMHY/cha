@@ -95,7 +95,7 @@ options:
 
 ### Docker
 
-Cha can be run in Docker and accessed through the browser. This is great if you want to access Cha from the browser and/or avoid installing the dependencies for Cha by running it in a sandbox. To setup and run the Docker version of Cha, checkout [this](./docker/) section of the repo.
+Cha can be run in Docker and accessed through the browser. This is great if you want to access Cha from the browser and/or avoid installing the dependencies for Cha by running it in a sandbox. To setup and run the Docker version of Cha, checkout [this](./assets/docker/) section of the repo.
 
 ## Development
 
