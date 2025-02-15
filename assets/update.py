@@ -17,13 +17,29 @@ def save_input(starting_text):
 
 if __name__ == "__main__":
     # path to setup file
-    PYTHON_SETUP_FILE_PATH = "/".join(
-        os.path.dirname(os.path.abspath(__file__)).split("/")[:-1] + ["setup.py"]
-    )
+    PYTHON_SETUP_FILE_PATH = None
+    for i in range(3):
+        setup_file_path = "/".join(
+            os.path.dirname(os.path.abspath(__file__)).split("/")[: -(i + 1)]
+            + ["setup.py"]
+        )
+        if os.path.isfile(setup_file_path):
+            PYTHON_SETUP_FILE_PATH = setup_file_path
+            break
 
-    # make sure the setup file exists
-    if os.path.isfile(PYTHON_SETUP_FILE_PATH) == False:
-        print("Failed to load 'setup.py' file because it does not exist!")
+    # confirm the loaded setup file path is correct
+    if PYTHON_SETUP_FILE_PATH is not None:
+        print(f"Found 'setup.py' at:\n{PYTHON_SETUP_FILE_PATH}")
+        confirm_input = save_input(f"Continue with this path (Y/n)? ")
+        if confirm_input.lower() in ["n", "no"]:
+            PYTHON_SETUP_FILE_PATH = save_input(
+                "Please manually input the path to 'setup.py': "
+            ).strip()
+            if not os.path.isfile(PYTHON_SETUP_FILE_PATH):
+                print(f"The file path '{PYTHON_SETUP_FILE_PATH}' does not exist!")
+                sys.exit(1)
+    else:
+        print("Failed to load 'setup.py' file(s) because it does not exist!")
         sys.exit(1)
 
     # read the current setup file
