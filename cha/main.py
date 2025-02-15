@@ -416,16 +416,13 @@ def cli():
         args = parser.parse_args()
 
         if args.ocr != None:
-            try:
-                filepath = str(args.ocr)
-                if "/" not in filepath:
-                    filepath = "./" + filepath
-                content = utils.load_most_files(
-                    file_path=filepath, client=openai_client
-                )
+            content = utils.act_as_ocr(
+                client=openai_client, filepath=str(args.ocr), prompt=None
+            )
+            if content == None:
+                print(colors.red(f"Failed to load file due to an error"))
+            else:
                 print(content)
-            except Exception as e:
-                print(colors.red(f"Failed to load file {filepath} due to {e}"))
             return
 
         if args.image:
