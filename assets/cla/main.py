@@ -9,7 +9,6 @@ CLA_DEFAULT_MODEL = "claude-3-5-sonnet-20241022"
 CLA_MAX_TOKENS = 4092
 
 utils.check_env_variable("ANTHROPIC_API_KEY", ANTHROPIC_DOCS_LINK)
-
 client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
 
