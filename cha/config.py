@@ -18,6 +18,7 @@ LOAD_MESSAGE_CONTENT = "!l"
 RUN_ANSWER_FEATURE = "!a"
 TEXT_EDITOR_INPUT_MODE = "!t"
 SWITCH_MODEL_TEXT = "!sm"
+USE_CODE_DUMP = "!d"
 
 # last updated on 11-19-2024
 CHA_DEFAULT_MODEL = "gpt-4o"
@@ -91,6 +92,44 @@ REQUEST_DEFAULT_RETRY_COUNT = 1
 REQUEST_BACKOFF_FACTOR = 0.1
 REQUEST_DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+}
+
+# codedump variables
+BINARY_EXTENSIONS = {
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".bmp",
+    ".tiff",
+    ".ico",
+    ".pdf",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".svg",
+    ".mp4",
+    ".mp3",
+    ".wav",
+    ".ogg",
+    ".mov",
+    ".exe",
+    ".dll",
+    ".so",
+    ".dylib",
+    ".pyc",
+    ".pkl",
+    ".pickle",
+    ".lock",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".ds_store",
+    ".env",
+    ".env.local",
+    ".env.development",
+    ".env.production",
+    ".env.test",
 }
 
 # last updated on 02-12-2025
