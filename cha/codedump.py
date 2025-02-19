@@ -209,11 +209,6 @@ def extract_code(dir_path):
 
     print(colors.magenta(f"Estimated token count: ~{token_count}"))
 
-    # # TODO: (2-19-2025) should we keep this?
-    # cont = input(colors.blue("Do you want to continue? (y/n): "))
-    # if cont.lower().strip() in ["n", "no"]:
-    #     return None
-
     return output_text
 
 
