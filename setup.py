@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.12.10",
+    version="0.13.0",
     packages=find_packages(),
     license="MIT",
     description="A simple CLI tool for chatting, web scraping, and image generation with OpenAI's models",
@@ -21,7 +21,7 @@ setup(
         "python-docx==1.1.2",
         "openpyxl==3.1.5",
         "chardet==5.2.0",
-        "pathspec==0.11.1",
+        "pathspec==0.12.1",
     ],
     python_requires=">=3.9.2",
     entry_points={

@@ -250,6 +250,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     if message == None:
                         continue
                 except (KeyboardInterrupt, EOFError):
+                    print()
                     continue
 
             # check for URLs -> scraping
