@@ -4,8 +4,9 @@ try:
     import argparse
     import time
     import os
-    from openai import OpenAI
+
     from cha import scraper, colors, image, utils, config, loading, platforms
+    from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
@@ -443,6 +444,11 @@ def cli():
 
         if args.platform or args.platform == True:
             try:
+                print(
+                    colors.red(
+                        "WARNING: Switching platforms is experimental and will break features!"
+                    )
+                )
                 API_KEY_NAME = None
                 BASE_URL_VALUE = None
                 if type(args.platform) == str:
@@ -467,11 +473,7 @@ def cli():
                     base_url=BASE_URL_VALUE,
                 )
 
-                print(
-                    colors.magenta(
-                        f"Warning! The platform switched to {BASE_URL_VALUE}"
-                    )
-                )
+                print(colors.magenta(f"Platform switched to {BASE_URL_VALUE}"))
             except Exception as e:
                 print(colors.red(f"Failed to switch platform due to {e}"))
                 return

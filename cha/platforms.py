@@ -1,14 +1,15 @@
-import copy
-
 from pydantic import BaseModel
+import copy
 
 from cha import scraper, utils, config, colors, loading
 
 
-def brute_force_models_list(client, url, headers, model_name):
+def brute_force_models_list(client, url, headers, model_name, clean):
     raw_response = utils.get_request(url=url, headers=headers)
     content_data = raw_response.text
-    raw_content = scraper.remove_html(content_data)
+    raw_content = content_data
+    if clean:
+        raw_content = scraper.remove_html(content_data)
 
     class ModelNames(BaseModel):
         names: list[str]
@@ -51,6 +52,10 @@ def auto_select_a_platform(client):
     url = models_info["url"]
     headers = models_info["headers"]
 
+    rm_html = False
+    if models_info.get("clean") == True:
+        rm_html = True
+
     failed_to_get_models = False
     try:
         loading.start_loading("Getting Model Names", "dots")
@@ -59,6 +64,7 @@ def auto_select_a_platform(client):
             url=url,
             headers=headers,
             model_name=config.SCRAPE_MODEL_NAME_FOR_PLATFORMS,
+            clean=rm_html,
         )
     except Exception as e:
         loading.print_message(colors.red(f"Failed to retrieve model: {e}"))

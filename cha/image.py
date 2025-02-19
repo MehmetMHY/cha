@@ -4,8 +4,8 @@ import json
 import sys
 import os
 
-from PIL.PngImagePlugin import PngInfo
 from cha import colors, utils, config, loading
+from PIL.PngImagePlugin import PngInfo
 from io import BytesIO
 from PIL import Image
 

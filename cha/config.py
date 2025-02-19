@@ -147,6 +147,17 @@ THIRD_PARTY_PLATFORMS = {
         "env_name": "ollama",
         "docs": "https://github.com/ollama/ollama/blob/main/docs/api.md",
     },
+    "xai": {
+        "models": {
+            "url": "https://docs.x.ai/docs/models?cluster=us-east-1",
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"
+            },
+        },
+        "base_url": "https://api.x.ai/v1",
+        "env_name": "XAI_API_KEY",
+        "docs": "https://docs.x.ai/docs/overview",
+    },
 }
 
 # urls that contain video data that can be scrapped using cha's scraper

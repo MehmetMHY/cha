@@ -1,12 +1,12 @@
 from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime, timezone
-from duckduckgo_search import DDGS
 from pydantic import BaseModel
 import time
 import json
 import os
 
 from cha import scraper, colors, utils, config, loading
+from duckduckgo_search import DDGS
 
 
 def create_mega_prompt(search_results, prompt):
