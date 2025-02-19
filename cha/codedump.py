@@ -107,7 +107,7 @@ def interactive_exclusion(root_path, files_dict):
             display_dir = os.path.relpath(d, root_path)
             print(colors.yellow(f"  {i+1}. {display_dir}/"))
         while True:
-            selection = utils.safe_input(colors.blue("> ")).strip()
+            selection = input(colors.blue("> ")).strip()
             if not selection:
                 break
             try:
@@ -134,7 +134,7 @@ def interactive_exclusion(root_path, files_dict):
             display_file = os.path.relpath(rf, root_path)
             print(colors.yellow(f"  {i+1}. {display_file}"))
         while True:
-            selection = utils.safe_input("> ").strip()
+            selection = input(colors.blue("> ")).strip()
             if not selection:
                 break
             try:
@@ -207,10 +207,10 @@ def extract_code(dir_path):
     output_text = generate_text_output(root_path, files_dict, excluded_files)
     token_count = count_tokens(output_text)
 
-    print(colors.magenta(f"Estimated token count: {token_count}"))
+    print(colors.magenta(f"Estimated token count: ~{token_count}"))
 
     # # TODO: (2-19-2025) should we keep this?
-    # cont = utils.safe_input(colors.blue("Do you want to continue? (y/n): "))
+    # cont = input(colors.blue("Do you want to continue? (y/n): "))
     # if cont.lower().strip() in ["n", "no"]:
     #     return None
 
@@ -219,12 +219,12 @@ def extract_code(dir_path):
 
 def code_dump(original_msg=None, save_file_to_current_dir=False):
     try:
-        choice = utils.safe_input(colors.blue("Use current directory (Y/n)? "))
+        choice = input(colors.blue("Use current directory (Y/n)? "))
 
         dir_path = os.getcwd()
         if choice.lower() in ["n", "no"]:
             while True:
-                dir_path = utils.safe_input(colors.yellow("Directory path: ")).strip()
+                dir_path = input(colors.yellow("Directory path: ")).strip()
 
                 if not os.path.isdir(dir_path):
                     print(colors.red(f"'{dir_path}' is not a directory!"))
@@ -248,7 +248,7 @@ def code_dump(original_msg=None, save_file_to_current_dir=False):
 
         user_question = original_msg
         if user_question == None:
-            user_question = utils.safe_input(colors.blue("Question: "))
+            user_question = input(colors.blue("Question: "))
 
         return f"""
 Here is original message:

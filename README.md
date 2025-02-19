@@ -23,6 +23,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
 - **Switch Between Models**: Easily switch between models during a conversation.
+- **Code Dump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
 
 ## Getting Started
 
@@ -68,12 +69,15 @@ cha
 Both commands support and accept additional parameters. Here is the help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t] [-ocr OCR] [-p [PLATFORM]] [string ...]
+usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t]
+           [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]]
+           [string ...]
 
 Chat with an OpenAI GPT model.
 
 positional arguments:
-  string                Non-interactive mode, feed a string into the model
+  string                Non-interactive mode, feed a string into the
+                        model
 
 options:
   -h, --help            show this help message and exit
@@ -83,14 +87,22 @@ options:
   -m MODEL, --model MODEL
                         Model to use for chatting
   -sm, --select_model   Select one model from OpenAI's supported models
-  -f FILE, --file FILE  Filepath to file that will be sent to the model (text only)
+  -f FILE, --file FILE  Filepath to file that will be sent to the model
+                        (text only)
   -i [IMAGE], --image [IMAGE]
-                        Generate image (flag only) or print the metadata for generated images (provide filepath)
+                        Generate image (flag only) or print the metadata
+                        for generated images (provide filepath)
   -t, --token_count     Count tokens for the input file or string
-  -ocr OCR, --ocr OCR   Given a file path, print the content of that file as text though Cha's main file loading logic
+  -ocr OCR, --ocr OCR   Given a file path, print the content of that
+                        file as text though Cha's main file loading
+                        logic
   -p [PLATFORM], --platform [PLATFORM]
-                        Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag
-                        with "-p" for True
+                        Use a different provider, set this like this:
+                        "<base_url>|<api_key_env_name>", or use as a
+                        flag with "-p" for True
+  -d [CODE_DUMP], --code_dump [CODE_DUMP]
+                        Do a full code dump into one file in your
+                        current directory
 ```
 
 ### Docker
