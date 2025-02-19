@@ -21,6 +21,7 @@ setup(
         "python-docx==1.1.2",
         "openpyxl==3.1.5",
         "chardet==5.2.0",
+        "pathspec==0.11.1",
     ],
     python_requires=">=3.9.2",
     entry_points={

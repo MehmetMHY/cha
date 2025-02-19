@@ -5,7 +5,7 @@ try:
     import time
     import os
 
-    from cha import scraper, colors, image, utils, config, loading, platforms
+    from cha import scraper, colors, image, utils, config, loading, platforms, codedump
     from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
@@ -41,6 +41,7 @@ Chatting With OpenAI's '{selected_model}' Model
 - '{config.MULTI_LINE_MODE_TEXT}' for single/multi-line switching
 - '{config.MULTI_LINE_SEND}' to end in multi-line mode
 - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
+- '{config.USE_CODE_DUMP}' to codedump a directory as context
                 """.strip().splitlines()
             )
         )
@@ -243,6 +244,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     print()
                     continue
 
+            if message.startswith(config.USE_CODE_DUMP):
+                try:
+                    message = codedump.code_dump()
+                    if message == None:
+                        continue
+                except (KeyboardInterrupt, EOFError):
+                    continue
+
             # check for URLs -> scraping
             detected_urls = len(scraper.extract_urls(message))
             if detected_urls > 0:
@@ -413,8 +422,19 @@ def cli():
             const=True,
             help='Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag with "-p" for True',
         )
+        parser.add_argument(
+            "-d",
+            "--code_dump",
+            nargs="?",
+            const=True,
+            help="Do a full code dump into one file in your current directory",
+        )
 
         args = parser.parse_args()
+
+        if args.code_dump == True:
+            codedump.code_dump(None, True)
+            return
 
         if args.ocr != None:
             content = utils.act_as_ocr(
