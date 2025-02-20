@@ -207,7 +207,7 @@ def extract_code(dir_path):
     output_text = generate_text_output(root_path, files_dict, excluded_files)
     token_count = count_tokens(output_text)
 
-    print(colors.magenta(f"Estimated token count: ~{token_count}"))
+    print(colors.magenta(f"Token Count:"), colors.red(f"~{token_count}"))
 
     return output_text
 
