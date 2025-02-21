@@ -18,10 +18,9 @@ def save_input(starting_text):
 if __name__ == "__main__":
     # path to setup file
     PYTHON_SETUP_FILE_PATH = None
-    for i in range(3):
+    for i in range(4):
         setup_file_path = "/".join(
-            os.path.dirname(os.path.abspath(__file__)).split("/")[: -(i + 1)]
-            + ["setup.py"]
+            os.path.dirname(os.path.abspath(__file__)).split("/")[:-(i)] + ["setup.py"]
         )
         if os.path.isfile(setup_file_path):
             PYTHON_SETUP_FILE_PATH = setup_file_path
