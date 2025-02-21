@@ -2,7 +2,7 @@
 class Cha < Formula
   desc "A simple CLI tool for chatting with OpenAI's GPT, scraping, etc."
   homepage "https://github.com/MehmetMHY/cha"
-  url "https://github.com/MehmetMHY/cha/releases/download/v0.13.1/cha-0.13.1.tar.gz"
+  url "https://github.com/MehmetMHY/cha/releases/tag/v0.13.1"
   sha256 "6b2bc5142ccbd4ff47908c9cbe5738256c5af5efe54904a2e655dbd015bf9b79"
   license "MIT"
 
