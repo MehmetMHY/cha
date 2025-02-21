@@ -1,10 +1,8 @@
 # Cha
 
-![image](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)
-
 ## Overview
 
-Cha is an open-source command-line tool that simplifies interactions with AI models from OpenAI. It allows users to efficiently engage with powerful language models directly from their terminal, enhancing development workflows. Check out the detailed demo [here](https://youtu.be/7zG8iFZjKtM?si=sOenMYNUb7XSWAsi).
+Cha is an open-source command-line tool that simplifies interactions with AI models from OpenAI. It allows users to efficiently engage with powerful language models directly from their terminal, enhancing development workflows.
 
 ## Vision
 
@@ -15,7 +13,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **CLI Chat Interface**: Communicate with OpenAI's models via commands `cha`.
 - **Interactive & Non-interactive Modes**: Interact with models via chat interface, command-line arguments, or file input.
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI.
-- **Text-Editor Input Mode**: Use your system's terminal-based text editor instead of Python's `input()`, allowing easier input of complex and long prompts.
+- **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
@@ -121,39 +119,15 @@ For those interested in contributing or experimenting with Cha:
    python3 update.py
    ```
 
-## Different Platforms - OpenAI Compatibility Platforms/APIs
+## Other Platform(s) Compatibility
 
-Cha now supports switching between different AI platforms using the `--platform` argument. This feature allows interoperability with other services offering OpenAI-compatible APIs.
+Cha now supports switching between AI platforms using the `--platform` argument, enabling interoperability with OpenAI-compatible APIs.
 
-### Platform Details (February 12, 2025)
+```bash
+cha -p
+```
 
-#### DeepSeek API
-
-- Base URL: https://api.deepseek.com
-
-- Environment Variable: DEEP_SEEK_API_KEY
-
-- Docs: https://api-docs.deepseek.com/
-
-- Get Models Command: `curl -s --request GET --url https://api.deepseek.com/models --header 'Accept: application/json' --header "Authorization: Bearer $DEEP_SEEK_API_KEY" | jq -r '.data[].id' | sort | uniq`
-
-#### Together.AI API
-
-- Base URL: https://api.together.xyz/v1
-
-- Environment Variable: TOGETHER_API_KEY
-
-- Docs: https://docs.together.ai/docs/introduction
-
-- Get Models Command: `curl -s --request GET --url https://api.together.xyz/v1/models --header 'accept: application/json' --header "authorization: Bearer $TOGETHER_API_KEY" | jq '.[] | select(.type == "chat") | .id' | tr -d '"' | sort | uniq`
-
-#### All Current Options
-
-You can refer to the [config.py](./cha/config.py) file and the `THIRD_PARTY_PLATFORMS` variable to see all the other platforms you can try and/or use.
-
-### Example Command
-
-Manually use a different provider/platform:
+Running `cha -p` opens a menu to select a platform. To skip the menu, provide the base URL, environment variable name, and model name directly. For example, to use the `DeepSeek-V3` model from `together.ai`:
 
 ```bash
 # Get and set the provider's API key env variable
@@ -163,11 +137,7 @@ export TOGETHER_API_KEY="..."
 cha -p "https://api.together.xyz/v1|TOGETHER_API_KEY" -m "deepseek-ai/DeepSeek-V3"
 ```
 
-Or, refer to the [config.py](./cha/config.py) file and the `THIRD_PARTY_PLATFORMS` variable to figure out what environment variables you need to set, then just run this command the pick what platform and model you want to use:
-
-```bash
-cha -p
-```
+Also, you can refer to the [config.py](./cha/config.py) file and the `THIRD_PARTY_PLATFORMS` variable to see all the other platforms you can try and/or use.
 
 ## Contributing
 
