@@ -20,8 +20,7 @@ if __name__ == "__main__":
     PYTHON_SETUP_FILE_PATH = None
     for i in range(4):
         setup_file_path = "/".join(
-            os.path.dirname(os.path.abspath(__file__)).split("/")[: -(i)]
-            + ["setup.py"]
+            os.path.dirname(os.path.abspath(__file__)).split("/")[:-(i)] + ["setup.py"]
         )
         if os.path.isfile(setup_file_path):
             PYTHON_SETUP_FILE_PATH = setup_file_path

@@ -5,7 +5,7 @@ try:
     import time
     import os
 
-    from cha import scraper, colors, image, utils, config, loading, platforms, codedump
+    from cha import scraper, colors, utils, config, loading, platforms, codedump
     from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
@@ -32,7 +32,6 @@ def title_print(selected_model):
 Chatting With OpenAI's '{selected_model}' Model
 - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
 - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
-- '{config.IMG_GEN_MODE}' for image generation
 - '{config.SAVE_CHAT_HISTORY}' to save chat history
 - '{config.LOAD_MESSAGE_CONTENT}' to load a file
 - '{config.HELP_PRINT_OPTIONS_KEY}' to list all options
@@ -193,10 +192,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if message == config.MULTI_LINE_MODE_TEXT:
                 multi_line_input = True
-                continue
-
-            elif message.replace(" ", "") == config.IMG_GEN_MODE:
-                image.gen_image(client=openai_client)
                 continue
 
             elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
@@ -398,14 +393,6 @@ def cli():
             help="Non-interactive mode, feed a string into the model",
         )
         parser.add_argument(
-            "-i",
-            "--image",
-            nargs="?",
-            const=True,
-            default=False,
-            help="Generate image (flag only) or print the metadata for generated images (provide filepath)",
-        )
-        parser.add_argument(
             "-t",
             "--token_count",
             help="Count tokens for the input file or string",
@@ -446,13 +433,6 @@ def cli():
             else:
                 print(content)
             return
-
-        if args.image:
-            if args.image == True:
-                status = image.gen_image(client=openai_client)
-            else:
-                status = image.display_metadata(str(args.image))
-            sys.exit(1 if status is None else 0)
 
         if args.answer_search == True:
             output = utils.run_answer_search(
