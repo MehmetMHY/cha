@@ -95,8 +95,6 @@ def duckduckgo_search(search_input, count=3):
                         "title": result.get("title"),
                         "url": result.get("href"),
                         "description": result.get("body"),
-                        "page_age": None,
-                        "age": None,
                     }
                 )
 
