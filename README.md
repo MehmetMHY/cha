@@ -17,7 +17,6 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI.
 - **Text-Editor Input Mode**: Use your system's terminal-based text editor instead of Python's `input()`, allowing easier input of complex and long prompts.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
-- **Image Generation**: Generate custom images using OpenAI's image models.
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
@@ -69,8 +68,8 @@ cha
 Both commands support and accept additional parameters. Here is the help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-i [IMAGE]] [-t]
-           [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]]
+usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR]
+           [-p [PLATFORM]] [-d [CODE_DUMP]]
            [string ...]
 
 Chat with an OpenAI GPT model.
@@ -89,9 +88,6 @@ options:
   -sm, --select_model   Select one model from OpenAI's supported models
   -f FILE, --file FILE  Filepath to file that will be sent to the model
                         (text only)
-  -i [IMAGE], --image [IMAGE]
-                        Generate image (flag only) or print the metadata
-                        for generated images (provide filepath)
   -t, --token_count     Count tokens for the input file or string
   -ocr OCR, --ocr OCR   Given a file path, print the content of that
                         file as text though Cha's main file loading

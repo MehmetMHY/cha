@@ -10,7 +10,6 @@ INITIAL_PROMPT = "You are a helpful assistant who provides concise, clear, and a
 MULTI_LINE_SEND = "END"
 MULTI_LINE_MODE_TEXT = "!m"
 CLEAR_HISTORY_TEXT = "!c"
-IMG_GEN_MODE = "!i"
 SAVE_CHAT_HISTORY = "!s"
 EXIT_STRING_KEY = "!e"
 HELP_PRINT_OPTIONS_KEY = "!h"
@@ -69,22 +68,6 @@ TERMINAL_THEME_CODES = {
         "white": "\033[47m",
     },
 }
-
-# image generation configs
-DEFAULT_IMAGE_QUALITY = "standard"
-DEFAULT_IMAGE_SIZE = "1024x1024"
-DEFAULT_IMAGE_MODEL = "dall-e-3"
-DEFAULT_IMAGE_N = 1
-COMMON_IMG_GEN_RESOLUTIONS = [
-    "256x256",
-    "512x512",
-    "768x768",
-    "1024x1024",
-    "1024x1792",
-    "1792x1024",
-    "2048x2048",
-    "4096x4096",
-]
 
 # http request configs
 REQUEST_DEFAULT_TIMEOUT_SECONDS = 10
