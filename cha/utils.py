@@ -1,4 +1,5 @@
 from datetime import datetime as dt, timezone
+import statistics
 import subprocess
 import datetime
 import tempfile
@@ -6,6 +7,7 @@ import base64
 import uuid
 import json
 import copy
+import math
 import sys
 import re
 import os
@@ -28,10 +30,37 @@ def is_o_model(model_name):
     return re.match(r"^o\d+", model_name) is not None
 
 
-def count_tokens(text, model_name):
+def fast_estimate_tokens(text, language=None, rounding=1.15):
+    word_count = len(text.split())
+
+    # https://gptforwork.com/guides/openai-gpt3-tokens
+    token_multiplier = {
+        "english": 1.3,
+        "french": 2.0,
+        "german": 2.1,
+        "spanish": 2.1,
+        "chinese": 2.5,
+        "russian": 3.3,
+        "vietnamese": 3.3,
+        "arabic": 4.0,
+        "hindi": 6.4,
+    }
+
+    if language is None or str(language.lower()) not in token_multiplier:
+        tokens = word_count * statistics.median(token_multiplier.values())
+    else:
+        tokens = word_count * token_multiplier[language.lower()]
+
+    return math.floor(tokens * rounding)
+
+
+def count_tokens(text, model_name, fast_mode=False):
     try:
-        encoding = tiktoken.encoding_for_model(model_name)
-        return len(encoding.encode(text))
+        if fast_mode:
+            return fast_estimate_tokens(text=text)
+        else:
+            encoding = tiktoken.encoding_for_model(model_name)
+            return len(encoding.encode(text))
     except:
         return None
 
