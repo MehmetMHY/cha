@@ -241,7 +241,12 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if message.startswith(config.USE_CODE_DUMP):
                 try:
-                    message = codedump.code_dump()
+                    dir_path = message.replace(config.USE_CODE_DUMP, "").replace(
+                        " ", ""
+                    )
+                    if "/" not in str(dir_path):
+                        dir_path = None
+                    message = codedump.code_dump(dir_full_path=dir_path)
                     if message == None:
                         continue
                 except (KeyboardInterrupt, EOFError):
