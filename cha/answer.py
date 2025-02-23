@@ -10,7 +10,7 @@ from cha import scraper, colors, utils, config, loading
 from duckduckgo_search import DDGS
 
 
-def create_mega_prompt(search_results, prompt):
+def create_mega_prompt(search_results, prompt, is_final=False):
     mega_prompt = f"""
 For your answer, understand that today's date is: {datetime.now(timezone.utc).isoformat()}
 
@@ -37,6 +37,13 @@ IEEE Citation Format Example:
 
 Make sure to clearly refer to each citation in the body of your response. Your answer should be clear, concise, and well-structured!
 """
+
+    if is_final:
+        mega_prompt = (
+            "NOTE: This process/prompting was already done many times and this is the final prompt/request to answer the user's question. For context, the results from all the sub-answer processes was included.\n\n"
+            + mega_prompt
+        )
+
     return mega_prompt
 
 
@@ -85,7 +92,8 @@ def duckduckgo_search(search_input, count=3):
                 ddgs.text(
                     keywords=search_input,
                     max_results=count,
-                    region="wt-wt",  # NOTE: this is equivalent to Brave's {'country': 'us'}
+                    # NOTE: this is equivalent to Brave's {'country': 'us'}
+                    region="wt-wt",
                 )
             )
 
@@ -105,7 +113,7 @@ def duckduckgo_search(search_input, count=3):
 
 
 def chunk_list(lst, n):
-    """Split list `lst` into `n` (almost) equal chunks."""
+    # split list into n (almost) equal chunks
     k, m = divmod(len(lst), n)
     chunks = []
     start = 0
@@ -196,26 +204,29 @@ def answer_search(
 
     print(colors.red(colors.underline("Scraping Website Content:")))
     loading.start_loading("Scraping", "circles")
+
     # TODO: suppress all untraceable print statements by muting all stdout prints
     with open(os.devnull, "w") as fnull:
         with redirect_stdout(fnull), redirect_stderr(fnull):
             scrapped_data = scraper.get_all_htmls(not_video_urls)
-    loading.stop_loading()
 
     for url in scrapped_data:
         for entry in search_results:
             if url == entry["url"]:
                 entry["content"] = scrapped_data[url]
+
+    loading.stop_loading()
     print(colors.yellow(f"Scraped {len(scrapped_data)}/{len(urls)} of the urls"))
 
     print(colors.red(colors.underline("Generating Sub Answers:")))
-    loading.start_loading("Processing", "circles")
+    loading.start_loading("Processing", "vertical_bar")
 
-    split_count = config.DEFAULT_SPLIT_LOGIC_COUNT
-    if len(search_results) <= split_count:
+    if len(search_results) <= config.DEFAULT_SPLIT_LOGIC_COUNT:
         splitted_search_results = [search_results]
     else:
-        splitted_search_results = chunk_list(search_results, split_count)
+        splitted_search_results = chunk_list(
+            search_results, config.DEFAULT_SPLIT_LOGIC_COUNT
+        )
 
     partial_answers = []
     if len(splitted_search_results) == 1:
@@ -239,21 +250,33 @@ def answer_search(
 
     loading.stop_loading()
 
-    partial_answers_str = "\n\n".join(
-        f"Partial Answer #{i+1}:\n{txt}" for i, txt in enumerate(partial_answers)
-    )
-
-    final_mega_prompt = f"""
-I have gathered several partial answers below:
-{partial_answers_str}
-
-Now, please combine the partial answers above into a single, coherent answer to the original question:
-```md
-{prompt}
-```
-
-Follow the same instructions about referencing your context and using IEEE citations.
-"""
+    mega_prompt = create_mega_prompt(partial_answers, prompt)
+    print(colors.red(colors.underline("Check Final Prompt Limit:")))
+    current_prompt_size = utils.count_tokens(mega_prompt, big_model)
+    removed_sub_answer_count = 0
+    if current_prompt_size > token_limit:
+        print(
+            colors.yellow(
+                f"Final prompt does not exceed model's limit of {token_limit} tokens"
+            )
+        )
+    else:
+        print(
+            colors.yellow(
+                f"Final prompt exceeds model's limit of {token_limit} tokens ({current_prompt_size})"
+            )
+        )
+        while utils.count_tokens(mega_prompt, big_model) >= token_limit:
+            for entry in search_results:
+                partial_answers = partial_answers[:-1]
+                removed_sub_answer_count += 1
+                mega_prompt = create_mega_prompt(partial_answers, prompt)
+                break
+        print(
+            colors.yellow(
+                f"Removed {removed_sub_answer_count} sub-answers to fit within the model's context window limit"
+            )
+        )
 
     final_output = ""
     try:
@@ -263,7 +286,7 @@ Follow the same instructions about referencing your context and using IEEE citat
 
         response = client.chat.completions.create(
             model=big_model,
-            messages=[{"role": "user", "content": final_mega_prompt}],
+            messages=[{"role": "user", "content": mega_prompt}],
             stream=True,
         )
 
