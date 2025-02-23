@@ -212,20 +212,14 @@ def extract_code(dir_path):
     return output_text
 
 
-def code_dump(original_msg=None, save_file_to_current_dir=False):
+def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=None):
     try:
-        choice = input(colors.blue("Use current directory (Y/n)? "))
-
         dir_path = os.getcwd()
-        if choice.lower() in ["n", "no"]:
-            while True:
-                dir_path = input(colors.yellow("Directory path: ")).strip()
-
-                if not os.path.isdir(dir_path):
-                    print(colors.red(f"'{dir_path}' is not a directory!"))
-                    continue
-
-                break
+        if dir_full_path != None:
+            if not os.path.isdir(dir_full_path):
+                print(colors.red(f"'{dir_full_path}' is not a directory!"))
+                return None
+            dir_path = dir_full_path
 
         print(colors.magenta(f"Using directory: {dir_path}"))
 
