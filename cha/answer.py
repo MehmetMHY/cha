@@ -149,13 +149,14 @@ def answer_search(
     time_delay_seconds=config.DEFAULT_SEARCH_TIME_DELAY_SECONDS,
     token_limit=config.DEFAULT_SEARCH_MAX_TOKEN_LIMIT,
     user_input_mode=False,
+    fast_token_count_mode=True,
 ):
     if user_input_mode or prompt == None:
         print(colors.red(colors.underline(f"Answer Search - User Input")))
         prompt = utils.safe_input(colors.blue(f"Question: "))
     else:
         print(colors.red(colors.underline("Question Prompt:")))
-        print(prompt)
+        print(colors.blue(prompt))
 
     search_queries = generate_search_queries(client, prompt, small_model)
 
@@ -253,7 +254,12 @@ def answer_search(
     mega_prompt = create_mega_prompt(partial_answers, prompt)
     print(colors.red(colors.underline("Check Final Prompt Limit:")))
     removed_sub_answer_count = 0
-    while utils.count_tokens(mega_prompt, big_model) >= token_limit:
+    while (
+        utils.count_tokens(
+            text=mega_prompt, model_name=big_model, fast_mode=fast_token_count_mode
+        )
+        >= token_limit
+    ):
         for entry in search_results:
             partial_answers = partial_answers[:-1]
             removed_sub_answer_count += 1
