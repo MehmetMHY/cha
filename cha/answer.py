@@ -252,31 +252,18 @@ def answer_search(
 
     mega_prompt = create_mega_prompt(partial_answers, prompt)
     print(colors.red(colors.underline("Check Final Prompt Limit:")))
-    current_prompt_size = utils.count_tokens(mega_prompt, big_model)
     removed_sub_answer_count = 0
-    if current_prompt_size > token_limit:
-        print(
-            colors.yellow(
-                f"Final prompt does not exceed model's limit of {token_limit} tokens"
-            )
+    while utils.count_tokens(mega_prompt, big_model) >= token_limit:
+        for entry in search_results:
+            partial_answers = partial_answers[:-1]
+            removed_sub_answer_count += 1
+            mega_prompt = create_mega_prompt(partial_answers, prompt)
+            break
+    print(
+        colors.yellow(
+            f"Removed {removed_sub_answer_count} sub-answers to fit within the model's context window limit"
         )
-    else:
-        print(
-            colors.yellow(
-                f"Final prompt exceeds model's limit of {token_limit} tokens ({current_prompt_size})"
-            )
-        )
-        while utils.count_tokens(mega_prompt, big_model) >= token_limit:
-            for entry in search_results:
-                partial_answers = partial_answers[:-1]
-                removed_sub_answer_count += 1
-                mega_prompt = create_mega_prompt(partial_answers, prompt)
-                break
-        print(
-            colors.yellow(
-                f"Removed {removed_sub_answer_count} sub-answers to fit within the model's context window limit"
-            )
-        )
+    )
 
     final_output = ""
     try:
