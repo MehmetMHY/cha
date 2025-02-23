@@ -1,6 +1,7 @@
 from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime, timezone
 from pydantic import BaseModel
+import concurrent.futures
 import time
 import json
 import os
@@ -103,6 +104,34 @@ def duckduckgo_search(search_input, count=3):
         return {"error": str(e)}
 
 
+def chunk_list(lst, n):
+    """Split list `lst` into `n` (almost) equal chunks."""
+    k, m = divmod(len(lst), n)
+    chunks = []
+    start = 0
+    for i in range(n):
+        size = k + (1 if i < m else 0)
+        chunk = lst[start : start + size]
+        start += size
+        if chunk:
+            chunks.append(chunk)
+    return chunks
+
+
+def get_partial_answer(client, big_model, sub_search_results, user_prompt):
+    sub_mega_prompt = create_mega_prompt(sub_search_results, user_prompt)
+    response = client.chat.completions.create(
+        model=big_model,
+        messages=[{"role": "user", "content": sub_mega_prompt}],
+        stream=False,  # do not stream partial calls
+    )
+    partial_output = ""
+    for choice in response.choices:
+        if choice.message.content:
+            partial_output += choice.message.content
+    return partial_output
+
+
 def answer_search(
     client,
     prompt=None,
@@ -133,7 +162,7 @@ def answer_search(
     for query in search_queries:
         results = duckduckgo_search(query, result_count)
 
-        # TODO: this is here to prevent us from surpassing the search engine's query limit
+        # prevent surpassing rate limit
         time.sleep(time_delay_seconds)
 
         if isinstance(results, dict) and "error" in results:
@@ -167,7 +196,7 @@ def answer_search(
 
     print(colors.red(colors.underline("Scraping Website Content:")))
     loading.start_loading("Scraping", "circles")
-    # TODO: suppress all untrackable print statements by muting all stdout prints
+    # TODO: suppress all untraceable print statements by muting all stdout prints
     with open(os.devnull, "w") as fnull:
         with redirect_stdout(fnull), redirect_stderr(fnull):
             scrapped_data = scraper.get_all_htmls(not_video_urls)
@@ -179,49 +208,68 @@ def answer_search(
                 entry["content"] = scrapped_data[url]
     print(colors.yellow(f"Scraped {len(scrapped_data)}/{len(urls)} of the urls"))
 
-    # TODO: this solution sucks, but it works and prevents us from exceeding the prompt limit
-    mega_prompt = create_mega_prompt(search_results, prompt)
-    print(colors.red(colors.underline("Check Final Prompt Limit:")))
-    cleared_urls = []
-    current_prompt_size = utils.count_tokens(mega_prompt, big_model)
-    if current_prompt_size < token_limit:
-        print(
-            colors.yellow(
-                f"Final prompt does not exceed model's limit of {token_limit} tokens"
-            )
+    print(colors.red(colors.underline("Generating Sub Answers:")))
+    loading.start_loading("Processing", "circles")
+
+    split_count = config.DEFAULT_SPLIT_LOGIC_COUNT
+    if len(search_results) <= split_count:
+        splitted_search_results = [search_results]
+    else:
+        splitted_search_results = chunk_list(search_results, split_count)
+
+    partial_answers = []
+    if len(splitted_search_results) == 1:
+        partial_answers.append(
+            get_partial_answer(client, big_model, splitted_search_results[0], prompt)
         )
     else:
-        print(
-            colors.yellow(
-                f"Final prompt exceeds model's limit of {token_limit} tokens ({current_prompt_size})"
-            )
-        )
-        while utils.count_tokens(mega_prompt, big_model) >= token_limit:
-            for entry in search_results:
-                if type(entry.get("content")) == str:
-                    url = entry.get("url")
-                    entry["content"] = None
-                    cleared_urls.append(url)
-                    mega_prompt = create_mega_prompt(search_results, prompt)
-                    print(colors.yellow(f"Cleared scraped content for {url}"))
-                    break
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            total = len(splitted_search_results)
+            futures = [
+                executor.submit(get_partial_answer, client, big_model, chunk, prompt)
+                for chunk in splitted_search_results
+            ]
+            done_count = 0
+            for f in concurrent.futures.as_completed(futures):
+                partial_answers.append(f.result())
+                done_count += 1
+                loading.print_message(
+                    colors.yellow(f"Generated sub-answer {done_count}/{total}")
+                )
+
+    loading.stop_loading()
+
+    partial_answers_str = "\n\n".join(
+        f"Partial Answer #{i+1}:\n{txt}" for i, txt in enumerate(partial_answers)
+    )
+
+    final_mega_prompt = f"""
+I have gathered several partial answers below:
+{partial_answers_str}
+
+Now, please combine the partial answers above into a single, coherent answer to the original question:
+```md
+{prompt}
+```
+
+Follow the same instructions about referencing your context and using IEEE citations.
+"""
 
     final_output = ""
     try:
-        print(colors.red(colors.underline("Response:")))
+        print(colors.red(colors.underline("Final Response:")))
 
         loading.start_loading("Crafting", "circles")
 
         response = client.chat.completions.create(
             model=big_model,
-            messages=[{"role": "user", "content": mega_prompt}],
+            messages=[{"role": "user", "content": final_mega_prompt}],
             stream=True,
         )
 
         received_first_chunk = False
         for chunk in response:
             if chunk.choices[0].delta.content is not None:
-                # stop loading animation after stream starts
                 if not received_first_chunk:
                     loading.stop_loading()
                     received_first_chunk = True
