@@ -169,6 +169,7 @@ THIRD_PARTY_PLATFORMS = {
         "base_url": "http://localhost:11434/v1",
         "env_name": "ollama",
         "docs": "https://github.com/ollama/ollama/blob/main/docs/api.md",
+        "is_local": True,
     },
     "xai": {
         "models": {
