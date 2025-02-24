@@ -4,7 +4,25 @@ import copy
 from cha import scraper, utils, config, colors, loading
 
 
-def brute_force_models_list(client, url, headers, model_name, clean):
+def local_platform_models_list_case(name, url):
+    if name == "ollama":
+        response = utils.get_request(url=url)
+        models = []
+        for entry in dict(response.json())["models"]:
+            if "name" in entry and entry["name"] not in models:
+                models.append(entry["name"])
+        models.sort()
+        return models
+    else:
+        raise Exception(f"Platform '{name}' is not a valid local platform!")
+
+
+def brute_force_models_list(
+    client, url, headers, model_name, clean, platform_name, is_local
+):
+    if is_local == True:
+        return local_platform_models_list_case(platform_name, url)
+
     raw_response = utils.get_request(url=url, headers=headers)
     content_data = raw_response.text
     raw_content = content_data
@@ -65,6 +83,8 @@ def auto_select_a_platform(client):
             headers=headers,
             model_name=config.SCRAPE_MODEL_NAME_FOR_PLATFORMS,
             clean=rm_html,
+            platform_name=platform_key,
+            is_local=selected_platform.get("is_local"),
         )
     except Exception as e:
         loading.print_message(colors.red(f"Failed to retrieve model: {e}"))
