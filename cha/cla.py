@@ -16,11 +16,6 @@ config.CLA_MAX_TOKENS = 8184
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
 
 
-def get_anthropic_models(client):
-    data = client.models.list()
-    return [{"model": model.id, "name": model.display_name} for model in data]
-
-
 def chat(client, model, message, stream=True):
     try:
         messages = [
@@ -155,7 +150,10 @@ def interactive_chat(client, model, print_title):
 
 
 def user_select_model(client):
-    models = get_anthropic_models(client)
+    models = [
+        {"model": model.id, "name": model.display_name}
+        for model in client.models.list()
+    ]
     if isinstance(models, str):
         print(colors.red("Failed to get models"))
         sys.exit(1)
