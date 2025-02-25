@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+import importlib
 import json
 import copy
 import sys
@@ -77,6 +78,15 @@ def brute_force_models_list(client, url, headers, model_name, clean, models_info
     return completion.choices[0].message.parsed.names
 
 
+# "anthropic": {
+#     "package_name": "cha.cla",
+#     "function": "anthropic",
+#     "parameters": {
+#         "select_model": False,
+#     }
+# }
+
+
 def auto_select_a_platform(client):
     print(colors.yellow("Available platforms:"))
     for index, platform in enumerate(config.THIRD_PARTY_PLATFORMS.keys(), start=1):
@@ -92,6 +102,19 @@ def auto_select_a_platform(client):
 
     platform_key = list(config.THIRD_PARTY_PLATFORMS.keys())[choice - 1]
     selected_platform = config.THIRD_PARTY_PLATFORMS[platform_key]
+
+    if (
+        selected_platform.get("package_name") != None
+        and selected_platform.get("function") != None
+        and selected_platform.get("parameters") != None
+    ):
+        module_name = selected_platform["package_name"]
+        function_name = selected_platform["function"]
+        parameters = selected_platform["parameters"]
+        module = importlib.import_module(module_name)
+        function_to_call = getattr(module, function_name)
+        result = function_to_call(**parameters)
+        return {"type": "package_call", "result": result}
 
     models_info = selected_platform["models"]
     url = models_info["url"]

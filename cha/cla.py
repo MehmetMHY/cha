@@ -23,12 +23,11 @@ def get_anthropic_models(client):
 
 def chat(client, model, message, stream=True):
     try:
-        # Omit the last dictionary’s 'bot' to avoid duplicating messages:
         messages = [
             {"role": "user", "content": msg["user"]}
             for msg in CURRENT_CHAT_HISTORY[:-1]
         ]
-        # Add the new user message
+
         messages.append({"role": "user", "content": message})
 
         response = client.messages.create(
@@ -48,7 +47,7 @@ def chat(client, model, message, stream=True):
             print()
             return full_response
         else:
-            # Non-streamed response
+            # non-streamed response
             return response.content[0].text
     except KeyboardInterrupt:
         print()
@@ -169,7 +168,7 @@ def user_select_model(client):
     return models[choice - 1]["model"]
 
 
-def main(
+def anthropic(
     selected_model=config.CLA_DEFAULT_MODEL,
     select_model=False,
     file=None,
@@ -185,7 +184,6 @@ def main(
     if select_model:
         selected_model = user_select_model(client)
 
-    # Ensure file and string aren't both used
     if file and string:
         print(colors.red("You can't use the string and file option at the same time!"))
         return
@@ -197,7 +195,6 @@ def main(
     elif string:
         chat(client, selected_model, " ".join(string), stream=True)
     else:
-        # Interactive mode
         interactive_chat(client, selected_model, print_title)
 
 
@@ -233,7 +230,7 @@ def cli():
     )
     args = parser.parse_args()
 
-    main(
+    anthropic(
         selected_model=args.model,
         select_model=args.select_model,
         file=args.file,
@@ -241,6 +238,4 @@ def cli():
         print_title=args.print_title,
     )
 
-
-if __name__ == "__main__":
-    cli()
+    return

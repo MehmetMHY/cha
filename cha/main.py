@@ -465,6 +465,8 @@ def cli():
                     platform_values = platforms.auto_select_a_platform(
                         client=openai_client
                     )
+                    if platform_values.get("type") == "package_call":
+                        return
                     API_KEY_NAME = platform_values["env_name"]
                     BASE_URL_VALUE = platform_values["base_url"]
                     selected_model = platform_values["picked_model"]
