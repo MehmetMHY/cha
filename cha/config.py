@@ -126,6 +126,7 @@ THIRD_PARTY_PLATFORMS = {
                 "Authorization": f"Bearer {os.environ.get('GROQ_API_KEY')}",
                 "Content-Type": "application/json",
             },
+            "json_name_path": "data.id",
         },
         "base_url": "https://api.groq.com/openai/v1",
         "env_name": "GROQ_API_KEY",
@@ -138,6 +139,7 @@ THIRD_PARTY_PLATFORMS = {
                 "Accept": "application/json",
                 "Authorization": f"Bearer {os.environ.get('DEEP_SEEK_API_KEY')}",
             },
+            "json_name_path": "data.id",
         },
         "base_url": "https://api.deepseek.com",
         "env_name": "DEEP_SEEK_API_KEY",
@@ -150,6 +152,7 @@ THIRD_PARTY_PLATFORMS = {
                 "accept": "application/json",
                 "authorization": f"Bearer {os.environ.get('TOGETHER_API_KEY')}",
             },
+            "json_name_path": "id",
         },
         "base_url": "https://api.together.xyz/v1",
         "env_name": "TOGETHER_API_KEY",
@@ -159,17 +162,21 @@ THIRD_PARTY_PLATFORMS = {
         "models": {
             "url": f"https://generativelanguage.googleapis.com/v1beta/models?key={os.environ.get('GEMINI_API_KEY')}",
             "headers": {},
+            "json_name_path": "models.name",
         },
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
         "env_name": "GEMINI_API_KEY",
         "docs": "https://ai.google.dev/gemini-api/docs",
     },
     "ollama": {
-        "models": {"url": "http://localhost:11434/api/tags", "headers": {}},
+        "models": {
+            "url": "http://localhost:11434/api/tags",
+            "headers": {},
+            "json_name_path": "models.name",
+        },
         "base_url": "http://localhost:11434/v1",
         "env_name": "ollama",
         "docs": "https://github.com/ollama/ollama/blob/main/docs/api.md",
-        "is_local": True,
     },
     "xai": {
         "models": {
@@ -177,6 +184,7 @@ THIRD_PARTY_PLATFORMS = {
             "headers": {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"
             },
+            "json_name_path": None,
         },
         "base_url": "https://api.x.ai/v1",
         "env_name": "XAI_API_KEY",

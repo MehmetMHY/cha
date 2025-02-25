@@ -1,33 +1,68 @@
 from pydantic import BaseModel
+import json
 import copy
+import sys
 
 from cha import scraper, utils, config, colors, loading
 
 
-def local_platform_models_list_case(name, url):
-    if name == "ollama":
-        response = utils.get_request(url=url)
-        models = []
-        for entry in dict(response.json())["models"]:
-            if "name" in entry and entry["name"] not in models:
-                models.append(entry["name"])
-        models.sort()
-        return models
-    else:
-        raise Exception(f"Platform '{name}' is not a valid local platform!")
-
-
-def brute_force_models_list(
-    client, url, headers, model_name, clean, platform_name, is_local
-):
-    if is_local == True:
-        return local_platform_models_list_case(platform_name, url)
+def brute_force_models_list(client, url, headers, model_name, clean, models_info):
+    json_name_path = models_info.get("json_name_path")
 
     raw_response = utils.get_request(url=url, headers=headers)
     content_data = raw_response.text
-    raw_content = content_data
+
+    if json_name_path is not None:
+        try:
+            content_data = raw_response.json()
+        except Exception as e:
+            print(f"Failed to parse JSON: {e}")
+            return []
+
+    # Handle case where JSON is a list (e.g., Together AI returns a list of dicts)
+    if isinstance(content_data, list) and json_name_path:
+        dict_path = json_name_path.split(".")
+        if len(dict_path) == 1:  # e.g. ["id"]
+            field = dict_path[0]
+            model_ids = []
+            for entry in content_data:
+                if isinstance(entry, dict) and field in entry:
+                    model_ids.append(entry[field])
+            model_ids = sorted(set(model_ids))
+            return model_ids
+        # If deeper nesting is needed, you can expand logic here (dict_path[1], etc.)
+
+    # If JSON is a dict, follow original dictionary-based logic
+    if isinstance(content_data, dict):
+        try:
+            dict_path = json_name_path.split(".")
+            tmp = copy.deepcopy(content_data)
+            model_name_key = None
+            if len(dict_path) > 1:
+                for i in range(len(dict_path)):
+                    key = dict_path[i]
+                    if not isinstance(tmp[key], list):
+                        tmp = tmp[key]
+                    else:
+                        tmp = tmp[key]
+                        model_name_key = dict_path[i + 1]
+                        break
+            else:
+                model_name_key = dict_path[0]
+
+            output = []
+            for entry in tmp:
+                output.append(entry[model_name_key])
+            output = list(set(output))
+            output.sort()
+            return output
+        except Exception as e:
+            print(f"Error extracting models from dict: {e}")
+
+    # Fallback to LLM-based approach if direct path extraction fails
+    raw_content = str(content_data)
     if clean:
-        raw_content = scraper.remove_html(content_data)
+        raw_content = scraper.remove_html(raw_content)
 
     class ModelNames(BaseModel):
         names: list[str]
@@ -83,8 +118,7 @@ def auto_select_a_platform(client):
             headers=headers,
             model_name=config.SCRAPE_MODEL_NAME_FOR_PLATFORMS,
             clean=rm_html,
-            platform_name=platform_key,
-            is_local=selected_platform.get("is_local"),
+            models_info=models_info,
         )
     except Exception as e:
         loading.print_message(colors.red(f"Failed to retrieve model: {e}"))
