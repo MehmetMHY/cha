@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.15.0",
+    version="0.15.1",
     packages=find_packages(),
     license="MIT",
     description="A simple CLI tool for chatting, web scraping, and doing other CLI tasks with OpenAI's models",
@@ -10,7 +10,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=[
         "openai==1.64.0",
-        "anthropic==0.47.1",
+        "anthropic==0.47.2",
         "beautifulsoup4==4.13.3",
         "yt-dlp==2025.2.19",
         "youtube-transcript-api==0.6.3",
