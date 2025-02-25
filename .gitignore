@@ -194,4 +194,5 @@ code_dump_*.txt
 codedump*.txt
 codedump_*.txt
 .sandbox/
+.future
 
