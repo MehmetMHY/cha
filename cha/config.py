@@ -35,8 +35,21 @@ DEFAULT_SPLIT_LOGIC_COUNT = 5
 
 # other random configs
 OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
-OPENAI_MODELS_TO_KEEP = ["gpt", "o1", "o2", "o3", "o4", "o5", "o6"]
 FILES_TO_IGNORE = [".DS_Store", ".env", ".env.local"]
+OPENAI_MODELS_TO_KEEP = [
+    "gpt",
+    "o0",
+    "o1",
+    "o2",
+    "o3",
+    "o4",
+    "o5",
+    "o6",
+    "o7",
+    "o8",
+    "o9",
+    "o10",
+]
 
 # terminal/console config
 SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
