@@ -78,15 +78,6 @@ def brute_force_models_list(client, url, headers, model_name, clean, models_info
     return completion.choices[0].message.parsed.names
 
 
-# "anthropic": {
-#     "package_name": "cha.cla",
-#     "function": "anthropic",
-#     "parameters": {
-#         "select_model": False,
-#     }
-# }
-
-
 def auto_select_a_platform(client):
     print(colors.yellow("Available platforms:"))
     for index, platform in enumerate(config.THIRD_PARTY_PLATFORMS.keys(), start=1):

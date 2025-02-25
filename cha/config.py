@@ -193,11 +193,12 @@ THIRD_PARTY_PLATFORMS = {
     },
     "xai": {
         "models": {
-            "url": "https://gist.githubusercontent.com/MehmetMHY/f913ee9fb8f88ffd56bf52676b9a72d9/raw/e52243f01f84d84305fae68727025017b331fae2/xai_models.json",
+            "url": "https://api.x.ai/v1/models",
             "headers": {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"
+                "accept": "application/json",
+                "authorization": f"Bearer {os.environ.get('XAI_API_KEY')}",
             },
-            "json_name_path": None,
+            "json_name_path": "data.id",
         },
         "base_url": "https://api.x.ai/v1",
         "env_name": "XAI_API_KEY",
