@@ -13,26 +13,19 @@ def brute_force_models_list(client, url, headers, model_name, clean, models_info
     content_data = raw_response.text
 
     if json_name_path is not None:
-        try:
-            content_data = raw_response.json()
-        except Exception as e:
-            print(f"Failed to parse JSON: {e}")
-            return []
+        content_data = raw_response.json()
 
-    # Handle case where JSON is a list (e.g., Together AI returns a list of dicts)
     if isinstance(content_data, list) and json_name_path:
         dict_path = json_name_path.split(".")
-        if len(dict_path) == 1:  # e.g. ["id"]
+        # NOTE: if deeper nesting is needed, you can expand logic here (dict_path[1], etc.)
+        if len(dict_path) == 1:
             field = dict_path[0]
             model_ids = []
             for entry in content_data:
                 if isinstance(entry, dict) and field in entry:
                     model_ids.append(entry[field])
-            model_ids = sorted(set(model_ids))
-            return model_ids
-        # If deeper nesting is needed, you can expand logic here (dict_path[1], etc.)
+            return sorted(set(model_ids))
 
-    # If JSON is a dict, follow original dictionary-based logic
     if isinstance(content_data, dict):
         try:
             dict_path = json_name_path.split(".")
@@ -57,9 +50,8 @@ def brute_force_models_list(client, url, headers, model_name, clean, models_info
             output.sort()
             return output
         except Exception as e:
-            print(f"Error extracting models from dict: {e}")
+            pass
 
-    # Fallback to LLM-based approach if direct path extraction fails
     raw_content = str(content_data)
     if clean:
         raw_content = scraper.remove_html(raw_content)
