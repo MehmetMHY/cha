@@ -9,8 +9,8 @@ from cha import colors, scraper, utils, loading
 from cha import config
 
 config.ANTHROPIC_DOCS_LINK = "https://docs.anthropic.com/en/docs/welcome"
-config.CLA_DEFAULT_MODEL = "claude-3-5-sonnet-20241022"
-config.CLA_MAX_TOKENS = 8184
+config.CLA_DEFAULT_MODEL = "claude-3-7-sonnet-20250219"
+config.CLA_MAX_TOKENS = 64_000
 
 
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
