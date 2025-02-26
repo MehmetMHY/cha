@@ -57,24 +57,107 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 
 ### Usage
 
-To start using **cha**, run the following simple command:
+#### Basic Invocation
 
-```bash
-cha
-```
+- `cha`
+- `cha "<some question or request>"`
+- Example:
+  ```bash
+  cha "in type script how can I check if .canvas.edges is an empty array?"
+  ```
+
+#### Code-Dump/Debug Flags
+
+- `cha --code_dump`
+- `cha -d`
+
+#### Answer Search
+
+- `cha -a`
+- `cha -a "<question>"`
+- Example:
+  ```bash
+  cha -a "what is the goal of life"
+  ```
+
+#### File Input with -f
+
+- `cha -f <FILE>`
+- Example:
+  ```bash
+  cha -f index.js
+  ```
+
+#### Model Selection with -m
+
+- `cha -m <MODEL_NAME>`
+- Example:
+  ```bash
+  cha -m "o3-mini"
+  ```
+
+#### OCR (Extract Text from Files)
+
+- `cha -ocr <FILE> [> <OUTPUT_FILE>]`
+- Examples:
+  ```bash
+  cha -ocr ./README.md
+  cha -ocr meme.jpg > output.txt
+  ```
+
+#### Platform Switching (-p) and Model Combined
+
+- `cha -p "<PLATFORM_OR_URL|API_KEY_ENV>" -m "<MODEL_NAME>"`
+- Examples:
+  ```bash
+  cha -p "https://api.deepseek.com|DEEP_SEEK_API_KEY" -m "deepseek-chat"
+  cha -p "llama3-70b-8192|GROQ_API_KEY" -m "llama3-70b-8192"
+  ```
+- Dynamic platform switching with no need for the user to provide a base_url and model name: `cha -p`
+
+#### Model Autoselection (-sm)
+
+- `cha -sm`
+- `cha -sm <MODEL_NAME>`
+
+#### Token Counting (-t) with a File
+
+- `cha -t -f <FILE>`
+- Example:
+  ```bash
+  cha -t -f README.md
+  ```
+
+#### Direct “How to” / “Make me” / “Craft me” Questions
+
+These appear frequently with “cha” followed by a question/request referencing programming, shell commands, or general tasks, for example:
+
+- `cha how many seconds is in a day`
+- `cha in python how can I save a dict to a json`
+- `cha craft me a unix command to find all Cargo.toml`
+- `cha make me a simple flask API`
+
+In essence, your unique “cha” CLI usage falls into these main patterns:
+
+- Running “cha” with a direct query.
+- Doing code dumps or debug dumps (-code_dump, -c, -d).
+- Performing answer searches (-a).
+- Feeding in file input (-f).
+- Specifying or switching models (-m, -sm).
+- Running OCR operations (-ocr).
+- Switching platforms (-p).
+- Checking token counts (-t).
+- Asking a broad variety of how-to / make-me requests directly after “cha …”.
 
 Both commands support and accept additional parameters. Here is the help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR]
-           [-p [PLATFORM]] [-d [CODE_DUMP]]
-           [string ...]
+usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [string ...]
 
 Chat with an OpenAI GPT model.
 
 positional arguments:
-  string                Non-interactive mode, feed a string into the
-                        model
+  string                Non-interactive mode, feed a string into the model
 
 options:
   -h, --help            show this help message and exit
@@ -84,19 +167,14 @@ options:
   -m MODEL, --model MODEL
                         Model to use for chatting
   -sm, --select_model   Select one model from OpenAI's supported models
-  -f FILE, --file FILE  Filepath to file that will be sent to the model
-                        (text only)
+  -f FILE, --file FILE  Filepath to file that will be sent to the model (text only)
   -t, --token_count     Count tokens for the input file or string
-  -ocr OCR, --ocr OCR   Given a file path, print the content of that
-                        file as text though Cha's main file loading
-                        logic
+  -ocr OCR, --ocr OCR   Given a file path, print the content of that file as text though Cha's main file loading logic
   -p [PLATFORM], --platform [PLATFORM]
-                        Use a different provider, set this like this:
-                        "<base_url>|<api_key_env_name>", or use as a
-                        flag with "-p" for True
+                        Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag
+                        with "-p" for True
   -d [CODE_DUMP], --code_dump [CODE_DUMP]
-                        Do a full code dump into one file in your
-                        current directory
+                        Do a full code dump into one file in your current directory
 ```
 
 ## Development
