@@ -85,15 +85,18 @@ Example Format:
     return completion.choices[0].message.parsed.queries
 
 
-def duckduckgo_search(search_input, count=3):
+def duckduckgo_search(
+    search_input, count=5, region="wt-wt", safesearch="off", timelimit=None
+):
     try:
         with DDGS() as ddgs:
             search_results = list(
                 ddgs.text(
                     keywords=search_input,
                     max_results=count,
-                    # NOTE: this is equivalent to Brave's {'country': 'us'}
-                    region="wt-wt",
+                    region=region,
+                    safesearch=safesearch,
+                    timelimit=timelimit,
                 )
             )
 
@@ -302,3 +305,62 @@ def answer_search(
         loading.stop_loading()
 
     return final_output
+
+
+def manual_search_engine(
+    search_input=None,
+    max_results=None,
+    timelimit=False,
+    print_title=False,
+    print_listing=False,
+):
+    if print_title:
+        print(colors.underline(colors.red("DuckDuckGo Terminal Search Engine")))
+
+    if type(search_input) != str:
+        search_input = utils.safe_input(colors.blue("Search Query: "))
+
+    if type(max_results) != int:
+        try:
+            max_results = int(utils.safe_input(colors.blue("Max Results: ")))
+        except:
+            max_results = 3
+
+    if type(timelimit) != str and timelimit != None:
+        timelimit = (
+            utils.safe_input(colors.blue("Time Limit (d, w, m, y): ")).strip().lower()
+        )
+
+    if timelimit not in ["d", "w", "m", "y"]:
+        timelimit = None
+
+    results = duckduckgo_search(
+        search_input=search_input, count=max_results, timelimit=timelimit
+    )
+
+    with open(os.devnull, "w") as fnull:
+        with redirect_stdout(fnull), redirect_stderr(fnull):
+            scrapped_data = scraper.get_all_htmls([item["url"] for item in results])
+
+    for result in results:
+        result["scrape"] = str(scrapped_data.get(result["url"]))
+
+    if print_title:
+        print(colors.underline(colors.red("Search Results:")))
+
+    if print_listing:
+        for result in results:
+            print(colors.underline(colors.green(f'{result["url"]}')))
+            print(colors.blue(f'{result["title"]}'))
+            print(colors.magenta(f'{result["description"]}'))
+            if result["scrape"].lower().startswith("An error occurred: ".lower()):
+                print(colors.yellow(f"Failed to scrape web page..."))
+            else:
+                print(colors.yellow(f'{str(result["scrape"])[:500]}...'))
+
+    return {
+        "search_input": search_input,
+        "max_results": max_results,
+        "timelimit": timelimit,
+        "results": results,
+    }

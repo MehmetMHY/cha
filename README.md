@@ -21,6 +21,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
 - **Switch Between Models**: Easily switch between models during a conversation.
 - **Code Dump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
+- **Browse Mode**: Enables fast automated web browsing to gather additional context for enhancements in response to user queries. It's quicker than the answer search engine, making it ideal for quick search-based questions.
 
 ## Getting Started
 
