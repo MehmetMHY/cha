@@ -428,12 +428,6 @@ def cli():
             help="Run answer search",
             action="store_true",
         )
-        parser.add_argument(
-            "-b",
-            "--browse_mode",
-            help="Run browse feature to answer your question",
-            action="store_true",
-        )
 
         args = parser.parse_args()
 
@@ -455,10 +449,6 @@ def cli():
             output = utils.run_answer_search(
                 client=openai_client, prompt=None, user_input_mode=True
             )
-            sys.exit(1 if output is None else 0)
-
-        if args.browse_mode == True:
-            output = utils.run_fast_search(message="")
             sys.exit(1 if output is None else 0)
 
         title_print_value = args.print_title
