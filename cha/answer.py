@@ -311,10 +311,9 @@ def manual_search_engine(
     search_input=None,
     max_results=None,
     timelimit=False,
-    print_title=False,
-    print_listing=False,
+    print_processes=False,
 ):
-    if print_title:
+    if print_processes:
         print(colors.underline(colors.red("DuckDuckGo Terminal Search Engine")))
 
     if type(search_input) != str:
@@ -345,10 +344,10 @@ def manual_search_engine(
     for result in results:
         result["scrape"] = str(scrapped_data.get(result["url"]))
 
-    if print_title:
+    if print_processes:
         print(colors.underline(colors.red("Search Results:")))
 
-    if print_listing:
+    if print_processes:
         for result in results:
             print(colors.underline(colors.green(f'{result["url"]}')))
             print(colors.blue(f'{result["title"]}'))
@@ -357,6 +356,9 @@ def manual_search_engine(
                 print(colors.yellow(f"Failed to scrape web page..."))
             else:
                 print(colors.yellow(f'{str(result["scrape"])[:500]}...'))
+
+    if print_processes:
+        print(colors.underline(colors.red("Search Engine Concluded")))
 
     return {
         "search_input": search_input,

@@ -350,28 +350,25 @@ def run_fast_search(message):
         default_print_browsing = True
         default_time_limit = False
         default_max_result = None
-        if message.startswith(config.BROWSE_MODE_TEXT + "d") and len(message) > (
+        if message.startswith(config.BROWSE_MODE_TEXT) and len(message) > (
             len(str(config.BROWSE_MODE_TEXT)) + 1 + 3
         ):
             default_print_browsing = False
             default_time_limit = None
             default_max_result = 3
-
-        if (
-            message.replace(" ", "") == str(config.BROWSE_MODE_TEXT)
-            or message.replace(" ", "") == f"{config.BROWSE_MODE_TEXT}d"
-            or len(message) <= 1
-        ):
+        else:
             message = None
 
         message = answer.manual_search_engine(
             search_input=message,
             max_results=default_max_result,
             timelimit=default_time_limit,
-            print_listing=default_print_browsing,
+            print_processes=default_print_browsing,
         )
 
         return f"""
+For your answer, understand that today's date is: {dt.now(timezone.utc)}
+
 The user made the following search engine query to DuckDuckGo's search engine:
 ```
 {message["search_input"]}
