@@ -428,6 +428,12 @@ def cli():
             help="Run answer search",
             action="store_true",
         )
+        parser.add_argument(
+            "-b",
+            "--browse_mode",
+            help="Run browse feature to answer your question",
+            action="store_true",
+        )
 
         args = parser.parse_args()
 
@@ -538,6 +544,12 @@ def cli():
             else:
                 print(colors.red("Invalid number selected. Exiting."))
                 return
+
+        if args.browse_mode == True:
+            output = utils.run_fast_search("")
+            if type(output) == str:
+                chatbot(selected_model, title_print_value, content_string=output)
+            sys.exit(1 if output is None else 0)
 
         if args.string and args.file:
             print(
