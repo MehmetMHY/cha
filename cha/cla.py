@@ -118,6 +118,17 @@ def interactive_chat(client, model, print_title):
             title_print(model)
             continue
 
+        if user_input == config.TEXT_EDITOR_INPUT_MODE:
+            editor_content = utils.check_terminal_editors_and_edit()
+            if editor_content is None:
+                print(colors.red(f"No text editor available or editing cancelled"))
+                continue
+            if len(editor_content) == 0:
+                continue
+            for line in str(editor_content).rstrip("\n").split("\n"):
+                print(colors.blue(">"), line)
+            user_input = editor_content
+
         # check for URLs -> scraping
         detected_urls = len(scraper.extract_urls(user_input))
         if detected_urls > 0:
