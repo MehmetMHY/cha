@@ -157,6 +157,17 @@ def answer_search(
     if user_input_mode or prompt == None:
         print(colors.red(colors.underline(f"Answer Search - User Input")))
         prompt = utils.safe_input(colors.blue(f"Question: "))
+        if prompt.lower() == config.TEXT_EDITOR_INPUT_MODE.lower():
+            prompt = utils.check_terminal_editors_and_edit()
+            if prompt is None:
+                print(colors.red(f"No text editor available or editing cancelled"))
+                return
+            if len(prompt) > 0:
+                for line in prompt.rstrip("\n").split("\n"):
+                    print(colors.blue(">"), line)
+            else:
+                print(colors.red("Nothing was entered into the text editor"))
+                return
     else:
         print(colors.red(colors.underline("Question Prompt:")))
         print(prompt)
