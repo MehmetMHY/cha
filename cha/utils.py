@@ -30,37 +30,33 @@ def is_o_model(model_name):
     return re.match(r"^o\d+", model_name) is not None
 
 
-def fast_estimate_tokens(text, language=None, rounding=1.15):
-    word_count = len(text.split())
-
-    # https://gptforwork.com/guides/openai-gpt3-tokens
-    token_multiplier = {
-        "english": 1.3,
-        "french": 2.0,
-        "german": 2.1,
-        "spanish": 2.1,
-        "chinese": 2.5,
-        "russian": 3.3,
-        "vietnamese": 3.3,
-        "arabic": 4.0,
-        "hindi": 6.4,
-    }
-
-    if language is None or str(language.lower()) not in token_multiplier:
-        tokens = word_count * statistics.median(token_multiplier.values())
-    else:
-        tokens = word_count * token_multiplier[language.lower()]
-
-    return math.floor(tokens * rounding)
-
-
-def count_tokens(text, model_name, fast_mode=False):
+def count_tokens(text, model_name, fast_mode=False, language=None, rounding=1.1):
     try:
-        if fast_mode:
-            return fast_estimate_tokens(text=text)
-        else:
+        if fast_mode == False:
             encoding = tiktoken.encoding_for_model(model_name)
             return len(encoding.encode(text))
+
+        word_count = len(text.split())
+
+        # https://gptforwork.com/guides/openai-gpt3-tokens
+        token_multiplier = {
+            "english": 1.3,
+            "french": 2.0,
+            "german": 2.1,
+            "spanish": 2.1,
+            "chinese": 2.5,
+            "russian": 3.3,
+            "vietnamese": 3.3,
+            "arabic": 4.0,
+            "hindi": 6.4,
+        }
+
+        if language is None or str(language.lower()) not in token_multiplier:
+            tokens = word_count * statistics.median(token_multiplier.values())
+        else:
+            tokens = word_count * token_multiplier[language.lower()]
+
+        return math.floor(tokens * rounding)
     except:
         return None
 

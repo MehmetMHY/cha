@@ -7,12 +7,6 @@ from cha import colors, utils, config
 import pathspec
 
 
-def count_tokens(text):
-    # simple token counting: ~4 tokens per 3 words (with 5% error handling)
-    words = text.split()
-    return int((4.0 / 3.0) * len(words) * 1.10)
-
-
 def is_probably_binary_by_extension(file_path):
     _, ext = os.path.splitext(file_path.lower())
     return ext in config.BINARY_EXTENSIONS
@@ -205,7 +199,9 @@ def extract_code(dir_path):
 
     excluded_files = interactive_exclusion(root_path, files_dict)
     output_text = generate_text_output(root_path, files_dict, excluded_files)
-    token_count = count_tokens(output_text)
+    token_count = utils.count_tokens(
+        output_text, config.DEFAULT_SEARCH_BIG_MODEL, False
+    )
 
     print(colors.magenta(f"Token Count:"), colors.red(f"~{token_count}"))
 
