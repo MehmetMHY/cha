@@ -1,8 +1,10 @@
 import sys
 
 try:
+    from urllib.parse import urlparse
     import argparse
     import time
+    import json
     import os
 
     from cha import scraper, colors, utils, config, loading, platforms, codedump
@@ -442,11 +444,19 @@ def cli():
             return
 
         if args.ocr != None:
-            content = utils.act_as_ocr(
-                client=openai_client, filepath=str(args.ocr), prompt=None
-            )
+            content = None
+            detected_urls = len(scraper.extract_urls(str(args.ocr)))
+            if detected_urls > 0:
+                content = scraper.get_all_htmls(str(args.ocr))
+            else:
+                content = utils.act_as_ocr(
+                    client=openai_client, filepath=str(args.ocr), prompt=None
+                )
+
             if content == None:
                 print(colors.red(f"Failed to load file due to an error"))
+            elif type(content) == dict:
+                print(json.dumps(content, indent=4))
             else:
                 print(content)
             return
