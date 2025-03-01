@@ -26,20 +26,20 @@ if __name__ == "__main__":
             PYTHON_SETUP_FILE_PATH = setup_file_path
             break
 
-    # confirm the loaded setup file path is correct
-    if PYTHON_SETUP_FILE_PATH is not None:
-        print(f"Found 'setup.py' at:\n{PYTHON_SETUP_FILE_PATH}")
-        confirm_input = save_input(f"Continue with this path (Y/n)? ")
-        if confirm_input.lower() in ["n", "no"]:
-            PYTHON_SETUP_FILE_PATH = save_input(
-                "Please manually input the path to 'setup.py': "
-            ).strip()
-            if not os.path.isfile(PYTHON_SETUP_FILE_PATH):
-                print(f"The file path '{PYTHON_SETUP_FILE_PATH}' does not exist!")
-                sys.exit(1)
-    else:
+    if PYTHON_SETUP_FILE_PATH is None:
         print("Failed to load 'setup.py' file(s) because it does not exist!")
         sys.exit(1)
+
+    # confirm the loaded setup file path is correct
+    print(f"Found 'setup.py' at:\n{PYTHON_SETUP_FILE_PATH}")
+    confirm_input = save_input(f"Continue with this path (Y/n)? ")
+    if confirm_input.lower() in ["n", "no"]:
+        PYTHON_SETUP_FILE_PATH = save_input(
+            "Please manually input the path to 'setup.py': "
+        ).strip()
+        if not os.path.isfile(PYTHON_SETUP_FILE_PATH):
+            print(f"The file path '{PYTHON_SETUP_FILE_PATH}' does not exist!")
+            sys.exit(1)
 
     # read the current setup file
     with open(PYTHON_SETUP_FILE_PATH, "r") as f:
@@ -62,9 +62,8 @@ if __name__ == "__main__":
 
     print("Scanning dependencies...")
 
-    changed_count = 0
-
     # update each dependency
+    changed_count = 0
     for package, current_version in deps:
         try:
             # get latest version by running the pip CLI command

@@ -86,15 +86,54 @@ def get_all_files_with_ignore(dir_path):
     return all_paths
 
 
+def parse_selection_input(selection_string):
+    indices = []
+    for part in selection_string.split(","):
+        part = part.strip()
+        if "-" in part:
+            bounds = part.split("-", 1)
+            if len(bounds) == 2:
+                start_str, end_str = bounds
+                try:
+                    start = int(start_str) - 1
+                    end = int(end_str) - 1
+                    if start <= end:
+                        indices.extend(range(start, end + 1))
+                    else:
+                        indices.extend(range(end, start + 1))
+                except ValueError:
+                    continue
+        else:
+            try:
+                i = int(part) - 1
+                indices.append(i)
+            except ValueError:
+                continue
+    return indices
+
+
 def interactive_exclusion(root_path, files_dict):
     excluded = set()
-    directories = {os.path.dirname(f) for f in files_dict if os.path.dirname(f)}
-    directories = sorted(d for d in directories if d != root_path.rstrip(os.sep))
+
+    all_dirs = set()
+    for f in files_dict:
+        d = os.path.dirname(f)
+        while d and os.path.abspath(d) != os.path.abspath(root_path):
+            all_dirs.add(d)
+            parent = os.path.dirname(d)
+            if parent == d:
+                break
+            d = parent
+
+    directories = sorted(all_dirs)
+    directories = [
+        d for d in directories if os.path.abspath(d) != os.path.abspath(root_path)
+    ]
 
     if directories:
         print(
             colors.yellow(
-                "Select directories to exclude (comma-separated numbers) or press Enter to skip:"
+                "Select dirs to exclude ('1', '1,2,3', '1-3') or press ENTER to skip:"
             )
         )
         for i, d in enumerate(directories):
@@ -105,7 +144,7 @@ def interactive_exclusion(root_path, files_dict):
             if not selection:
                 break
             try:
-                indices = [int(x.strip()) - 1 for x in selection.split(",")]
+                indices = parse_selection_input(selection)
                 if any(i < 0 or i >= len(directories) for i in indices):
                     print(colors.red("Invalid selection. Try again!"))
                     continue
@@ -115,13 +154,15 @@ def interactive_exclusion(root_path, files_dict):
                         excluded.add(f)
                 break
             except ValueError:
-                print(colors.red("Please enter comma-separated numbers!"))
+                print(
+                    colors.red("Please enter valid comma-separated numbers or ranges!")
+                )
 
     remaining_files = [f for f in files_dict.keys() if f not in excluded]
     if remaining_files:
         print(
             colors.yellow(
-                "Select files to exclude (comma-separated numbers) or press Enter to skip:"
+                "Select files to exclude ('1', '1,2,3', '1-3') or press ENTER to skip:"
             )
         )
         for i, rf in enumerate(sorted(remaining_files)):
@@ -132,7 +173,7 @@ def interactive_exclusion(root_path, files_dict):
             if not selection:
                 break
             try:
-                indices = [int(x.strip()) - 1 for x in selection.split(",")]
+                indices = parse_selection_input(selection)
                 if any(i < 0 or i >= len(remaining_files) for i in indices):
                     print(colors.red("Invalid selection. Try again!"))
                     continue
@@ -140,7 +181,9 @@ def interactive_exclusion(root_path, files_dict):
                     excluded.add(remaining_files[i])
                 break
             except ValueError:
-                print(colors.red("Please enter comma-separated numbers!"))
+                print(
+                    colors.red("Please enter valid comma-separated numbers or ranges!")
+                )
 
     return excluded
 
