@@ -15,7 +15,30 @@ def save_input(starting_text):
         sys.exit(1)
 
 
+def is_ffmpeg_installed():
+    try:
+        subprocess.run(
+            ["ffmpeg", "-version"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+
 if __name__ == "__main__":
+    try:
+        if is_ffmpeg_installed() == False:
+            print(
+                "!!! - ffmpeg is not installed, please install it: https://ffmpeg.org/"
+            )
+    except Exception as e:
+        print(
+            f"!!! - An error occurred well checking if other deps were installed or not: {e}"
+        )
+
     # path to setup file
     PYTHON_SETUP_FILE_PATH = None
     for i in range(4):
