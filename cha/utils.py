@@ -189,7 +189,7 @@ def check_terminal_editors_and_edit():
     return None
 
 
-def transcribe_file(file_path, loading_mode=False):
+def transcribe_file(file_path, local_only=True):
     if os.path.exists(file_path) == False:
         raise Exception(f"Audio file {file_path} does not exist")
 
@@ -198,25 +198,9 @@ def transcribe_file(file_path, loading_mode=False):
 
     file_extension = "." + str(file_path.split(".")[-1]).lower()
 
-    assembly_api_key = os.getenv("ASSEMBLY_AI_API_KEY")
+    if local_only == False:
+        assembly_api_key = os.getenv("ASSEMBLY_AI_API_KEY")
 
-    use_assembly = False
-    if (
-        assembly_api_key is not None
-        and file_extension in config.ASSEMBLY_AI_SUPPORTED_FORMATS
-    ):
-        input_msg = colors.yellow("Use AssemblyAI for transcription? (y/n) ")
-        if loading_mode == False:
-            try:
-                choice = input(colors.yellow("Use AssemblyAI for transcription? (y/n) "))
-            except (KeyboardInterrupt, EOFError):
-                choice = ""
-        else:
-            choice = loading.input_message(input_msg)
-        if choice.strip().lower() == "y":
-            use_assembly = True
-
-    if use_assembly:
         aai.settings.api_key = assembly_api_key
         transcriber = aai.Transcriber()
 
@@ -351,7 +335,7 @@ def load_most_files(
         or file_ext in config.LOCAL_WHISPER_SUPPORTED_FORMATS
     ):
         try:
-            content = transcribe_file(file_path, True)
+            content = transcribe_file(file_path=file_path, local_only=True)
             if type(content) == dict:
                 return str(content.get("standard"))
         except Exception as e:
