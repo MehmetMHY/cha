@@ -130,19 +130,6 @@ BINARY_EXTENSIONS = {
     ".env.test",
 }
 
-ASSEMBLY_AI_SUPPORTED_FORMATS = [
-    ".mp3",
-    ".wav",
-    ".aac",
-    ".m4a",
-    ".flac",
-    ".ogg",
-    ".wma",
-    ".mp4",
-    ".mov",
-    ".avi",
-    ".mkv",
-]
 LOCAL_WHISPER_SUPPORTED_FORMATS = [
     ".mp3",
     ".mp4",
