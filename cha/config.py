@@ -130,6 +130,29 @@ BINARY_EXTENSIONS = {
     ".env.test",
 }
 
+ASSEMBLY_AI_SUPPORTED_FORMATS = [
+    ".mp3",
+    ".wav",
+    ".aac",
+    ".m4a",
+    ".flac",
+    ".ogg",
+    ".wma",
+    ".mp4",
+    ".mov",
+    ".avi",
+    ".mkv",
+]
+LOCAL_WHISPER_SUPPORTED_FORMATS = [
+    ".mp3",
+    ".mp4",
+    ".wav",
+    ".m4a",
+    ".flac",
+    ".ogg",
+    ".webm",
+]
+
 # last updated on 02-12-2025
 SCRAPE_MODEL_NAME_FOR_PLATFORMS = DEFAULT_SEARCH_SMALL_MODEL
 THIRD_PARTY_PLATFORMS = {
