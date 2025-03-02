@@ -40,6 +40,13 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
    pip3 install --upgrade .
    ```
 
+3. **Install other dependencies**:
+
+```bash
+# checkout docs for install details different systems: https://ffmpeg.org/
+brew install ffmpeg
+```
+
 ### Configuration
 
 1. **API Key Setup**: Cha requires an OpenAI API key, which you can obtain [here](https://platform.openai.com/api-keys).
