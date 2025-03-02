@@ -3,6 +3,7 @@ import statistics
 import subprocess
 import datetime
 import tempfile
+import warnings
 import base64
 import uuid
 import json
@@ -13,6 +14,8 @@ import re
 import os
 
 from docx import Document
+import assemblyai as aai
+import whisper
 import openpyxl
 import chardet
 import base64
@@ -186,6 +189,94 @@ def check_terminal_editors_and_edit():
     return None
 
 
+def transcribe_file(file_path, loading_mode=False):
+    if os.path.exists(file_path) == False:
+        raise Exception(f"Audio file {file_path} does not exist")
+
+    if type(file_path) != str:
+        raise Exception("Inputted file_path is NOT type string")
+
+    file_extension = "." + str(file_path.split(".")[-1]).lower()
+
+    assembly_api_key = os.getenv("ASSEMBLY_AI_API_KEY")
+
+    use_assembly = False
+    if (
+        assembly_api_key is not None
+        and file_extension in config.ASSEMBLY_AI_SUPPORTED_FORMATS
+    ):
+        input_msg = colors.yellow("Use AssemblyAI for transcription? (y/n) ")
+        if loading_mode == False:
+            try:
+                choice = input(colors.yellow("Use AssemblyAI for transcription? (y/n) "))
+            except (KeyboardInterrupt, EOFError):
+                choice = ""
+        else:
+            choice = loading.input_message(input_msg)
+        if choice.strip().lower() == "y":
+            use_assembly = True
+
+    if use_assembly:
+        aai.settings.api_key = assembly_api_key
+        transcriber = aai.Transcriber()
+
+        api_config = aai.TranscriptionConfig(
+            speaker_labels=True, speech_model=aai.SpeechModel.best
+        )
+
+        transcript = transcriber.transcribe(file_path, config=api_config)
+        transcript_dict = transcript.json_response if transcript.json_response else {}
+
+        utterances = transcript_dict.get("utterances", [])
+
+        standardized_output = []
+        for utt in utterances:
+            speaker = utt.get("speaker", "?")
+            start_time = utt.get("start", 0.0)
+            end_time = utt.get("end", 0.0)
+            text = utt.get("text", "")
+
+            standardized_output.append(
+                {
+                    "speaker": speaker if speaker else "?",
+                    "start": start_time,
+                    "end": end_time,
+                    "text": text,
+                }
+            )
+
+        return {
+            "standard": standardized_output,
+            "raw": transcript_dict,
+            "platform": "assembly_ai",
+        }
+
+    if file_extension not in config.LOCAL_WHISPER_SUPPORTED_FORMATS:
+        raise Exception(f"File {file_path} is not a supported file extension")
+
+    # suppress user warnings from Whisper
+    warnings.filterwarnings("ignore", category=UserWarning)
+
+    model = whisper.load_model("base")
+    result = model.transcribe(file_path)
+
+    segments = result.get("segments", [])
+    standardized_output = []
+    for seg in segments:
+        start_time = seg.get("start", 0.0)
+        end_time = seg.get("end", 0.0)
+        text = seg.get("text", "")
+        standardized_output.append(
+            {"speaker": "?", "start": start_time, "end": end_time, "text": text}
+        )
+
+    return {
+        "standard": standardized_output,
+        "raw": result,
+        "platform": "local_whisper",
+    }
+
+
 def load_most_files(
     file_path, client, model_name=config.CHA_DEFAULT_IMAGE_MODEL, prompt=None
 ):
@@ -254,6 +345,20 @@ def load_most_files(
                 text += "\t\n"
         text = text.strip()
         return text
+
+    elif (
+        file_ext in config.ASSEMBLY_AI_SUPPORTED_FORMATS
+        or file_ext in config.LOCAL_WHISPER_SUPPORTED_FORMATS
+    ):
+        try:
+            content = transcribe_file(file_path, True)
+            if type(content) == dict:
+                return str(content.get("standard"))
+        except Exception as e:
+            loading.print_message(
+                colors.red(f"Failed to load audio file {file_path} due to {e}")
+            )
+            return None
 
     else:
         # get exact file encoding
