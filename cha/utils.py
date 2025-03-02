@@ -14,8 +14,6 @@ import re
 import os
 
 from docx import Document
-import assemblyai as aai
-import whisper
 import openpyxl
 import chardet
 import base64
@@ -189,7 +187,10 @@ def check_terminal_editors_and_edit():
     return None
 
 
-def transcribe_file(file_path, local_only=True):
+def transcribe_file(file_path):
+    # NOTE: the import is made here to reduce initial loading time for the rest of the application
+    import whisper
+
     if os.path.exists(file_path) == False:
         raise Exception(f"Audio file {file_path} does not exist")
 
@@ -197,43 +198,6 @@ def transcribe_file(file_path, local_only=True):
         raise Exception("Inputted file_path is NOT type string")
 
     file_extension = "." + str(file_path.split(".")[-1]).lower()
-
-    if local_only == False:
-        assembly_api_key = os.getenv("ASSEMBLY_AI_API_KEY")
-
-        aai.settings.api_key = assembly_api_key
-        transcriber = aai.Transcriber()
-
-        api_config = aai.TranscriptionConfig(
-            speaker_labels=True, speech_model=aai.SpeechModel.best
-        )
-
-        transcript = transcriber.transcribe(file_path, config=api_config)
-        transcript_dict = transcript.json_response if transcript.json_response else {}
-
-        utterances = transcript_dict.get("utterances", [])
-
-        standardized_output = []
-        for utt in utterances:
-            speaker = utt.get("speaker", "?")
-            start_time = utt.get("start", 0.0)
-            end_time = utt.get("end", 0.0)
-            text = utt.get("text", "")
-
-            standardized_output.append(
-                {
-                    "speaker": speaker if speaker else "?",
-                    "start": start_time,
-                    "end": end_time,
-                    "text": text,
-                }
-            )
-
-        return {
-            "standard": standardized_output,
-            "raw": transcript_dict,
-            "platform": "assembly_ai",
-        }
 
     if file_extension not in config.LOCAL_WHISPER_SUPPORTED_FORMATS:
         raise Exception(f"File {file_path} is not a supported file extension")
@@ -330,12 +294,9 @@ def load_most_files(
         text = text.strip()
         return text
 
-    elif (
-        file_ext in config.ASSEMBLY_AI_SUPPORTED_FORMATS
-        or file_ext in config.LOCAL_WHISPER_SUPPORTED_FORMATS
-    ):
+    elif file_ext in config.LOCAL_WHISPER_SUPPORTED_FORMATS:
         try:
-            content = transcribe_file(file_path=file_path, local_only=True)
+            content = transcribe_file(file_path=file_path)
             if type(content) == dict:
                 return str(content.get("standard"))
         except Exception as e:

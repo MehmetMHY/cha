@@ -21,7 +21,6 @@ setup(
         "openpyxl==3.1.5",
         "chardet==5.2.0",
         "pathspec==0.12.1",
-        "assemblyai==0.37.0",
         "openai-whisper==20240930",
     ],
     python_requires=">=3.9.2",
