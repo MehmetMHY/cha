@@ -205,7 +205,7 @@ def transcribe_file(file_path):
     # suppress user warnings from Whisper
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    model = whisper.load_model("base")
+    model = whisper.load_model(config.DEFAULT_WHISPER_MODEL_NAME)
     result = model.transcribe(file_path)
 
     segments = result.get("segments", [])

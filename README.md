@@ -160,7 +160,7 @@ In essence, your unique “cha” CLI usage falls into these main patterns:
 Both commands support and accept additional parameters. Here is the help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-a] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [string ...]
+usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-b] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -170,8 +170,6 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -pt, --print_title    Print initial title during interactive mode
-  -a, -as, --answer_search
-                        Run answer search
   -m MODEL, --model MODEL
                         Model to use for chatting
   -sm, --select_model   Select one model from OpenAI's supported models
@@ -183,6 +181,9 @@ options:
                         with "-p" for True
   -d [CODE_DUMP], --code_dump [CODE_DUMP]
                         Do a full code dump into one file in your current directory
+  -a, -as, --answer_search
+                        Run answer search
+  -b, --browse_mode     Run browse feature to answer your question
 ```
 
 ## Development
@@ -199,10 +200,10 @@ For those interested in contributing or experimenting with Cha:
 
 3. **(optional) Load your Custom Configuration**: Use the `CHA_PYTHON_CUSTOM_CONFIG_PATH` environment variable to point to a custom `config.py` file that overrides default global variables. Set it using `export CHA_PYTHON_CUSTOM_CONFIG_PATH="/path/to/your/config.py"`. Ensure your defined variables are in uppercase.
 
-4. **(optional) Update Cha's "setup.py" File**: Run the following command in the same directory as Cha's code:
+4. **(Optional) Update Cha's "setup.py" or run system checks to ensure proper functionality**: Run the following command in the same directory as Cha's code:
 
    ```bash
-   python3 update.py
+   python3 maintain.py
    ```
 
 ## Other Platform(s) Compatibility

@@ -130,6 +130,19 @@ BINARY_EXTENSIONS = {
     ".env.test",
 }
 
+"""
+Updated: March 2, 2025
+Source: https://pypi.org/project/openai-whisper/
+| Model  | Params | VRAM   | Speed | Error Rate |
+|--------|--------|--------|-------|------------|
+| tiny   | 39M    | ~1 GB  | ~10x  | ~23.6%     |
+| base   | 74M    | ~1 GB  | ~7x   | ~16.5%     |
+| small  | 244M   | ~2 GB  | ~4x   | ~9.8%      |
+| medium | 769M   | ~5 GB  | ~2x   | ~8.9%      |
+| large  | 1,550M | ~10 GB | 1x    | ~7.9%      |
+| turbo  | 809M   | ~6 GB  | ~8x   | ~7.7%      |
+"""
+DEFAULT_WHISPER_MODEL_NAME = "base"
 LOCAL_WHISPER_SUPPORTED_FORMATS = [
     ".mp3",
     ".mp4",

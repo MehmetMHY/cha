@@ -1,13 +1,16 @@
 # NOTE: the goal of this script is to easily update the dependencies in Cha's SETUP file
 # NOTE: make sure to run this script in the root directory of the Cha project
 
+from pathlib import Path
 import subprocess
+import shutil
+import time
 import sys
 import os
 import re
 
 
-def save_input(starting_text):
+def safe_input(starting_text):
     try:
         return input(starting_text)
     except (KeyboardInterrupt, EOFError):
@@ -15,7 +18,11 @@ def save_input(starting_text):
         sys.exit(1)
 
 
-def is_ffmpeg_installed():
+def checkup():
+    total_successes = 0
+    total_fails = 0
+
+    # check if ffmpeg is installed or not
     try:
         subprocess.run(
             ["ffmpeg", "-version"],
@@ -23,22 +30,51 @@ def is_ffmpeg_installed():
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        return True
+        print("✓ ffmpeg seems to be installed")
+        total_successes += 1
     except (subprocess.CalledProcessError, FileNotFoundError):
-        return False
+        print("✗ ffmpeg is not installed, please install it: https://ffmpeg.org/")
+        total_fails += 1
 
-
-if __name__ == "__main__":
+    # check if whisper model is installed and working
     try:
-        if is_ffmpeg_installed() == False:
-            print(
-                "!!! - ffmpeg is not installed, please install it: https://ffmpeg.org/"
-            )
-    except Exception as e:
-        print(
-            f"!!! - An error occurred well checking if other deps were installed or not: {e}"
-        )
+        from cha import config
 
+        whisper_model_weight_file_path = (
+            f"{str(Path.home())}/.cache/whisper/{config.DEFAULT_WHISPER_MODEL_NAME}.pt"
+        )
+        if os.path.isfile(whisper_model_weight_file_path) == False:
+            import whisper
+
+            whisper.load_model(config.DEFAULT_WHISPER_MODEL_NAME)
+        print(f"✓ Whisper model weight exists at {whisper_model_weight_file_path}")
+        total_successes += 1
+    except Exception as e:
+        print(f"✗ failed to find Whisper model {e}")
+        total_fails += 1
+
+    # check to make sure at least one of the supported Terminal IDEs are installed
+    supported_terminal_ide_installed = False
+    for editor in config.SUPPORTED_TERMINAL_IDES:
+        if shutil.which(editor):
+            supported_terminal_ide_installed = True
+            break
+    if supported_terminal_ide_installed:
+        print(f"✓ Supported Terminal IDE is installed")
+        total_successes += 1
+    else:
+        print(
+            f"✗ None of the supported terminal IDE(s) are installed: {config.SUPPORTED_TERMINAL_IDES}"
+        )
+        total_fails += 1
+
+    print(f"=====REPORT=====")
+    print(f"Passes: {total_successes}")
+    print(f"Fails: {total_fails}")
+    print(f"Total: {total_successes + total_fails}")
+
+
+def update_setup():
     # path to setup file
     PYTHON_SETUP_FILE_PATH = None
     for i in range(4):
@@ -55,9 +91,9 @@ if __name__ == "__main__":
 
     # confirm the loaded setup file path is correct
     print(f"Found 'setup.py' at:\n{PYTHON_SETUP_FILE_PATH}")
-    confirm_input = save_input(f"Continue with this path (Y/n)? ")
+    confirm_input = safe_input(f"Continue with this path (Y/n)? ")
     if confirm_input.lower() in ["n", "no"]:
-        PYTHON_SETUP_FILE_PATH = save_input(
+        PYTHON_SETUP_FILE_PATH = safe_input(
             "Please manually input the path to 'setup.py': "
         ).strip()
         if not os.path.isfile(PYTHON_SETUP_FILE_PATH):
@@ -73,7 +109,7 @@ if __name__ == "__main__":
     if version_match:
         current_version = version_match.group(1)
         print(f"Current version: {current_version}")
-        new_version = save_input("Enter new version: ").strip()
+        new_version = safe_input("Enter new version: ").strip()
         if len(new_version) == 0 or "." not in new_version:
             new_version = current_version
         content = content.replace(
@@ -124,12 +160,21 @@ if __name__ == "__main__":
     print(f"A total of {changed_count} package versions got changed!")
 
     # (optional) reinstall Cha
-    user_input = save_input(f"Do you like to reinstall Cha (Y/n)? ")
+    user_input = safe_input(f"Do you like to reinstall Cha (Y/n)? ")
     if user_input.lower() in ["y", "yes"]:
-        user_input = save_input('Install without "-e" option (Y/n)? ')
+        user_input = safe_input('Install without "-e" option (Y/n)? ')
         if user_input.lower() in ["y", "yes"]:
             print('> Installing Cha WITHOUT "-e" Option!')
             os.system("pip3 install .")
         else:
             print('> Installing Cha WITH "-e" Option!')
             os.system("pip3 install -e .")
+
+
+if __name__ == "__main__":
+    user_choice = safe_input("Run CHECKUP [1] or UPGRADE [2]? ").strip().lower()
+    if user_choice in ["2", "u", "upgrade", "update", "up", "setup"]:
+        update_setup()
+    else:
+        # NOTE: default to checkup function call to make it easier for the user(s)
+        checkup()
