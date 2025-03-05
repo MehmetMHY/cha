@@ -8,6 +8,7 @@ from cha import colors, scraper, utils, loading
 
 from cha import config
 
+# add on to the main config
 config.ANTHROPIC_DOCS_LINK = "https://docs.anthropic.com/en/docs/welcome"
 config.CLA_DEFAULT_MODEL = "claude-3-7-sonnet-20250219"
 config.CLA_MAX_TOKENS = 64_000

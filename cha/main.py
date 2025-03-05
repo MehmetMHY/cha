@@ -43,7 +43,6 @@ Chatting With OpenAI's '{selected_model}' Model
 - '{config.MULTI_LINE_SEND}' to end in multi-line mode
 - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
 - '{config.USE_CODE_DUMP}' to codedump a directory as context
-- '{config.BROWSE_MODE_TEXT} browse the web and provide context to the model'
                 """.strip().splitlines()
             )
         )
@@ -298,11 +297,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
                 continue
 
-            if message.startswith(config.BROWSE_MODE_TEXT):
-                data = utils.run_fast_search(message)
-                if data != None:
-                    messages.append({"role": "user", "content": data})
-
             # skip if user typed something blank
             if len("".join(str(message)).split()) == 0:
                 continue
@@ -430,12 +424,6 @@ def cli():
             help="Run answer search",
             action="store_true",
         )
-        parser.add_argument(
-            "-b",
-            "--browse_mode",
-            help="Run browse feature to answer your question",
-            action="store_true",
-        )
 
         args = parser.parse_args()
 
@@ -554,12 +542,6 @@ def cli():
             else:
                 print(colors.red("Invalid number selected. Exiting."))
                 return
-
-        if args.browse_mode == True:
-            output = utils.run_fast_search("")
-            if type(output) == str:
-                chatbot(selected_model, title_print_value, content_string=output)
-            sys.exit(1 if output is None else 0)
 
         if args.string and args.file:
             print(

@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.15.6",
+    version="0.15.7",
     packages=find_packages(),
     license="MIT",
-    description="A simple CLI tool for chatting, web scraping, and doing other CLI tasks with OpenAI's models",
+    description="A simple cli tool that simplifies interactions with AI models, offering features like chat, web scraping, and answer search. It supports multiple platforms and file types, enhancing productivity for all.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
