@@ -183,7 +183,6 @@ options:
                         Do a full code dump into one file in your current directory
   -a, -as, --answer_search
                         Run answer search
-  -b, --browse_mode     Run browse feature to answer your question
 ```
 
 ## Development
