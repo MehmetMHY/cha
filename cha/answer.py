@@ -249,7 +249,9 @@ def answer_search(
             get_partial_answer(client, big_model, splitted_search_results[0], prompt)
         )
     else:
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=len(splitted_search_results)
+        ) as executor:
             total = len(splitted_search_results)
             futures = [
                 executor.submit(get_partial_answer, client, big_model, chunk, prompt)

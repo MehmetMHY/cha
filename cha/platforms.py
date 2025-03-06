@@ -1,8 +1,6 @@
 from pydantic import BaseModel
 import importlib
-import json
 import copy
-import sys
 
 from cha import scraper, utils, config, colors, loading
 

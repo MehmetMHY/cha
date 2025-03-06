@@ -1,4 +1,3 @@
-from datetime import datetime as dt, timezone
 import statistics
 import subprocess
 import datetime
@@ -199,9 +198,6 @@ def transcribe_file(file_path):
 
     file_extension = "." + str(file_path.split(".")[-1]).lower()
 
-    if file_extension not in config.LOCAL_WHISPER_SUPPORTED_FORMATS:
-        raise Exception(f"File {file_path} is not a supported file extension")
-
     # suppress user warnings from Whisper
     warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -211,11 +207,12 @@ def transcribe_file(file_path):
     segments = result.get("segments", [])
     standardized_output = []
     for seg in segments:
+        speaker = "?"
         start_time = seg.get("start", 0.0)
         end_time = seg.get("end", 0.0)
         text = seg.get("text", "")
         standardized_output.append(
-            {"speaker": "?", "start": start_time, "end": end_time, "text": text}
+            {"speaker": speaker, "start": start_time, "end": end_time, "text": text}
         )
 
     return {

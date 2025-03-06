@@ -3,10 +3,9 @@ import json
 import time
 import sys
 import os
-from anthropic import Anthropic
-from cha import colors, scraper, utils, loading
 
-from cha import config
+from cha import config, colors, scraper, utils, loading
+from anthropic import Anthropic
 
 # add on to the main config
 config.ANTHROPIC_DOCS_LINK = "https://docs.anthropic.com/en/docs/welcome"
