@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.15.8",
+    version="0.15.9",
     packages=find_packages(),
     license="MIT",
     description="A simple cli tool that simplifies interactions with AI models, offering features like chat, web scraping, and answer search. It supports multiple platforms and file types, enhancing productivity for all.",
@@ -22,6 +22,7 @@ setup(
         "chardet==5.2.0",
         "pathspec==0.12.1",
         "openai-whisper==20240930",
+        "moviepy==2.1.2",
     ],
     python_requires=">=3.9.2",
     entry_points={

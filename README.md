@@ -160,7 +160,7 @@ In essence, your unique “cha” CLI usage falls into these main patterns:
 Both commands support and accept additional parameters. Here is the help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-b] [string ...]
+usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [string ...]
 
 Chat with an OpenAI GPT model.
 

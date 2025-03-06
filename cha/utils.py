@@ -1,3 +1,4 @@
+from contextlib import redirect_stdout, redirect_stderr
 import statistics
 import subprocess
 import datetime
@@ -20,6 +21,7 @@ import fitz
 
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
+from moviepy import VideoFileClip
 import tiktoken
 import requests
 
@@ -302,6 +304,11 @@ def load_most_files(
             )
             return None
 
+    elif file_ext in config.SUPPORTED_VIDEO_FORMATS:
+        content = extract_text_from_video(file_path)
+        if type(content) == dict:
+            return str(content.get("standard"))
+
     else:
         # get exact file encoding
         with open(file_path, "rb") as file:
@@ -407,3 +414,41 @@ Also note, that the file name is named "{filepath}" which might or might not pro
         return str(content)
     except Exception as e:
         return None
+
+
+def extract_audio_from_video(video_path):
+    try:
+        if not os.path.exists(video_path):
+            return None
+
+        audio_filepath = os.path.join(
+            tempfile.gettempdir(), f"audio_{str(uuid.uuid4())}.mp3"
+        )
+
+        video = VideoFileClip(video_path)
+
+        if video.audio is None:
+            video.close()
+            return None
+
+        video.audio.write_audiofile(audio_filepath)
+        video.close()
+
+        if os.path.exists(audio_filepath):
+            return audio_filepath
+    except Exception:
+        pass
+
+    return None
+
+
+def extract_text_from_video(video_path):
+    result = None
+    with open(os.devnull, "w") as fnull:
+        with redirect_stdout(fnull), redirect_stderr(fnull):
+            result = extract_audio_from_video(video_path)
+    output = None
+    if result != None and os.path.exists(result):
+        output = transcribe_file(result)
+        os.remove(result)
+    return output
