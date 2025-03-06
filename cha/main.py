@@ -1,7 +1,6 @@
 import sys
 
 try:
-    from urllib.parse import urlparse
     import argparse
     import time
     import json

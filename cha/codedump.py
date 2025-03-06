@@ -39,10 +39,6 @@ def read_file(file_path):
         return None
 
 
-def is_git_repo(path):
-    return os.path.isdir(os.path.join(path, ".git"))
-
-
 def get_git_tracked_and_untracked_files(repo_path):
     try:
         cmd = ["git", "ls-files", "--exclude-standard", "--cached", "--others"]
@@ -222,7 +218,7 @@ def generate_text_output(root_path, files_dict, excluded_files):
 
 def extract_code(dir_path):
     root_path = os.path.abspath(dir_path)
-    if is_git_repo(root_path):
+    if os.path.isdir(os.path.join(root_path, ".git")):
         rel_paths = get_git_tracked_and_untracked_files(root_path)
     else:
         rel_paths = get_all_files_with_ignore(root_path)

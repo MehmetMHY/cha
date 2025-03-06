@@ -128,7 +128,7 @@ Source: https://pypi.org/project/openai-whisper/
 | large  | 1,550M | ~10 GB | 1x    | ~7.9%      |
 | turbo  | 809M   | ~6 GB  | ~8x   | ~7.7%      |
 """
-DEFAULT_WHISPER_MODEL_NAME = "base"
+DEFAULT_WHISPER_MODEL_NAME = "tiny"
 LOCAL_WHISPER_SUPPORTED_FORMATS = [
     ".mp3",
     ".mp4",
