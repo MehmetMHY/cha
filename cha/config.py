@@ -138,6 +138,35 @@ LOCAL_WHISPER_SUPPORTED_FORMATS = [
     ".ogg",
     ".webm",
 ]
+SUPPORTED_VIDEO_FORMATS = [
+    ".mp4",
+    ".avi",
+    ".mov",
+    ".mkv",
+    ".webm",
+    ".flv",
+    ".wmv",
+    ".mpeg",
+    ".mpg",
+    ".m4v",
+    ".ogv",
+    ".3gp",
+    ".3g2",
+    ".asf",
+    ".vob",
+    ".rm",
+    ".m2v",
+    ".ts",
+    ".mxf",
+    ".f4v",
+    ".divx",
+    ".qt",
+    ".amv",
+    ".nsv",
+    ".roq",
+    ".svi",
+    ".mod",
+]
 
 # last updated on 02-12-2025
 SCRAPE_MODEL_NAME_FOR_PLATFORMS = DEFAULT_SEARCH_SMALL_MODEL
