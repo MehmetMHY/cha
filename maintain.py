@@ -68,6 +68,33 @@ def checkup():
         )
         total_fails += 1
 
+    try:
+        subprocess.run(
+            ["git", "--version"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        print("✓ Git found (for code-dump feature)")
+        total_successes += 1
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("✗ Git not installed or not on PATH")
+        total_fails += 1
+
+    if shutil.which("yt-dlp"):
+        print("✓ yt-dlp found (for YouTube transcripts)")
+        total_successes += 1
+    else:
+        print("✗ yt-dlp not installed or not on PATH")
+        total_fails += 1
+
+    if "OPENAI_API_KEY" in os.environ:
+        print("✓ OPENAI_API_KEY is set")
+        total_successes += 1
+    else:
+        print("✗ The OPENAI_API_KEY variable is missing")
+        total_fails += 1
+
     print(f"=====REPORT=====")
     print(f"Passes: {total_successes}")
     print(f"Fails: {total_fails}")
