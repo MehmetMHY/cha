@@ -246,6 +246,7 @@ THIRD_PARTY_PLATFORMS = {
     "anthropic": {
         "package_name": "cha.cla",
         "function": "anthropic",
+        "env_name": "ANTHROPIC_API_KEY",
         "parameters": {
             "select_model": True,
         },

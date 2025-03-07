@@ -3,12 +3,18 @@
 
 from pathlib import Path
 import subprocess
+import requests
 import shutil
 import time
 import sys
 import os
 import re
 
+try:
+    from cha import config
+    LOADED_CHA_PKGS = True
+except:
+    LOADED_CHA_PKGS = False
 
 def safe_input(starting_text):
     try:
@@ -19,8 +25,37 @@ def safe_input(starting_text):
 
 
 def checkup():
-    total_successes = 0
-    total_fails = 0
+    # check if required environment variables are loaded
+    try:
+        from cha import config
+        for platform in config.THIRD_PARTY_PLATFORMS:
+            env_name = str(config.THIRD_PARTY_PLATFORMS[platform].get("env_name"))
+            if env_name in os.environ:
+                print(f"✓ (OPTIONAL) {env_name} is set")
+                continue
+            print(f"! (OPTIONAL) {env_name} variable is missing")
+
+        if "OPENAI_API_KEY" in os.environ:
+            print("✓ OPENAI_API_KEY is set")
+        else:
+            print("✗ OPENAI_API_KEY variable is missing")
+    except:
+        pass
+
+    # check if the local ollama client is running or not
+    try:
+        from cha import config
+
+        if "ollama" not in config.THIRD_PARTY_PLATFORMS:
+            raise Exception("Ollama not included in platform config")
+        url = config.THIRD_PARTY_PLATFORMS["ollama"]["models"]["url"]
+        response = requests.get(url, timeout=3)
+        if response.status_code == 200:
+            print("✓ Ollama is running locally")
+        else:
+            print("! Ollama is not running locally")
+    except:
+        pass
 
     # check if ffmpeg is installed or not
     try:
@@ -31,10 +66,9 @@ def checkup():
             stderr=subprocess.PIPE,
         )
         print("✓ ffmpeg seems to be installed")
-        total_successes += 1
+
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("✗ ffmpeg is not installed, please install it: https://ffmpeg.org/")
-        total_fails += 1
 
     # check if whisper model is installed and working
     try:
@@ -48,10 +82,9 @@ def checkup():
 
             whisper.load_model(config.DEFAULT_WHISPER_MODEL_NAME)
         print(f"✓ Whisper model weight exists at {whisper_model_weight_file_path}")
-        total_successes += 1
+
     except Exception as e:
         print(f"✗ failed to find Whisper model {e}")
-        total_fails += 1
 
     # check to make sure at least one of the supported Terminal IDEs are installed
     supported_terminal_ide_installed = False
@@ -61,13 +94,12 @@ def checkup():
             break
     if supported_terminal_ide_installed:
         print(f"✓ Supported Terminal IDE is installed")
-        total_successes += 1
     else:
         print(
             f"✗ None of the supported terminal IDE(s) are installed: {config.SUPPORTED_TERMINAL_IDES}"
         )
-        total_fails += 1
 
+    # check if git is installed or not
     try:
         subprocess.run(
             ["git", "--version"],
@@ -76,29 +108,14 @@ def checkup():
             stderr=subprocess.PIPE,
         )
         print("✓ Git found (for code-dump feature)")
-        total_successes += 1
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("✗ Git not installed or not on PATH")
-        total_fails += 1
 
+    # check if yt-dlp is installed, correctly, or not
     if shutil.which("yt-dlp"):
         print("✓ yt-dlp found (for YouTube transcripts)")
-        total_successes += 1
     else:
         print("✗ yt-dlp not installed or not on PATH")
-        total_fails += 1
-
-    if "OPENAI_API_KEY" in os.environ:
-        print("✓ OPENAI_API_KEY is set")
-        total_successes += 1
-    else:
-        print("✗ The OPENAI_API_KEY variable is missing")
-        total_fails += 1
-
-    print(f"=====REPORT=====")
-    print(f"Passes: {total_successes}")
-    print(f"Fails: {total_fails}")
-    print(f"Total: {total_successes + total_fails}")
 
 
 def update_setup():
