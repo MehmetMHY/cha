@@ -5,16 +5,10 @@ from pathlib import Path
 import subprocess
 import requests
 import shutil
-import time
 import sys
 import os
 import re
 
-try:
-    from cha import config
-    LOADED_CHA_PKGS = True
-except:
-    LOADED_CHA_PKGS = False
 
 def safe_input(starting_text):
     try:
@@ -28,8 +22,11 @@ def checkup():
     # check if required environment variables are loaded
     try:
         from cha import config
+
         for platform in config.THIRD_PARTY_PLATFORMS:
             env_name = str(config.THIRD_PARTY_PLATFORMS[platform].get("env_name"))
+            if env_name.lower().strip() == "ollama":
+                continue
             if env_name in os.environ:
                 print(f"✓ (OPTIONAL) {env_name} is set")
                 continue
@@ -65,39 +62,38 @@ def checkup():
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        print("✓ ffmpeg seems to be installed")
-
+        print("✓ Tool ffmpeg seems to be installed")
     except (subprocess.CalledProcessError, FileNotFoundError):
-        print("✗ ffmpeg is not installed, please install it: https://ffmpeg.org/")
+        print("✗ Tool ffmpeg is not installed, please install it: https://ffmpeg.org/")
 
     # check if whisper model is installed and working
     try:
         from cha import config
+        import whisper
 
         whisper_model_weight_file_path = (
             f"{str(Path.home())}/.cache/whisper/{config.DEFAULT_WHISPER_MODEL_NAME}.pt"
         )
         if os.path.isfile(whisper_model_weight_file_path) == False:
-            import whisper
-
             whisper.load_model(config.DEFAULT_WHISPER_MODEL_NAME)
         print(f"✓ Whisper model weight exists at {whisper_model_weight_file_path}")
-
     except Exception as e:
         print(f"✗ failed to find Whisper model {e}")
 
     # check to make sure at least one of the supported Terminal IDEs are installed
-    supported_terminal_ide_installed = False
-    for editor in config.SUPPORTED_TERMINAL_IDES:
-        if shutil.which(editor):
-            supported_terminal_ide_installed = True
-            break
-    if supported_terminal_ide_installed:
-        print(f"✓ Supported Terminal IDE is installed")
-    else:
-        print(
-            f"✗ None of the supported terminal IDE(s) are installed: {config.SUPPORTED_TERMINAL_IDES}"
-        )
+    try:
+        from cha import config
+
+        test_failed = True
+        if any(shutil.which(editor) for editor in config.SUPPORTED_TERMINAL_IDES):
+            print("✓ Supported Terminal IDE is installed")
+            test_failed = False
+        if test_failed:
+            raise Exception(
+                f"user's systems has none of the supported terminal text editor(s) installed"
+            )
+    except:
+        print(f"✗ None of the supported terminal IDE(s) are installed")
 
     # check if git is installed or not
     try:
