@@ -20,7 +20,7 @@ Here is some additional context that may be useful:
 ```
 
 Please answer the following question using both your existing knowledge and the context provided above:
-```md
+```
 {prompt}
 ```
 
@@ -30,7 +30,7 @@ Instructions:
 3. Include inline citations using square brackets, e.g., [1], in IEEE format for any referenced content. Do not include anything else (url, title, description, etc).
 4. Make sure there is a space between a word and the referenced content. Meaning, "word[1]" is NOT ok, rather it should be "word [1]"
 5. Ensure all citations contain a URL and are formatted correctly.
-6. Present your final answer in markdown format.
+6. Present your final answer as plain text, without using Markdown-specific tags or formatting (e.g., no ```markdown, or similar tags).
 
 IEEE Citation Format Example:
 - [1] Author(s), "Article Title," *Journal Title*, vol. number, no. number, pp. pages, Month, Year. [Online]. Available: URL

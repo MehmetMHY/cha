@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.15.10",
+    version="0.15.11",
     packages=find_packages(),
     license="MIT",
     description="A simple cli tool that simplifies interactions with AI models, offering features like chat, web scraping, and answer search. It supports multiple platforms and file types, enhancing productivity for all.",
@@ -16,7 +16,7 @@ setup(
         "youtube-transcript-api==0.6.3",
         "PyMuPDF==1.25.3",
         "tiktoken==0.9.0",
-        "duckduckgo_search==7.5.0",
+        "duckduckgo_search==7.5.1",
         "python-docx==1.1.2",
         "openpyxl==3.1.5",
         "chardet==5.2.0",
