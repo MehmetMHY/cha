@@ -36,7 +36,6 @@ Chatting With OpenAI's '{selected_model}' Model
 - '{config.SAVE_CHAT_HISTORY}' to save chat history
 - '{config.LOAD_MESSAGE_CONTENT}' to load a file
 - '{config.HELP_PRINT_OPTIONS_KEY}' to list all options
-- '{config.RUN_ANSWER_FEATURE}' to run answer search
 - '{config.TEXT_EDITOR_INPUT_MODE}' for text-editor input mode
 - '{config.MULTI_LINE_MODE_TEXT}' for single/multi-line switching
 - '{config.MULTI_LINE_SEND}' to end in multi-line mode
@@ -273,29 +272,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     finally:
                         loading.stop_loading()
 
-            # check for an answer-search command
-            if message.startswith(config.RUN_ANSWER_FEATURE):
-                user_input_mode = True
-                answer_prompt = None
-                if len(message) > len(config.RUN_ANSWER_FEATURE):
-                    answer_prompt_draft = message[
-                        len(config.RUN_ANSWER_FEATURE) :
-                    ].strip()
-                    if len(answer_prompt_draft) > 10:
-                        user_input_mode = False
-                        answer_prompt = answer_prompt_draft
-
-                message = utils.run_answer_search(
-                    client=openai_client,
-                    prompt=answer_prompt,
-                    user_input_mode=user_input_mode,
-                )
-
-                if message is not None:
-                    messages.append({"role": "user", "content": message})
-
-                continue
-
             # skip if user typed something blank
             if len("".join(str(message)).split()) == 0:
                 continue
@@ -362,7 +338,9 @@ def cli():
     global client
 
     try:
-        parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
+        parser = argparse.ArgumentParser(
+            description="A simple cli tool that simplifies interactions with AI models"
+        )
         parser.add_argument(
             "-pt",
             "--print_title",
@@ -416,13 +394,6 @@ def cli():
             const=True,
             help="Do a full code dump into one file in your current directory",
         )
-        parser.add_argument(
-            "-a",
-            "-as",
-            "--answer_search",
-            help="Run answer search",
-            action="store_true",
-        )
 
         args = parser.parse_args()
 
@@ -447,12 +418,6 @@ def cli():
             else:
                 print(content)
             return
-
-        if args.answer_search == True:
-            output = utils.run_answer_search(
-                client=openai_client, prompt=None, user_input_mode=True
-            )
-            sys.exit(1 if output is None else 0)
 
         title_print_value = args.print_title
         selected_model = args.model

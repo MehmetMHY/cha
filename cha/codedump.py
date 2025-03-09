@@ -238,9 +238,7 @@ def extract_code(dir_path):
 
     excluded_files = interactive_exclusion(root_path, files_dict)
     output_text = generate_text_output(root_path, files_dict, excluded_files)
-    token_count = utils.count_tokens(
-        output_text, config.DEFAULT_SEARCH_BIG_MODEL, False
-    )
+    token_count = utils.count_tokens(output_text, config.CHA_DEFAULT_MODEL, False)
 
     print(colors.magenta(f"Token Count:"), colors.red(f"~{token_count}"))
 

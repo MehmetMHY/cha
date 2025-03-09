@@ -15,13 +15,11 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI.
 - **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
-- **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
 - **Switch Between Models**: Easily switch between models during a conversation.
 - **Code Dump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
-- **Browse Mode**: Enables fast automated web browsing to gather additional context for enhancements in response to user queries. It's quicker than the answer search engine, making it ideal for quick search-based questions.
 
 ## Getting Started
 
@@ -78,15 +76,6 @@ brew install ffmpeg
 
 - `cha --code_dump`
 - `cha -d`
-
-#### Answer Search
-
-- `cha -a`
-- `cha -a "<question>"`
-- Example:
-  ```bash
-  cha -a "what is the goal of life"
-  ```
 
 #### File Input with -f
 
@@ -149,7 +138,6 @@ In essence, your unique “cha” CLI usage falls into these main patterns:
 
 - Running “cha” with a direct query.
 - Doing code dumps or debug dumps (-code_dump, -c, -d).
-- Performing answer searches (-a).
 - Feeding in file input (-f).
 - Specifying or switching models (-m, -sm).
 - Running OCR operations (-ocr).
@@ -160,9 +148,9 @@ In essence, your unique “cha” CLI usage falls into these main patterns:
 Both commands support and accept additional parameters. Here is the help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [string ...]
+usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [string ...]
 
-Chat with an OpenAI GPT model.
+A simple cli tool that simplifies interactions with AI models
 
 positional arguments:
   string                Non-interactive mode, feed a string into the model
@@ -177,12 +165,9 @@ options:
   -t, --token_count     Count tokens for the input file or string
   -ocr OCR, --ocr OCR   Given a file path, print the content of that file as text though Cha's main file loading logic
   -p [PLATFORM], --platform [PLATFORM]
-                        Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag
-                        with "-p" for True
+                        Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag with "-p" for True
   -d [CODE_DUMP], --code_dump [CODE_DUMP]
                         Do a full code dump into one file in your current directory
-  -a, -as, --answer_search
-                        Run answer search
 ```
 
 ## Development

@@ -5,7 +5,7 @@ setup(
     version="0.15.11",
     packages=find_packages(),
     license="MIT",
-    description="A simple cli tool that simplifies interactions with AI models, offering features like chat, web scraping, and answer search. It supports multiple platforms and file types, enhancing productivity for all.",
+    description="A simple cli tool that simplifies interactions with AI models, offering features like chat, web scraping, etc. It supports multiple platforms and file types, enhancing productivity for all.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
