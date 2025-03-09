@@ -6,7 +6,7 @@ try:
     import json
     import os
 
-    from cha import scraper, colors, utils, config, loading, platforms, codedump
+    from cha import scraper, colors, utils, config, loading, codedump
     from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
@@ -381,13 +381,6 @@ def cli():
             help="Given a file path, print the content of that file as text though Cha's main file loading logic",
         )
         parser.add_argument(
-            "-p",
-            "--platform",
-            nargs="?",
-            const=True,
-            help='Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag with "-p" for True',
-        )
-        parser.add_argument(
             "-d",
             "--code_dump",
             nargs="?",
@@ -421,44 +414,6 @@ def cli():
 
         title_print_value = args.print_title
         selected_model = args.model
-
-        if args.platform or args.platform == True:
-            try:
-                print(
-                    colors.red(
-                        "WARNING: Switching platforms is experimental and will break features!"
-                    )
-                )
-                API_KEY_NAME = None
-                BASE_URL_VALUE = None
-                if type(args.platform) == str:
-                    platform_values = str(args.platform).split("|")
-                    API_KEY_NAME = platform_values[1]
-                    BASE_URL_VALUE = platform_values[0]
-                if args.platform == True:
-                    platform_values = platforms.auto_select_a_platform(
-                        client=openai_client
-                    )
-                    if platform_values.get("type") == "package_call":
-                        return
-                    API_KEY_NAME = platform_values["env_name"]
-                    BASE_URL_VALUE = platform_values["base_url"]
-                    selected_model = platform_values["picked_model"]
-
-                # NOTE: (2-13-2025) this exists to account for cases like this: https://ollama.com/blog/openai-compatibility
-                API_KEY_VALUE = API_KEY_NAME
-                if API_KEY_VALUE in os.environ:
-                    API_KEY_VALUE = os.environ.get(API_KEY_NAME)
-
-                client = OpenAI(
-                    api_key=API_KEY_VALUE,
-                    base_url=BASE_URL_VALUE,
-                )
-
-                print(colors.magenta(f"Platform switched to {BASE_URL_VALUE}"))
-            except Exception as e:
-                print(colors.red(f"Failed to switch platform due to {e}"))
-                return
 
         if args.token_count:
             text, content_mode = None, None

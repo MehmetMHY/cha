@@ -17,7 +17,6 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
-- **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
 - **Switch Between Models**: Easily switch between models during a conversation.
 - **Code Dump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
 
@@ -102,16 +101,6 @@ brew install ffmpeg
   cha -ocr meme.jpg > output.txt
   ```
 
-#### Platform Switching (-p) and Model Combined
-
-- `cha -p "<PLATFORM_OR_URL|API_KEY_ENV>" -m "<MODEL_NAME>"`
-- Examples:
-  ```bash
-  cha -p "https://api.deepseek.com|DEEP_SEEK_API_KEY" -m "deepseek-chat"
-  cha -p "llama3-70b-8192|GROQ_API_KEY" -m "llama3-70b-8192"
-  ```
-- Dynamic platform switching with no need for the user to provide a base_url and model name: `cha -p`
-
 #### Model Autoselection (-sm)
 
 - `cha -sm`
@@ -141,14 +130,13 @@ In essence, your unique “cha” CLI usage falls into these main patterns:
 - Feeding in file input (-f).
 - Specifying or switching models (-m, -sm).
 - Running OCR operations (-ocr).
-- Switching platforms (-p).
 - Checking token counts (-t).
 - Asking a broad variety of how-to / make-me requests directly after “cha …”.
 
 Both commands support and accept additional parameters. Here is the help page for reference:
 
 ```bash
-usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [string ...]
+usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-d [CODE_DUMP]] [string ...]
 
 A simple cli tool that simplifies interactions with AI models
 
@@ -164,8 +152,6 @@ options:
   -f FILE, --file FILE  Filepath to file that will be sent to the model (text only)
   -t, --token_count     Count tokens for the input file or string
   -ocr OCR, --ocr OCR   Given a file path, print the content of that file as text though Cha's main file loading logic
-  -p [PLATFORM], --platform [PLATFORM]
-                        Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag with "-p" for True
   -d [CODE_DUMP], --code_dump [CODE_DUMP]
                         Do a full code dump into one file in your current directory
 ```
@@ -189,26 +175,6 @@ For those interested in contributing or experimenting with Cha:
    ```bash
    python3 maintain.py
    ```
-
-## Other Platform(s) Compatibility
-
-Cha now supports switching between AI platforms using the `--platform` argument, enabling interoperability with OpenAI-compatible APIs.
-
-```bash
-cha -p
-```
-
-Running `cha -p` opens a menu to select a platform. To skip the menu, provide the base URL, environment variable name, and model name directly. For example, to use the `DeepSeek-V3` model from `together.ai`:
-
-```bash
-# Get and set the provider's API key env variable
-export TOGETHER_API_KEY="..."
-
-# Run cha with a different provider/platform
-cha -p "https://api.together.xyz/v1|TOGETHER_API_KEY" -m "deepseek-ai/DeepSeek-V3"
-```
-
-Also, you can refer to the [config.py](./cha/config.py) file and the `THIRD_PARTY_PLATFORMS` variable to see all the other platforms you can try and/or use.
 
 ## Contributing
 

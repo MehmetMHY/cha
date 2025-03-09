@@ -19,41 +19,6 @@ def safe_input(starting_text):
 
 
 def checkup():
-    # check if required environment variables are loaded
-    try:
-        from cha import config
-
-        for platform in config.THIRD_PARTY_PLATFORMS:
-            env_name = str(config.THIRD_PARTY_PLATFORMS[platform].get("env_name"))
-            if env_name.lower().strip() == "ollama":
-                continue
-            if env_name in os.environ:
-                print(f"✓ (OPTIONAL) {env_name} is set")
-                continue
-            print(f"! (OPTIONAL) {env_name} variable is missing")
-
-        if "OPENAI_API_KEY" in os.environ:
-            print("✓ OPENAI_API_KEY is set")
-        else:
-            print("✗ OPENAI_API_KEY variable is missing")
-    except:
-        pass
-
-    # check if the local ollama client is running or not
-    try:
-        from cha import config
-
-        if "ollama" not in config.THIRD_PARTY_PLATFORMS:
-            raise Exception("Ollama not included in platform config")
-        url = config.THIRD_PARTY_PLATFORMS["ollama"]["models"]["url"]
-        response = requests.get(url, timeout=3)
-        if response.status_code == 200:
-            print("✓ Ollama is running locally")
-        else:
-            print("! Ollama is not running locally")
-    except:
-        pass
-
     # check if ffmpeg is installed or not
     try:
         subprocess.run(
