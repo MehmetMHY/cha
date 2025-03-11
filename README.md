@@ -200,7 +200,7 @@ For those interested in contributing or experimenting with Cha:
 4. **(Optional) Update Cha's "setup.py" or run system checks to ensure proper functionality**: Run the following command in the same directory as Cha's code:
 
    ```bash
-   python3 maintain.py
+   python3 upkeep.py
    ```
 
 ## Other Platform(s) Compatibility

@@ -212,9 +212,12 @@ def update_setup():
 
 
 if __name__ == "__main__":
-    user_choice = safe_input("Run CHECKUP [1] or UPGRADE [2]? ").strip().lower()
-    if user_choice in ["2", "u", "upgrade", "update", "up", "setup"]:
+    print("OPTIONS")
+    print("  1) CHECKUP")
+    print("  2) UPGRADE")
+    choice = safe_input("Choice: ").strip().lower()
+
+    if choice in ["2", "u", "upgrade", "update", "up", "setup"]:
         update_setup()
     else:
-        # NOTE: default to checkup function call to make it easier for the user(s)
         checkup()
