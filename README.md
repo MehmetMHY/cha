@@ -15,12 +15,13 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI.
 - **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
-- **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution.
+- **Answer Search (Deep Search)**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
 - **Switch Between Models**: Easily switch between models during a conversation.
 - **Code Dump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
+- **Quick Web Search**: Well chatting you can ask a question/prompt and have Cha browse the web real quick before answering your question.
 
 ## Getting Started
 
@@ -87,6 +88,18 @@ brew install ffmpeg
   cha -a "what is the goal of life"
   ```
 
+#### Quick Web Search
+
+- Note: This feature can only be ran well in a interactive chat
+- Example:
+  ```bash
+  # go into interactive chat mode
+  ~/ cha
+  User: !b What is the goal of life?
+  The goal of life is subjective, often involving personal growth and fulfillment. Philosophers like Camus suggest creating personal meaning by embracing lifes experiences [1](https://positivepsychology.com/find-your-purpose-of-life/)...
+  User: ^C
+  ```
+
 #### File Input with -f
 
 - `cha -f <FILE>`
@@ -148,7 +161,8 @@ In essence, your unique “cha” CLI usage falls into these main patterns:
 
 - Running “cha” with a direct query.
 - Doing code dumps or debug dumps (-code_dump, -c, -d).
-- Performing answer searches (-a).
+- Performing deep answer searches (-a).
+- Perform a quick web search before answering your question/prompt (-b).
 - Feeding in file input (-f).
 - Specifying or switching models (-m, -sm).
 - Running OCR operations (-ocr).
