@@ -195,4 +195,5 @@ codedump*.txt
 codedump_*.txt
 .sandbox/
 .future
+.plans.md
 

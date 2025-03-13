@@ -88,18 +88,6 @@ brew install ffmpeg
   cha -a "what is the goal of life"
   ```
 
-#### Quick Web Search
-
-- Note: This feature can only be ran well in a interactive chat
-- Example:
-  ```bash
-  # go into interactive chat mode
-  ~/ cha
-  User: !b What is the goal of life?
-  The goal of life is subjective, often involving personal growth and fulfillment. Philosophers like Camus suggest creating personal meaning by embracing lifes experiences [1](https://positivepsychology.com/find-your-purpose-of-life/)...
-  User: ^C
-  ```
-
 #### File Input with -f
 
 - `cha -f <FILE>`
