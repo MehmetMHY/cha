@@ -5,64 +5,21 @@ import os
 
 from cha import scraper, colors, utils, config, loading, answer
 
-if __name__ == "__main__":
-    from openai import OpenAI
-    import random
 
-    client = OpenAI(
-        api_key=os.environ.get("OPENAI_API_KEY"),
+def quick_search(user_input, min_search_result=3):
+    results = answer.duckduckgo_search(
+        search_input=user_input,
+        count=min_search_result,
+        region="wt-wt",
+        safesearch="off",
+        timelimit="none",
     )
 
-    user_input = input("Question: ")
-
-    start_time = time.time()
-
-    search_loop_delay_secs = 0.1
-    default_model = "gpt-4o-mini"
-    min_search_result = 3
-    default_result_count = 2
-    time_limit_options = ["none", "y", "m", "w", "d"]
-    i = 0
-
-    search_params = answer.generate_search_queries(
-        client=client,
-        user_prompt=user_input,
-        model_name=default_model,
-        min_results=min_search_result,
-    )
-
-    random.shuffle(search_params)
-
-    search_results = {}
     urls = []
-    for query_text in search_params:
-        query = {
-            "search_input": query_text,
-            "count": default_result_count,
-            "region": "wt-wt",
-            "safesearch": "off",
-            "timelimit": time_limit_options[i],
-        }
-
-        results = answer.duckduckgo_search(
-            search_input=query["search_input"],
-            count=query["count"],
-            region=query["region"],
-            safesearch=query["safesearch"],
-            timelimit=query["timelimit"],
-        )
-
-        if isinstance(results, dict) and "error" in results:
-            continue
-
-        for result in results:
-            url = str(result["url"])
-            if url not in urls:
-                urls.append(url)
-            search_results[url] = result
-
-        i += 1
-        time.sleep(search_loop_delay_secs)
+    for result in results:
+        url = str(result["url"])
+        if url not in urls:
+            urls.append(url)
 
     # TODO: suppress all untraceable print statements by muting all stdout prints
     with open(os.devnull, "w") as fnull:
@@ -70,16 +27,44 @@ if __name__ == "__main__":
             scrapped_data = scraper.get_all_htmls(urls)
 
     output = []
-    for url in scrapped_data:
-        if url in search_results:
-            search_results[url]["content"] = scrapped_data[url]
-            output.append(search_results[url])
+    for result in results:
+        url = str(result["url"])
+        description = str(result.get("description"))
+        content = None
+        if url in scrapped_data:
+            content = str(scrapped_data[url])
+        if content == None or len(description) >= len(content):
+            content = str(description)
+        output.append({"url": url, "content": content})
+
+    return f"""
+Here is the user's prompt/question:
+```
+{user_input}
+```
+
+Here is some context extracted from the internet:
+```
+{str(output)}
+```
+
+Knowing this context and your own internal knowledge, please answer the user's prompt/question as best as you can.
+""".strip()
+
+
+if __name__ == "__main__":
+    user_input = input("Question: ")
+
+    start_time = time.time()
+
+    output = quick_search(user_input)
 
     runtime = time.time() - start_time
 
     print("Output:")
-    print(json.dumps(output, indent=4))
-
-    token_count = utils.count_tokens(str(output), "gpt-4o")
-    print(f"Token Count: {token_count}")
+    print("===============")
+    print(output)
+    print("===============")
+    print()
+    print("Tokens:", utils.count_tokens(str(output), "gpt-4o"))
     print(f"Runtime: {runtime} seconds")
