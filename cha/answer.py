@@ -370,11 +370,18 @@ Here is the user's prompt/question:
 ```
 
 Here is some context extracted from the internet:
-```
-{str(output)}
+```json
+{output}
 ```
 
-Knowing this context and your own internal knowledge, please answer the user's prompt/question as best as you can.
-    """.strip()
+Instructions:
+1. Use your own knowledge and the context provided above to answer the question.
+2. Reference relevant information from the context above where appropriate.
+3. Include inline citations using square brackets, e.g., [1], formatted in IEEE style for any referenced content.
+4. Ensure all citations contain a URL and are formatted correctly.
+5. Present your final answer as plain text, without using Markdown-specific tags or formatting.
+
+Your answer should be clear, concise, and well-structured!
+""".strip()
     except:
         return None
