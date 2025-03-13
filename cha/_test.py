@@ -17,18 +17,24 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
+    search_loop_delay_secs = 0.1
+    default_model = "gpt-4o-mini"
+    min_search_result = 3
+    default_result_count = 2
+    time_limit_options = ["none", "y", "m", "w", "d"]
+    i = 0
+
     search_params = answer.generate_search_queries(
-        client=client, user_prompt=user_input, model_name="gpt-4o-mini", min_results=5
+        client=client,
+        user_prompt=user_input,
+        model_name=default_model,
+        min_results=min_search_result,
     )
 
     random.shuffle(search_params)
 
     search_results = {}
     urls = []
-    default_result_count = 2
-    time_limit_options = ["d", "w", "m", "y", "none"]
-    i = 0
-
     for query_text in search_params:
         query = {
             "search_input": query_text,
@@ -56,7 +62,7 @@ if __name__ == "__main__":
             search_results[url] = result
 
         i += 1
-        time.sleep(0.1)
+        time.sleep(search_loop_delay_secs)
 
     # TODO: suppress all untraceable print statements by muting all stdout prints
     with open(os.devnull, "w") as fnull:
