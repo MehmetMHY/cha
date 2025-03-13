@@ -6,7 +6,7 @@ try:
     import json
     import os
 
-    from cha import scraper, colors, utils, config, loading, platforms, codedump
+    from cha import scraper, colors, utils, config, loading, platforms, codedump, answer
     from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
@@ -42,6 +42,7 @@ Chatting With OpenAI's '{selected_model}' Model
 - '{config.MULTI_LINE_SEND}' to end in multi-line mode
 - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
 - '{config.USE_CODE_DUMP}' to codedump a directory as context
+- `{config.QUICK_WEB_SEARCH_ANSWER}` answer prompt with a quick web search
                 """.strip().splitlines()
             )
         )
@@ -272,6 +273,17 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         message = scraper.scraped_prompt(message)
                     finally:
                         loading.stop_loading()
+
+            if (
+                message.startswith(config.QUICK_WEB_SEARCH_ANSWER)
+                and len(message) > len(str(config.QUICK_WEB_SEARCH_ANSWER)) * 2
+            ):
+                message = message.replace(config.QUICK_WEB_SEARCH_ANSWER, "").strip()
+                new_message = answer.quick_search(user_input=message)
+                if new_message == None:
+                    print(colors.red(f"Failed to do a quick web search"))
+                else:
+                    message = new_message
 
             # check for an answer-search command
             if message.startswith(config.RUN_ANSWER_FEATURE):
