@@ -152,7 +152,7 @@ def answer_search(
     time_delay_seconds=config.DEFAULT_SEARCH_TIME_DELAY_SECONDS,
     token_limit=config.DEFAULT_SEARCH_MAX_TOKEN_LIMIT,
     user_input_mode=False,
-    fast_token_count_mode=True,
+    fast_token_count_mode=False,
 ):
     if user_input_mode or prompt == None:
         print(colors.red(colors.underline(f"Answer Search - User Input")))
@@ -180,10 +180,19 @@ def answer_search(
 
     loading.start_loading("Browsing", "circles")
 
+    # NOTE: the time/age limit options for the search results
+    time_limit_options = ["none", "y", "m", "w", "d"]
+
     search_results = []
     urls = []
+    i = 0
     for query in search_queries:
-        results = duckduckgo_search(query, result_count)
+        if i >= len(time_limit_options):
+            i = 0
+
+        results = duckduckgo_search(
+            search_input=query, count=result_count, timelimit=time_limit_options[i]
+        )
 
         # prevent surpassing rate limit
         time.sleep(time_delay_seconds)
@@ -196,6 +205,8 @@ def answer_search(
             if url and not any(existing["url"] == url for existing in search_results):
                 search_results.append(result)
                 urls.append(url)
+
+        i += 1
 
     loading.stop_loading()
 
