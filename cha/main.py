@@ -274,10 +274,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     finally:
                         loading.stop_loading()
 
-            if (
-                message.startswith(config.QUICK_WEB_SEARCH_ANSWER)
-                and len(message) > len(str(config.QUICK_WEB_SEARCH_ANSWER)) * 2
-            ):
+            if message.startswith(config.QUICK_WEB_SEARCH_ANSWER):
+                if len(message) <= len(str(config.QUICK_WEB_SEARCH_ANSWER)) * 2:
+                    print(
+                        colors.red(
+                            f"Usage: {config.QUICK_WEB_SEARCH_ANSWER} <question>"
+                        )
+                    )
+                    continue
                 message = message.replace(config.QUICK_WEB_SEARCH_ANSWER, "").strip()
                 new_message = answer.quick_search(user_input=message)
                 if new_message == None:
