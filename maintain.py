@@ -178,14 +178,18 @@ def update_setup():
                 if "Available versions:" in line:
                     latest_version = line.split(":")[1].strip().split(",")[0].strip()
                     if latest_version != current_version:
-                        print(
-                            f"Updating {package}: {current_version} -> {latest_version}"
+                        update_input = safe_input(
+                            f"Update {package} from {current_version} to {latest_version} (Y/n)? "
                         )
-                        content = content.replace(
-                            f'"{package}=={current_version}"',
-                            f'"{package}=={latest_version}"',
-                        )
-                        changed_count += 1
+                        if update_input.lower() in ["y", "yes", ""]:
+                            print(
+                                f"Updating {package}: {current_version} -> {latest_version}"
+                            )
+                            content = content.replace(
+                                f'"{package}=={current_version}"',
+                                f'"{package}=={latest_version}"',
+                            )
+                            changed_count += 1
                     break
 
         except subprocess.CalledProcessError:
