@@ -120,7 +120,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     model_name=config.CHA_DEFAULT_IMAGE_MODEL,
                 )
             except:
-                raise Exception(f"failed to load file {filepath}")
+                raise Exception(f"Failed to load file {filepath}")
             finally:
                 loading.stop_loading()
         else:
