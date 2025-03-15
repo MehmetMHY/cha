@@ -14,6 +14,8 @@ import re
 import os
 
 from docx import Document
+from PIL import Image
+import pytesseract
 import openpyxl
 import chardet
 import base64
@@ -198,8 +200,6 @@ def transcribe_file(file_path):
     if type(file_path) != str:
         raise Exception("Inputted file_path is NOT type string")
 
-    file_extension = "." + str(file_path.split(".")[-1]).lower()
-
     # suppress user warnings from Whisper
     warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -230,6 +230,8 @@ def load_most_files(
     file_ext = os.path.splitext(file_path)[1].lower()
 
     if file_ext in [".jpg", ".jpeg", ".png"]:
+        traditional_method = pytesseract.image_to_string(Image.open(file_path))
+
         with open(file_path, "rb") as image_file:
             base64_image = base64.b64encode(image_file.read()).decode("utf-8")
 
@@ -253,7 +255,25 @@ def load_most_files(
             model=model_name, messages=chat_history
         )
 
-        return response.choices[0].message.content
+        llm_method = response.choices[0].message.content
+
+        return f"""
+The LLM model "{model_name}" extracted the following from the image:
+
+```
+{llm_method}
+```
+
+The traditional, None-LLM method, extracted the following from the image:
+
+```
+{traditional_method}
+```
+
+Either methods are perfect, they both have their pros and cons. That is why,
+both methods were utilized and their outputs were presented. So place your,
+judgement based on both methods.
+""".strip()
 
     elif file_ext == ".pdf":
         document = fitz.open(file_path)
