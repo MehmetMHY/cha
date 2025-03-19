@@ -42,10 +42,10 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 
 3. **Install other dependencies**:
 
-```bash
-# checkout docs for install details different systems: https://ffmpeg.org/
-brew install ffmpeg
-```
+   ```bash
+   # checkout docs for install details different systems: https://ffmpeg.org/
+   brew install ffmpeg
+   ```
 
 ### Configuration
 

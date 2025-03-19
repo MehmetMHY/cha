@@ -448,9 +448,12 @@ def cli():
 
         if args.ocr != None:
             content = None
-            detected_urls = len(scraper.extract_urls(str(args.ocr)))
-            if detected_urls > 0:
-                content = scraper.get_all_htmls(str(args.ocr))
+
+            detected_urls = scraper.extract_urls(str(args.ocr))
+            if len(detected_urls) > 0:
+                for i in range(len(detected_urls)):
+                    detected_urls[i] = str(detected_urls[i]).replace("\\", "")
+                content = scraper.get_all_htmls(detected_urls)
             else:
                 content = utils.act_as_ocr(
                     client=openai_client, filepath=str(args.ocr), prompt=None
