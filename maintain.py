@@ -76,7 +76,7 @@ def checkup():
         )
         if os.path.isfile(whisper_model_weight_file_path) == False:
             whisper.load_model(config.DEFAULT_WHISPER_MODEL_NAME)
-        print(f"✓ Whisper model weight exists at {whisper_model_weight_file_path}")
+        print(f"✓ Whisper model found: {whisper_model_weight_file_path}")
     except Exception as e:
         print(f"✗ failed to find Whisper model {e}")
 
@@ -216,9 +216,9 @@ def update_setup():
 
 
 if __name__ == "__main__":
-    print("OPTIONS")
-    print("  1) CHECKUP")
-    print("  2) UPGRADE")
+    print("\033[4m" + "OPTIONS:" + "\033[0m")
+    print("1) CHECKUP")
+    print("2) UPGRADE")
     choice = safe_input("Choice: ").strip().lower()
 
     if choice in ["2", "u", "upgrade", "update", "up", "setup"]:
