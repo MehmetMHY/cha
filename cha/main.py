@@ -493,10 +493,9 @@ def cli():
                     platform_name = None
                     platform_model_name = None
                     if type(args.platform) == str:
-                        psplit = str(args.platform).split("|")
-                        platform_name = str(args.platform)
+                        psplit = args.platform.split("|")
+                        platform_name = psplit[0]
                         if len(psplit) == 2:
-                            platform_name = psplit[0]
                             platform_model_name = psplit[1]
 
                     platform_values = platforms.auto_select_a_platform(
