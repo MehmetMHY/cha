@@ -478,20 +478,30 @@ def cli():
 
         if args.platform or args.platform == True:
             try:
-                print(
-                    colors.red(
-                        "WARNING: Switching platforms is experimental and will break features!"
-                    )
-                )
+                print(colors.red("WARNING: Switching platforms is experimental!"))
                 API_KEY_NAME = None
                 BASE_URL_VALUE = None
-                if type(args.platform) == str:
+                if (
+                    type(args.platform) == str
+                    and "|" in args.platform
+                    and "http" in args.platform
+                ):
                     platform_values = str(args.platform).split("|")
                     API_KEY_NAME = platform_values[1]
                     BASE_URL_VALUE = platform_values[0]
-                if args.platform == True:
+                else:
+                    platform_name = None
+                    platform_model_name = None
+                    if type(args.platform) == str:
+                        psplit = str(args.platform).split("|")
+                        platform_name = str(args.platform)
+                        if len(psplit) == 2:
+                            platform_name = psplit[0]
+                            platform_model_name = psplit[1]
                     platform_values = platforms.auto_select_a_platform(
-                        client=openai_client
+                        client=openai_client,
+                        platform_key=platform_name,
+                        model_name=platform_model_name,
                     )
                     if platform_values.get("type") == "package_call":
                         return
