@@ -184,9 +184,21 @@ def interactive_exclusion(root_path, files_dict):
     return excluded
 
 
+def get_tree_output(dir_path):
+    try:
+        cmd = ["tree", "--gitignore", "--prune", dir_path]
+        result = subprocess.run(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
+        )
+        return result.stdout
+    except:
+        return "Failed to generate tree output"
+
+
 def generate_text_output(root_path, files_dict, excluded_files):
     included = [f for f in files_dict if f not in excluded_files]
     utc_now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    tree_output = get_tree_output(root_path)
     epoch_time = time.time()
     header = (
         "GENERAL INFORMATION/DATA:\n"
@@ -201,6 +213,10 @@ def generate_text_output(root_path, files_dict, excluded_files):
             short_path = os.path.relpath(f, root_path)
             header += f"- {short_path}\n"
     header += "`````\n"
+    header += "\nDIRECTORY STRUCTURE (TREE OUTPUT):\n`````\n"
+    header += tree_output
+    header += "`````\n"
+
     body = []
     for f in included:
         content = files_dict[f]
