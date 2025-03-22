@@ -1,77 +1,33 @@
-import argparse, json, time, sys, os, re
+import argparse
+import json
+import time
+import sys
+import os
+
+from cha import config, colors, scraper, utils, loading
 from anthropic import Anthropic
-from bs4 import BeautifulSoup
-from cha import colors, config, scraper, utils
 
-# global variables (2-15-2025)
-ANTHROPIC_DOCS_LINK = "https://docs.anthropic.com/en/docs/welcome"
-CLA_DEFAULT_MODEL = "claude-3-5-sonnet-20241022"
-CLA_MAX_TOKENS = 4092
+# add on to the main config
+config.ANTHROPIC_DOCS_LINK = "https://docs.anthropic.com/en/docs/welcome"
+config.CLA_DEFAULT_MODEL = "claude-3-7-sonnet-20250219"
+config.CLA_MAX_TOKENS = 64_000
 
-utils.check_env_variable("ANTHROPIC_API_KEY", ANTHROPIC_DOCS_LINK)
-client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
 
 
-# NOTE: (6-30-2024) Anthropic's API lacks an endpoint for fetching the latest supported models, so web scraping is required
-def get_anthropic_models():
-    try:
-        url = "https://docs.anthropic.com/en/docs/about-claude/models"
-
-        response = utils.get_request(url=url)
-        if response == None:
-            raise Exception(f"Failed to make HTTP GET request to {url}")
-
-        soup = BeautifulSoup(response.content, "html.parser")
-
-        output = []
-        for table in soup.find_all("table")[:6]:
-            headers = [header.text.strip() for header in table.find_all("th")]
-            for row in table.find_all("tr")[1:]:
-                data = dict(
-                    zip(headers, [cell.text.strip() for cell in row.find_all("td")])
-                )
-                if "Model" in data and "Anthropic API" in data:
-                    if not any(
-                        phrase in data["Anthropic API"].lower()
-                        for phrase in [
-                            "coming soon",
-                            "later this year",
-                            "later this month",
-                            "later this week",
-                        ]
-                    ):
-                        output.append(
-                            {"name": data["Model"], "model": data["Anthropic API"]}
-                        )
-
-        if not all(
-            isinstance(d, dict)
-            and all(key in d and d[key] for key in ["name", "model"])
-            for d in output
-        ):
-            raise Exception("model scraper is broken")
-
-        # (10-22-2024) account for cases like this: "claude-3-5-sonnet-20241022 (claude-3-5-sonnet-latest)" -> "claude-3-5-sonnet-20241022"
-        for entry in output:
-            entry["model"] = re.sub(r"[\s\n]+", "", str(entry["model"].split(" (")[0]))
-
-        return output
-    except Exception as err:
-        return str(err)
-
-
-def chat(model, message, stream=True):
+def chat(client, model, message, stream=True):
     try:
         messages = [
             {"role": "user", "content": msg["user"]}
             for msg in CURRENT_CHAT_HISTORY[:-1]
         ]
+
         messages.append({"role": "user", "content": message})
 
         response = client.messages.create(
             model=model,
-            max_tokens=CLA_MAX_TOKENS,
+            max_tokens=config.CLA_MAX_TOKENS,
             messages=messages,
             system=config.INITIAL_PROMPT,
             stream=stream,
@@ -86,6 +42,7 @@ def chat(model, message, stream=True):
             print()
             return full_response
         else:
+            # non-streamed response
             return response.content[0].text
     except KeyboardInterrupt:
         print()
@@ -125,12 +82,18 @@ def title_print(selected_model):
     )
 
 
-def interactive_chat(model, print_title):
+def interactive_chat(client, model, print_title):
+    """
+    Runs an interactive REPL-style chat with the given model.
+    """
     global CURRENT_CHAT_HISTORY
+
     if print_title:
         title_print(model)
+
     while True:
         user_input = utils.safe_input(colors.blue("User: ")).strip()
+
         if user_input == config.EXIT_STRING_KEY:
             break
 
@@ -155,37 +118,93 @@ def interactive_chat(model, print_title):
             title_print(model)
             continue
 
+        if user_input == config.TEXT_EDITOR_INPUT_MODE:
+            editor_content = utils.check_terminal_editors_and_edit()
+            if editor_content is None:
+                print(colors.red(f"No text editor available or editing cancelled"))
+                continue
+            if len(editor_content) == 0:
+                continue
+            for line in str(editor_content).rstrip("\n").split("\n"):
+                print(colors.blue(">"), line)
+            user_input = editor_content
+
+        # check for URLs -> scraping
         detected_urls = len(scraper.extract_urls(user_input))
         if detected_urls > 0:
             du_print = f"{detected_urls} URL{'s' if detected_urls > 1 else ''}"
-            du_user = input(
-                colors.red(f"{du_print} detected, continue web scraping (y/n)? ")
-            )
-            if du_user.lower() == "y" or du_user.lower() == "yes":
-                user_input = scraper.scraped_prompt(user_input)
+            prompt = f"{du_print} detected, continue web scraping (y/n)? "
+            sys.stdout.write(colors.red(prompt))
+            sys.stdout.flush()
+            du_user = utils.safe_input().strip()
+            sys.stdout.write(config.MOVE_CURSOR_ONE_LINE)
+            sys.stdout.write(config.CLEAR_LINE)
+            sys.stdout.flush()
+
+            if du_user.lower() in ["y", "yes"]:
+                loading.start_loading("Scraping URLs", "star")
+                try:
+                    user_input = scraper.scraped_prompt(user_input)
+                finally:
+                    loading.stop_loading()
 
         CURRENT_CHAT_HISTORY.append(
             {"time": time.time(), "user": user_input, "bot": ""}
         )
 
-        response = chat(model, user_input)
-        if type(response) == dict and response.get("error") != None:
-            print(colors.red(response.get("error")))
+        response = chat(client, model, user_input)
+        if isinstance(response, dict) and response.get("error") is not None:
+            print(colors.red(response["error"]))
             continue
 
         CURRENT_CHAT_HISTORY[-1]["bot"] = response
 
 
-def user_select_model():
-    models = get_anthropic_models()
-    if type(models) == str:
-        print(colors.red(f"Failed to get models"))
+def user_select_model(client):
+    models = [
+        {"model": model.id, "name": model.display_name}
+        for model in client.models.list()
+    ]
+    if isinstance(models, str):
+        print(colors.red("Failed to get models"))
         sys.exit(1)
+
     print(colors.yellow("Available Anthropic Models:"))
-    for i, model in enumerate(models, 1):
-        print(colors.yellow(f"   {i}) {model['name']} ({model['model']})"))
+    for i, model_dict in enumerate(models, 1):
+        print(colors.yellow(f"   {i}) {model_dict['name']} ({model_dict['model']})"))
+
     choice = int(utils.safe_input(colors.blue("Select model number: ")))
     return models[choice - 1]["model"]
+
+
+def anthropic(
+    selected_model=config.CLA_DEFAULT_MODEL,
+    select_model=False,
+    file=None,
+    string=None,
+    print_title=False,
+    client=None,
+):
+    utils.check_env_variable("ANTHROPIC_API_KEY", config.ANTHROPIC_DOCS_LINK)
+
+    if client is None:
+        client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+    if select_model:
+        selected_model = user_select_model(client)
+
+    if file and string:
+        print(colors.red("You can't use the string and file option at the same time!"))
+        return
+
+    if file:
+        with open(file, "r") as f:
+            content = f.read()
+        chat(client, selected_model, content, stream=True)
+    elif string:
+        chat(client, selected_model, " ".join(string), stream=True)
+    else:
+        interactive_chat(client, selected_model, print_title)
 
 
 def cli():
@@ -194,7 +213,7 @@ def cli():
         "-m",
         "--model",
         help="Model to use for chatting",
-        default=CLA_DEFAULT_MODEL,
+        default=config.CLA_DEFAULT_MODEL,
     )
     parser.add_argument(
         "-sm",
@@ -220,20 +239,15 @@ def cli():
     )
     args = parser.parse_args()
 
-    selected_model = args.model
-    if args.select_model:
-        selected_model = user_select_model()
+    anthropic(
+        selected_model=args.model,
+        select_model=args.select_model,
+        file=args.file,
+        string=args.string,
+        print_title=args.print_title,
+    )
 
-    if args.file and args.string:
-        print(colors.red("You can't use the string and file option at the same time!"))
-    elif args.file:
-        with open(args.file, "r") as file:
-            content = file.read()
-        chat(selected_model, content, stream=True)
-    elif args.string:
-        chat(selected_model, (" ".join(args.string)), stream=True)
-    else:
-        interactive_chat(selected_model, (args.print_title))
+    return
 
 
 if __name__ == "__main__":

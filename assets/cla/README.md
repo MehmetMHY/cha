@@ -25,23 +25,23 @@ bash install.sh
 Start an interactive session with the default model:
 
 ```bash
-python3 main.py
+python3 cla.py
 ```
 
 To select a different model:
 
 ```bash
-python3 main.py --select_model
+python3 cla.py --select_model
 ```
 
 For non-interactive mode (sending a string):
 
 ```bash
-python3 main.py "Hello, Claude!"
+python3 cla.py "Hello, Claude!"
 ```
 
 To send a text file to the model:
 
 ```bash
-python3 main.py --file path/to/your/file.txt
+python3 cla.py --file path/to/your/file.txt
 ```
