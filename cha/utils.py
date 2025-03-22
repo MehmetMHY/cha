@@ -14,6 +14,7 @@ import re
 import os
 
 from docx import Document
+from mutagen import File
 from PIL import Image
 import pytesseract
 import openpyxl
@@ -315,9 +316,32 @@ judgement based on both methods.
 
     elif file_ext in config.LOCAL_WHISPER_SUPPORTED_FORMATS:
         try:
+            audio_data = str(File(file_path).pprint()).strip()
             content = transcribe_file(file_path=file_path)
-            if type(content) == dict:
-                return str(content.get("standard"))
+            transcript = ""
+            for entry in content.get("standard"):
+                start = round(entry.get("start"), 2)
+                end = round(entry.get("end"), 2)
+                text = entry.get("text")
+                transcript += f"[{start}-{end}] {text.strip()}\n"
+            if transcript.endswith("\n"):
+                transcript = transcript[:-1]
+            return f"""
+Audio File's Name:
+```
+{file_path}
+```
+
+MetaData:
+```
+{audio_data}
+```
+
+Transcript:
+```
+{transcript}
+```
+""".strip()
         except Exception as e:
             loading.print_message(
                 colors.red(f"Failed to load audio file {file_path} due to {e}")

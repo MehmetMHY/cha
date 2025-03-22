@@ -24,6 +24,7 @@ setup(
         "moviepy==2.1.2",
         "pillow==10.4.0",
         "pytesseract==0.3.13",
+        "mutagen==1.47.0",
     ],
     python_requires=">=3.9.2",
     entry_points={
