@@ -116,12 +116,37 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 #### Platform Switching (-p) and Model Combined
 
 - `cha -p "<PLATFORM_OR_URL|API_KEY_ENV>" -m "<MODEL_NAME>"`
-- Examples:
-  ```bash
-  cha -p "https://api.deepseek.com|DEEP_SEEK_API_KEY" -m "deepseek-chat"
-  cha -p "llama3-70b-8192|GROQ_API_KEY" -m "llama3-70b-8192"
-  ```
-- Dynamic platform switching with no need for the user to provide a base_url and model name: `cha -p`
+
+  - Examples:
+    ```bash
+    cha -p "https://api.deepseek.com|DEEP_SEEK_API_KEY" -m "deepseek-chat"
+    cha -p "llama3-70b-8192|GROQ_API_KEY" -m "llama3-70b-8192"
+    ```
+
+- `cha -p`
+
+  - Dynamic platform switching with no need for the user to provide a base URL and model name.
+  - Manually select a platform and model; refer to `./cha/config.py` to see all supported platforms.
+  - Examples:
+    ```bash
+    cha -p
+    ```
+
+- `cha -p "<PLATFORM_NAME|OPTIONAL_MODEL_NAME>"`
+
+  - Refer to `./cha/config.py` to see all supported platforms.
+  - Here you can select a supported platform and a model on that platform in one line with no need for manually selecting a platform and/or model.
+  - The model name is optional; you can just provide the platform name and manually select a model name. Or just provide both.
+  - Please note, if the platform is not listed in the config or the model name is invalid, Cha will just error out.
+  - Examples:
+
+    ```bash
+    # cleanly select a supported platform and the name of a model supported on the platform
+    cha -p "groq|deepseek-r1-distill-llama-70b"
+
+    # cleanly select just the platform and select a model from that platform manually with user input later on
+    cha -p "groq"
+    ```
 
 #### Model Autoselection (-sm)
 
