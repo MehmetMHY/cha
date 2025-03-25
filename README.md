@@ -1,6 +1,6 @@
 # Cha
 
-Check out the [demo](https://www.youtube.com/watch?v=7zG8iFZjKtM)!
+Check out the [demo](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
 ## Overview
 
