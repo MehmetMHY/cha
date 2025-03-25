@@ -245,6 +245,14 @@ THIRD_PARTY_PLATFORMS = {
         "env_name": "XAI_API_KEY",
         "docs": "https://docs.x.ai/docs/overview",
     },
+    "anthropic": {
+        "package_name": "cha.cla",
+        "function": "anthropic",
+        "env_name": "ANTHROPIC_API_KEY",
+        "parameters": {
+            "select_model": True,
+        },
+    },
 }
 
 # urls that contain video data that can be scrapped using cha's scraper
