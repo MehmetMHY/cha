@@ -508,6 +508,9 @@ def cli():
                     BASE_URL_VALUE = platform_values["base_url"]
                     selected_model = platform_values["picked_model"]
 
+                if platform_values.get("type") == "package_call":
+                    return
+
                 # NOTE: (2-13-2025) this exists to account for cases like this: https://ollama.com/blog/openai-compatibility
                 API_KEY_VALUE = API_KEY_NAME
                 if API_KEY_VALUE in os.environ:
