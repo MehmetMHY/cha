@@ -10,6 +10,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=[
         "openai==1.68.2",
+        "anthropic==0.49.0",
         "beautifulsoup4==4.13.3",
         "yt-dlp==2025.3.21",
         "youtube-transcript-api==1.0.2",
