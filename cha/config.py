@@ -35,7 +35,7 @@ DEFAULT_GEN_SEARCH_QUERY_COUNT = 15
 DEFAULT_SPLIT_LOGIC_COUNT = 6
 
 # other random configs
-OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio"]
+OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio", "tts"]
 FILES_TO_IGNORE = [".DS_Store", ".env", ".env.local"]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5"]
 
