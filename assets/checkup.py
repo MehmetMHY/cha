@@ -24,17 +24,16 @@ def parse_setup_py(file_path="setup.py"):
 
 
 def check_installed_packages_with_pip(packages):
-    # get installed packages using pip freeze
     freeze_output = subprocess.check_output(
         [sys.executable, "-m", "pip", "freeze"], text=True
     )
+
     installed_packages_pip = {
         line.split("==")[0].lower() for line in freeze_output.splitlines()
     }
 
     installed = []
     missing = []
-
     for package in packages:
         package_name = package.split("==")[0].lower()
         if package_name in installed_packages_pip:
