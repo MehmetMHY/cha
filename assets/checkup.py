@@ -2,10 +2,82 @@ from pathlib import Path
 import subprocess
 import requests
 import shutil
+import sys
 import os
+import re
+
+
+def parse_setup_py(file_path="setup.py"):
+    with open(file_path, "r") as file:
+        content = file.read()
+
+    # find install_requires section
+    match = re.search(r"install_requires\s*=\s*\[([^\]]+)\]", content)
+
+    if match:
+        # extract package names by removing comments and extra spaces
+        packages = [
+            pkg.strip().strip("'\"") for pkg in match.group(1).split(",") if pkg.strip()
+        ]
+        return packages
+    return []
+
+
+def check_installed_packages_with_pip(packages):
+    # get installed packages using pip freeze
+    freeze_output = subprocess.check_output(
+        [sys.executable, "-m", "pip", "freeze"], text=True
+    )
+    installed_packages_pip = {
+        line.split("==")[0].lower() for line in freeze_output.splitlines()
+    }
+
+    installed = []
+    missing = []
+
+    for package in packages:
+        package_name = package.split("==")[0].lower()
+        if package_name in installed_packages_pip:
+            installed.append(package)
+        else:
+            missing.append(package)
+
+    return {"installed": installed, "missing": missing}
 
 
 def checkup():
+    try:
+        PYTHON_SETUP_FILE_PATH = None
+        for i in range(4):
+            setup_file_path = "/".join(
+                os.path.dirname(os.path.abspath(__file__)).split("/")[:-(i)]
+                + ["setup.py"]
+            )
+            if os.path.isfile(setup_file_path):
+                PYTHON_SETUP_FILE_PATH = setup_file_path
+                break
+
+        if PYTHON_SETUP_FILE_PATH is None:
+            raise Exception(f"Failed to find setup.py file")
+
+        try:
+            import pkg_resources
+        except ImportError:
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "setuptools"]
+            )
+            import pkg_resources
+
+        packages = parse_setup_py(PYTHON_SETUP_FILE_PATH)
+
+        result = check_installed_packages_with_pip(packages)
+        if len(result["missing"]) > 0:
+            print(f"✗ Cha's dependencies are not installed: {response['missing']}")
+        else:
+            print("✓ All of Cha's dependencies are installed")
+    except:
+        print("✗ Failed to check if Cha's dependencies are installed or not")
+
     try:
         import cha
 
