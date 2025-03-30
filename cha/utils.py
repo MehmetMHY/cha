@@ -31,6 +31,34 @@ import requests
 from cha import colors, utils, config, answer, loading
 
 
+def extract_code_blocks(text, file_start_str=""):
+    output = {"created": [], "errors": [], "total": 0}
+
+    pattern = r"```([a-zA-Z0-9+\-#]*)\n(.*?)```"
+    matches = re.findall(pattern, text, re.DOTALL)
+    for lang, code in matches:
+        output["total"] += 1
+        filename = None
+        try:
+            lang = lang.strip().lower() if lang else None
+            extension = config.FILETYPE_TO_EXTENSION.get(lang, ".txt")
+
+            filename = (
+                str(file_start_str) + str(uuid.uuid4()).replace("-", "")[:8] + extension
+            )
+            filename = os.path.join(os.getcwd(), filename)
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(code.strip())
+
+            output["created"].append(filename)
+        except Exception as e:
+            output["errors"].append(e)
+            if filename != None and os.path.exists(filename):
+                os.remove(filename)
+
+    return output
+
+
 def is_o_model(model_name):
     return re.match(r"^o\d+", model_name) is not None
 
