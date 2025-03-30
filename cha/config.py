@@ -5,8 +5,14 @@ import os
 # links
 OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
 
-# main chat short config
-INITIAL_PROMPT = "You are a helpful assistant who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details"
+# system prompt
+INITIAL_PROMPT = """
+You are a helpful assistant powered by Cha who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details
+
+Always return any code or file output in a Markdown code fence, with syntax ```<language or filetype>\n...``` so it can be parsed automatically.
+""".strip()
+
+# key words
 MULTI_LINE_SEND = "END"
 MULTI_LINE_MODE_TEXT = "!m"
 CLEAR_HISTORY_TEXT = "!c"
@@ -19,6 +25,7 @@ TEXT_EDITOR_INPUT_MODE = "!t"
 SWITCH_MODEL_TEXT = "!sm"
 USE_CODE_DUMP = "!d"
 QUICK_WEB_SEARCH_ANSWER = "!b"
+EXPORT_FILES_IN_OUTPUT_KEY = "!ept"
 
 # last updated on 11-19-2024
 CHA_DEFAULT_MODEL = "gpt-4o"

@@ -196,4 +196,5 @@ codedump_*.txt
 .sandbox/
 .future
 .plans.md
+export_*
 
