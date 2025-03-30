@@ -202,10 +202,18 @@ In essence, your unique “cha” CLI usage falls into these main patterns:
 - Checking token counts (-t).
 - Asking a broad variety of how-to / make-me requests directly after “cha …”.
 
-Both commands support and accept additional parameters. Here is the help page for reference:
+Note that when you run Cha directly, meaning it conducts a single call to the model through the CLI as an argument, you can use the optional `-e` argument. This will export all code/file blocks in the model's last response that are enclosed in markdown fences. This feature makes it easy for Cha to generate files, such as a Python script, and have them accessible on you system (current directory) without needing to manually create a file, select, copy, and paste the content into a file. You can do this by running Cha like this (example):
 
 ```bash
-usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [string ...]
+cha -e write me python code to find the area of a circle
+```
+
+When you run the example command above, it will answer your question in one shot, then grab the code/file the model generated and save it to a file in your current directory. The file(s) it create will be named something like this: `export_a9570f7e.py`. Cha considers file extensions, so if the content is a text file, Go code, etc., it will include that file extension as part of the file name. With this, you can run the code/file and/or edit it on your system without needing to manually create a file if needed.
+
+Cha also supports and accepts additional parameters. Here is the help page for reference:
+
+```bash
+usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -227,6 +235,8 @@ options:
                         Do a full code dump into one file in your current directory
   -a, -as, --answer_search
                         Run answer search
+  -e, --export_parsed_text
+                        Extract code blocks from the final output and save them as files
 ```
 
 ## Development
