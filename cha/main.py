@@ -83,6 +83,33 @@ def cleanly_print_models(openai_models):
     return openai_models
 
 
+def export_file_logic():
+    try:
+        extracted = utils.extract_code_blocks(
+            text=CURRENT_CHAT_HISTORY[-1]["bot"], file_start_str="export_"
+        )
+
+        if extracted["total"] == 0:
+            print(colors.yellow("No blocks found for exporting"))
+
+        if len(extracted["errors"]) > 0:
+            print(
+                colors.red(
+                    f"Failed to export {len(extracted['errors'])} blocks to files: {extracted}"
+                )
+            )
+
+        if len(extracted["created"]) > 0:
+            print(colors.green(f"Created following file(s):"))
+            for f in extracted["created"]:
+                print(colors.green(f"- {f}"))
+
+    except Exception as e:
+        print(colors.red(f"Failed to export code block(s) due to {e}"))
+
+    return
+
+
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
     global client
     global CURRENT_CHAT_HISTORY
@@ -228,25 +255,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 continue
 
             if message.strip() == config.EXPORT_FILES_IN_OUTPUT_KEY:
-                extracted = utils.extract_code_blocks(
-                    text=CURRENT_CHAT_HISTORY[-1]["bot"], file_start_str="export_"
-                )
-
-                if extracted["total"] == 0:
-                    print(colors.yellow("No blocks found for exporting"))
-
-                if len(extracted["errors"]) > 0:
-                    print(
-                        colors.red(
-                            f"Failed to export {len(extracted['errors'])} blocks to files: {extracted}"
-                        )
-                    )
-
-                if len(extracted["created"]) > 0:
-                    print(colors.green(f"Created following files:"))
-                    for f in extracted["created"]:
-                        print(colors.green(f"- {f}"))
-
+                export_file_logic()
                 continue
 
             # print help
@@ -462,6 +471,12 @@ def cli():
             help="Run answer search",
             action="store_true",
         )
+        parser.add_argument(
+            "-e",
+            "--export_parsed_text",
+            help="Extract code blocks from the final output and save them as files",
+            action="store_true",
+        )
 
         args = parser.parse_args()
 
@@ -608,6 +623,10 @@ def cli():
             )
         else:
             chatbot(selected_model=selected_model, print_title=title_print_value)
+
+        if args.export_parsed_text:
+            print()
+            export_file_logic()
 
     except (KeyboardInterrupt, EOFError):
         print()
