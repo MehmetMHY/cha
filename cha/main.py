@@ -43,6 +43,7 @@ Chatting With OpenAI's '{selected_model}' Model
 - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
 - '{config.USE_CODE_DUMP}' to codedump a directory as context
 - `{config.QUICK_WEB_SEARCH_ANSWER}` answer prompt with a quick web search
+- `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files generated my the model
                 """.strip().splitlines()
             )
         )
@@ -224,6 +225,28 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 cha_filepath = f"cha_{int(time.time())}.json"
                 utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
                 print(colors.red(f"Saved current chat history to {cha_filepath}"))
+                continue
+
+            if message.strip() == config.EXPORT_FILES_IN_OUTPUT_KEY:
+                extracted = utils.extract_code_blocks(
+                    text=CURRENT_CHAT_HISTORY[-1]["bot"], file_start_str="export_"
+                )
+
+                if extracted["total"] == 0:
+                    print(colors.yellow("No blocks found for exporting"))
+
+                if len(extracted["errors"]) > 0:
+                    print(
+                        colors.red(
+                            f"Failed to export {len(extracted['errors'])} blocks to files: {extracted}"
+                        )
+                    )
+
+                if len(extracted["created"]) > 0:
+                    print(colors.green(f"Created following files:"))
+                    for f in extracted["created"]:
+                        print(colors.green(f"- {f}"))
+
                 continue
 
             # print help

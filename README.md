@@ -24,6 +24,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Switch Between Models**: Easily switch between models during a conversation.
 - **Code Dump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
 - **Quick Web Search**: Well chatting you can ask a question/prompt and have Cha browse the web real quick before answering your question.
+- **Export Markdown Fences**: If desired, export any Markdown fence in the latest message from a model to file(s).
 
 ## Getting Started
 
