@@ -71,7 +71,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 After installing and configuring everything, the final step is to run the checkup script to ensure everything is set up/installed correctly. You can ignore optional checkups/tests here, as those are not necessary for the core of Cha to function. Knowing this, to run these checkups/tests, use the following command:
 
 ```bash
-python3 ./scripts/checkup.py
+python3 ./assets/checkup.py
 ```
 
 If the checkups/tests look good, or you're okay with it, then start using Cha!
@@ -256,7 +256,7 @@ For those interested in contributing or experimenting with Cha:
 4. **(Optional) Update Cha's "setup.py" or run system checks to ensure proper functionality**: Run the following command in the same directory as Cha's code:
 
    ```bash
-   python3 ./scripts/update.py
+   python3 ./assets/update.py
    ```
 
 ## Other Platform(s) Compatibility

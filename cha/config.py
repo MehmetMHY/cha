@@ -256,9 +256,7 @@ THIRD_PARTY_PLATFORMS = {
         "package_name": "cha.cla",
         "function": "anthropic",
         "env_name": "ANTHROPIC_API_KEY",
-        "parameters": {
-            "select_model": True,
-        },
+        "parameters": {"selected_model": None},
     },
 }
 
@@ -350,7 +348,6 @@ LOADING_ANIMATIONS = {
 
 # NOTE: last updated on March 29, 2025
 FILETYPE_TO_EXTENSION = {
-    # Programming Languages
     "python": ".py",
     "py": ".py",
     "bash": ".sh",
@@ -425,7 +422,6 @@ FILETYPE_TO_EXTENSION = {
     "vhd": ".vhd",
     "vhdl": ".vhdl",
     "cl": ".cl",  # OpenCL
-    # Markup, Data, and Config
     "html": ".html",
     "htm": ".htm",
     "css": ".css",
@@ -464,7 +460,6 @@ FILETYPE_TO_EXTENSION = {
     "properties": ".properties",
     "inf": ".inf",
     "plist": ".plist",
-    # Plain Text & Documentation
     "txt": ".txt",
     "text": ".txt",
     "plaintext": ".txt",
@@ -480,7 +475,6 @@ FILETYPE_TO_EXTENSION = {
     "ods": ".ods",
     "rtfd": ".rtfd",
     "man": ".man",
-    # Shell / Build / System / Others
     "makefile": ".makefile",
     "dockerfile": ".dockerfile",
     "docker-compose": ".yml",
@@ -504,7 +498,6 @@ FILETYPE_TO_EXTENSION = {
     "socket": ".socket",
     "timer": ".timer",
     "target": ".target",
-    # Misc File Types
     "jpg": ".jpg",
     "jpeg": ".jpeg",
     "png": ".png",
