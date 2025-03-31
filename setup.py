@@ -29,6 +29,6 @@ setup(
     ],
     python_requires=">=3.9.2",
     entry_points={
-        "console_scripts": ["cha = cha.main:cli", "cla = cha.cla:cli"],
+        "console_scripts": ["cha = cha.main:cli"],
     },
 )
