@@ -98,9 +98,12 @@ def auto_select_a_platform(client, platform_key=None, model_name=None):
         and selected_platform.get("function") != None
         and selected_platform.get("parameters") != None
     ):
+        parameters = selected_platform["parameters"]
+        # NOTE: (3-31-2025) When doing function call based platform shifts, we assume the argument for model name is always "selected_model"
+        if model_name != None:
+            parameters["selected_model"] = model_name
         module_name = selected_platform["package_name"]
         function_name = selected_platform["function"]
-        parameters = selected_platform["parameters"]
         module = importlib.import_module(module_name)
         function_to_call = getattr(module, function_name)
         result = function_to_call(**parameters)

@@ -129,7 +129,6 @@ def interactive_chat(client, model, print_title):
                 print(colors.blue(">"), line)
             user_input = editor_content
 
-        # check for URLs -> scraping
         detected_urls = len(scraper.extract_urls(user_input))
         if detected_urls > 0:
             du_print = f"{detected_urls} URL{'s' if detected_urls > 1 else ''}"
@@ -179,7 +178,6 @@ def user_select_model(client):
 
 def anthropic(
     selected_model=config.CLA_DEFAULT_MODEL,
-    select_model=False,
     file=None,
     string=None,
     print_title=False,
@@ -190,7 +188,7 @@ def anthropic(
     if client is None:
         client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-    if select_model:
+    if selected_model == None:
         selected_model = user_select_model(client)
 
     if file and string:
@@ -239,9 +237,12 @@ def cli():
     )
     args = parser.parse_args()
 
+    selected_model_name = args.model
+    if args.select_model:
+        selected_model_name = None
+
     anthropic(
-        selected_model=args.model,
-        select_model=args.select_model,
+        selected_model=selected_model_name,
         file=args.file,
         string=args.string,
         print_title=args.print_title,
