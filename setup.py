@@ -21,7 +21,7 @@ setup(
         "openpyxl==3.1.5",
         "chardet==5.2.0",
         "pathspec==0.12.1",
-        "openai-whisper==20240930",
+        "faster-whisper==1.1.1",
         "moviepy==2.1.2",
         "pillow==10.4.0",
         "pytesseract==0.3.13",
