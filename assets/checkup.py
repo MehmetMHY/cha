@@ -135,14 +135,14 @@ def checkup():
     # check if whisper model is installed and working
     try:
         from cha import config
-        import whisper
+        from faster_whisper import WhisperModel
 
-        whisper_model_weight_file_path = (
-            f"{str(Path.home())}/.cache/whisper/{config.DEFAULT_WHISPER_MODEL_NAME}.pt"
+        model = WhisperModel(
+            config.DEFAULT_WHISPER_MODEL_NAME, device="cpu", compute_type="int8"
         )
-        if os.path.isfile(whisper_model_weight_file_path) == False:
-            whisper.load_model(config.DEFAULT_WHISPER_MODEL_NAME)
-        print(f"✓ Whisper model found: {whisper_model_weight_file_path}")
+        del model
+
+        print(f"✓ Whisper model found")
     except Exception as e:
         print(f"✗ failed to find Whisper model {e}")
 

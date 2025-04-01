@@ -220,37 +220,29 @@ def check_terminal_editors_and_edit():
 
 
 def transcribe_file(file_path):
-    # NOTE: the import is made here to reduce initial loading time for the rest of the application
-    import whisper
+    try:
+        # NOTE: the import is made here to reduce initial loading time for the rest of the application
+        from faster_whisper import WhisperModel
 
-    if os.path.exists(file_path) == False:
-        raise Exception(f"Audio file {file_path} does not exist")
+        if os.path.exists(file_path) == False:
+            raise Exception(f"Audio file {file_path} does not exist")
 
-    if type(file_path) != str:
-        raise Exception("Inputted file_path is NOT type string")
+        if type(file_path) != str:
+            raise Exception("Inputted file_path is NOT type string")
 
-    # suppress user warnings from Whisper
-    warnings.filterwarnings("ignore", category=UserWarning)
-
-    model = whisper.load_model(config.DEFAULT_WHISPER_MODEL_NAME)
-    result = model.transcribe(file_path)
-
-    segments = result.get("segments", [])
-    standardized_output = []
-    for seg in segments:
-        speaker = "?"
-        start_time = seg.get("start", 0.0)
-        end_time = seg.get("end", 0.0)
-        text = seg.get("text", "")
-        standardized_output.append(
-            {"speaker": speaker, "start": start_time, "end": end_time, "text": text}
+        model = WhisperModel(
+            config.DEFAULT_WHISPER_MODEL_NAME, device="cpu", compute_type="int8"
         )
 
-    return {
-        "standard": standardized_output,
-        "raw": result,
-        "platform": "local_whisper",
-    }
+        segments, info = model.transcribe(file_path, beam_size=5)
+        transcript = ""
+        for segment in segments:
+            line = "[%.3fs -> %.3fs] %s" % (segment.start, segment.end, segment.text)
+            transcript = transcript + line + "\n"
+
+        return transcript
+    except Exception as e:
+        return {"error": e}
 
 
 def load_most_files(
@@ -343,18 +335,16 @@ judgement based on both methods.
         return text
 
     elif file_ext in config.LOCAL_WHISPER_SUPPORTED_FORMATS:
-        try:
-            audio_data = str(File(file_path).pprint()).strip()
-            content = transcribe_file(file_path=file_path)
-            transcript = ""
-            for entry in content.get("standard"):
-                start = round(entry.get("start"), 2)
-                end = round(entry.get("end"), 2)
-                text = entry.get("text")
-                transcript += f"[{start}-{end}] {text.strip()}\n"
-            if transcript.endswith("\n"):
-                transcript = transcript[:-1]
-            return f"""
+        audio_data = str(File(file_path).pprint()).strip()
+        transcript = transcribe_file(file_path=file_path)
+        if type(transcript) == dict:
+            print(
+                colors.red(f"Failed to load audio file {file_path} due to {transcript}")
+            )
+            return None
+        if transcript.endswith("\n"):
+            transcript = transcript[:-1]
+        return f"""
 Audio File's Name:
 ```
 {file_path}
@@ -370,11 +360,6 @@ Transcript:
 {transcript}
 ```
 """.strip()
-        except Exception as e:
-            loading.print_message(
-                colors.red(f"Failed to load audio file {file_path} due to {e}")
-            )
-            return None
 
     elif file_ext in config.SUPPORTED_VIDEO_FORMATS:
         content = extract_text_from_video(file_path)
