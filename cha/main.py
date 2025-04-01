@@ -477,6 +477,12 @@ def cli():
             help="Extract code blocks from the final output and save them as files",
             action="store_true",
         )
+        parser.add_argument(
+            "-ide",
+            "--integrated_dev_env",
+            help="Input a one-short query using your default terminal text editor (IDE)",
+            action="store_true",
+        )
 
         args = parser.parse_args()
 
@@ -611,16 +617,18 @@ def cli():
                 print(colors.red("Invalid number selected. Exiting."))
                 return
 
-        if args.string and args.file:
-            print(
-                colors.red("You can't use the string and file option at the same time!")
-            )
-        elif args.file:
+        if args.file:
             chatbot(selected_model, title_print_value, filepath=args.file)
         elif args.string:
             chatbot(
                 selected_model, title_print_value, content_string=" ".join(args.string)
             )
+        elif args.integrated_dev_env:
+            editor_content = utils.check_terminal_editors_and_edit()
+            if editor_content is None:
+                print(colors.red(f"No text editor available or editing cancelled"))
+                sys.exit(1)
+            chatbot(selected_model, title_print_value, content_string=editor_content)
         else:
             chatbot(selected_model=selected_model, print_title=title_print_value)
 
