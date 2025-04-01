@@ -4,6 +4,17 @@
 IMAGE_NAME="gotty-term"
 URL="http://localhost:8080/"
 
+# display help if -h parameter is passed
+if [[ "$1" == "-h" || "$2" == "-h" ]]; then
+	echo "Name: Cha Docker Setup Tool"
+	echo "Usage: run.sh [options]"
+	echo "Options:"
+	echo "  -b  Rebuild the Docker image"
+	echo "  -o  Open the application URL in the browser"
+	echo "  -h  Display this help message"
+	exit 0
+fi
+
 # build the image if it does not exist or ask to user to rebuild it
 if [[ "$(docker images -q ${IMAGE_NAME} 2>/dev/null)" == "" ]]; then
 	echo "Docker image ${IMAGE_NAME} does not exist. Building it now."
