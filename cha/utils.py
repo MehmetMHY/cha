@@ -3,7 +3,6 @@ import statistics
 import subprocess
 import datetime
 import tempfile
-import warnings
 import base64
 import uuid
 import json
@@ -12,21 +11,6 @@ import math
 import sys
 import re
 import os
-
-from docx import Document
-from mutagen import File
-from PIL import Image
-import pytesseract
-import openpyxl
-import chardet
-import base64
-import fitz
-
-from requests.packages.urllib3.util.retry import Retry
-from requests.adapters import HTTPAdapter
-from moviepy import VideoFileClip
-import tiktoken
-import requests
 
 from cha import colors, utils, config, answer, loading
 
@@ -66,6 +50,8 @@ def is_o_model(model_name):
 def count_tokens(text, model_name, fast_mode=False, language=None, rounding=1.1):
     try:
         if fast_mode == False:
+            import tiktoken
+
             encoding = tiktoken.encoding_for_model(model_name)
             return len(encoding.encode(text))
 
@@ -101,6 +87,10 @@ def get_request(
     headers=config.REQUEST_DEFAULT_HEADERS,
     debug_mode=False,
 ):
+    from requests.packages.urllib3.util.retry import Retry
+    from requests.adapters import HTTPAdapter
+    import requests
+
     retries = Retry(
         total=retry_count,
         backoff_factor=config.REQUEST_BACKOFF_FACTOR,
@@ -251,6 +241,9 @@ def load_most_files(
     file_ext = os.path.splitext(file_path)[1].lower()
 
     if file_ext in [".jpg", ".jpeg", ".png"]:
+        from PIL import Image
+        import pytesseract
+
         traditional_method = pytesseract.image_to_string(Image.open(file_path))
 
         with open(file_path, "rb") as image_file:
@@ -297,6 +290,8 @@ judgement based on both methods.
 """.strip()
 
     elif file_ext == ".pdf":
+        import fitz
+
         document = fitz.open(file_path)
         text = ""
         for page_num in range(document.page_count):
@@ -306,10 +301,14 @@ judgement based on both methods.
         return text
 
     elif file_ext in [".doc", ".docx"]:
+        from docx import Document
+
         doc = Document(file_path)
         return "\n".join([paragraph.text for paragraph in doc.paragraphs])
 
     elif file_ext in [".xls", ".xlsx"]:
+        import openpyxl
+
         workbook = openpyxl.load_workbook(file_path, data_only=True)
         text = ""
         for sheet in workbook:
@@ -335,6 +334,8 @@ judgement based on both methods.
         return text
 
     elif file_ext in config.LOCAL_WHISPER_SUPPORTED_FORMATS:
+        from mutagen import File
+
         audio_data = str(File(file_path).pprint()).strip()
         transcript = transcribe_file(file_path=file_path)
         if type(transcript) == dict:
@@ -367,6 +368,8 @@ Transcript:
             return str(content.get("standard"))
 
     else:
+        import chardet
+
         # get exact file encoding
         with open(file_path, "rb") as file:
             raw_data = file.read()
@@ -475,6 +478,8 @@ Also note, that the file name is named "{filepath}" which might or might not pro
 
 def extract_audio_from_video(video_path):
     try:
+        from moviepy import VideoFileClip
+
         if not os.path.exists(video_path):
             return None
 
