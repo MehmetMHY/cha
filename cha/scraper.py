@@ -6,9 +6,7 @@ import json
 import re
 import os
 
-from youtube_transcript_api import YouTubeTranscriptApi
 from bs4 import BeautifulSoup
-import fitz  # PyMuPDF
 
 from cha import colors, utils, loading, config
 
@@ -119,6 +117,8 @@ def video_transcript(url, always_use_yt_dlp=False):
     output = ""
     try:
         if not always_use_yt_dlp:
+            from youtube_transcript_api import YouTubeTranscriptApi
+
             video_id = url.replace(" ", "").split("v=")[1]
 
             # https://github.com/jdepoix/youtube-transcript-api
@@ -260,6 +260,8 @@ def scrape_pdf_url(url):
                 tmp_path = tmp_file.name
 
             try:
+                import fitz
+
                 document = fitz.open(tmp_path)
                 text = ""
                 for page_num in range(len(document)):

@@ -7,7 +7,6 @@ import json
 import os
 
 from cha import scraper, colors, utils, config, loading
-from duckduckgo_search import DDGS
 
 
 def create_mega_prompt(search_results, prompt, is_final=False):
@@ -89,6 +88,8 @@ def duckduckgo_search(
     search_input, count=5, region="wt-wt", safesearch="off", timelimit=None
 ):
     try:
+        from duckduckgo_search import DDGS
+
         with DDGS() as ddgs:
             search_results = list(
                 ddgs.text(

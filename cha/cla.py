@@ -5,7 +5,6 @@ import sys
 import os
 
 from cha import config, colors, scraper, utils, loading
-from anthropic import Anthropic
 
 # add on to the main config
 config.ANTHROPIC_DOCS_LINK = "https://docs.anthropic.com/en/docs/welcome"
@@ -186,6 +185,8 @@ def anthropic(
     utils.check_env_variable("ANTHROPIC_API_KEY", config.ANTHROPIC_DOCS_LINK)
 
     if client is None:
+        from anthropic import Anthropic
+
         client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
     if selected_model == None:
