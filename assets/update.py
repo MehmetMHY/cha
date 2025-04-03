@@ -79,7 +79,7 @@ def update_setup():
                         update_input = safe_input(
                             f"Update {package} from {current_version} to {latest_version} (Y/n)? "
                         )
-                        if update_input.lower() in ["y", "yes", ""]:
+                        if update_input.lower() in ["y", "yes"]:
                             print(
                                 f"Updating {package}: {current_version} -> {latest_version}"
                             )

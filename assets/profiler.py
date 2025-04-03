@@ -1,3 +1,13 @@
+"""
+April 2, 2025
+
+The goal of this script is to time the import time for all packages in Cha
+
+This code is far from perfect but was good enough to improve Cha's initial interactive mode startup time from ~2.3 seconds to ~1.23 seconds on my personal laptop (2019 16-inch MacBook Pro with an Intel i9)
+
+If you can make this script better, please make a PR! :)
+"""
+
 import subprocess
 import time
 import json
