@@ -413,6 +413,14 @@ def msg_content_load(client):
 
     prompt = input(colors.yellow("Additional Prompt: "))
 
+    # handle text-editor input
+    if prompt.strip() == config.TEXT_EDITOR_INPUT_MODE:
+        editor_content = utils.check_terminal_editors_and_edit()
+        if editor_content != None and len(editor_content) > 0:
+            prompt = editor_content
+            for line in prompt.rstrip("\n").split("\n"):
+                print(colors.yellow(">"), line)
+
     contents = []
     try:
         for file_path in file_paths:
