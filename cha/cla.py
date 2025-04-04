@@ -82,9 +82,6 @@ def title_print(selected_model):
 
 
 def interactive_chat(client, model, print_title):
-    """
-    Runs an interactive REPL-style chat with the given model.
-    """
     global CURRENT_CHAT_HISTORY
 
     if print_title:

@@ -12,7 +12,7 @@ import sys
 import re
 import os
 
-from cha import colors, utils, config, answer, loading
+from cha import colors, utils, config, answer, loading, helpers
 
 
 def extract_code_blocks(text, file_start_str=""):
@@ -271,23 +271,25 @@ def load_most_files(
 
         llm_method = response.choices[0].message.content
 
-        return f"""
-The LLM model "{model_name}" extracted the following from the image:
+        return helpers.rls(
+            f"""
+            The LLM model "{model_name}" extracted the following from the image:
 
-```
-{llm_method}
-```
+            ```
+            {llm_method}
+            ```
 
-The traditional, None-LLM method, extracted the following from the image:
+            The traditional, None-LLM method, extracted the following from the image:
 
-```
-{traditional_method}
-```
+            ```
+            {traditional_method}
+            ```
 
-Either methods are perfect, they both have their pros and cons. That is why,
-both methods were utilized and their outputs were presented. So place your,
-judgement based on both methods.
-""".strip()
+            Either methods are perfect, they both have their pros and cons. That is why,
+            both methods were utilized and their outputs were presented. So place your,
+            judgement based on both methods.
+            """
+        )
 
     elif file_ext == ".pdf":
         import fitz
@@ -345,22 +347,24 @@ judgement based on both methods.
             return None
         if transcript.endswith("\n"):
             transcript = transcript[:-1]
-        return f"""
-Audio File's Name:
-```
-{file_path}
-```
+        return helpers.rls(
+            f"""
+            Audio File's Name:
+            ```
+            {file_path}
+            ```
 
-MetaData:
-```
-{audio_data}
-```
+            MetaData:
+            ```
+            {audio_data}
+            ```
 
-Transcript:
-```
-{transcript}
-```
-""".strip()
+            Transcript:
+            ```
+            {transcript}
+            ```
+            """
+        )
 
     elif file_ext in config.SUPPORTED_VIDEO_FORMATS:
         content = extract_text_from_video(file_path)
@@ -443,10 +447,7 @@ def msg_content_load(client):
     )
 
     if len(prompt) > 0:
-        output = f"""
-PROMPT: {prompt}
-{output}
-"""
+        output = f"PROMPT: {prompt}\n\n{output}"
 
     return output
 
@@ -462,14 +463,16 @@ def run_answer_search(client, prompt=None, user_input_mode=True):
 
 
 def act_as_ocr(client, filepath, prompt=None):
-    default_prompt = f"""
-Analyze the provided image and perform the following tasks:
-1. Extract all visible text accurately, including any embedded or obscured text.
-2. Interpret the contextual meaning of the image by examining visual elements, symbols, and any implied narratives or themes.
-3. Identify relationships between the text and visual components, noting any cultural, historical, or emotional subtleties.
-Provide a comprehensive report combining literal text extraction with nuanced interpretations of the image's symbolic and contextual messages.
-Also note, that the file name is named "{filepath}" which might or might not provide more context of the image.
-"""
+    default_prompt = helpers.rls(
+        f"""
+        Analyze the provided image and perform the following tasks:
+        1. Extract all visible text accurately, including any embedded or obscured text.
+        2. Interpret the contextual meaning of the image by examining visual elements, symbols, and any implied narratives or themes.
+        3. Identify relationships between the text and visual components, noting any cultural, historical, or emotional subtleties.
+        Provide a comprehensive report combining literal text extraction with nuanced interpretations of the image's symbolic and contextual messages.
+        Also note, that the file name is named "{filepath}" which might or might not provide more context of the image.
+        """
+    )
     try:
         current_prompt = default_prompt
         if type(prompt) == None:
