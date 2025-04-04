@@ -3,7 +3,7 @@ import subprocess
 import time
 import os
 
-from cha import colors, utils, config, helpers
+from cha import colors, utils, config
 import pathspec
 
 
@@ -290,7 +290,7 @@ def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=N
         if user_question == None:
             user_question = input(colors.blue("Question: "))
 
-        return helpers.rls(
+        return utils.rls(
             f"""
             Here is original message:
             ```

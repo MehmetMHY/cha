@@ -7,17 +7,7 @@ try:
     import json
     import os
 
-    from cha import (
-        scraper,
-        colors,
-        utils,
-        config,
-        loading,
-        platforms,
-        codedump,
-        answer,
-        helpers,
-    )
+    from cha import scraper, colors, utils, config, loading, platforms, codedump, answer
 
     from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
@@ -39,7 +29,7 @@ CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bo
 def title_print(selected_model):
     print(
         colors.yellow(
-            helpers.rls(
+            utils.rls(
                 f"""
                 Chatting With OpenAI's '{selected_model}' Model
                 - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
