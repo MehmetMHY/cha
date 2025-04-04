@@ -3,7 +3,7 @@ import subprocess
 import time
 import os
 
-from cha import colors, utils, config
+from cha import colors, utils, config, helpers
 import pathspec
 
 
@@ -290,20 +290,22 @@ def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=N
         if user_question == None:
             user_question = input(colors.blue("Question: "))
 
-        return f"""
-Here is original message:
-```
-{user_question}
-```
+        return helpers.rls(
+            f"""
+            Here is original message:
+            ```
+            {user_question}
+            ```
 
-Knowing this, here is my entire code dump:
+            Knowing this, here is my entire code dump:
 
-=====[CODE DUMP STARTS]=====
-{content}
-======[CODE DUMP ENDS]======
+            =====[CODE DUMP STARTS]=====
+            {content}
+            ======[CODE DUMP ENDS]======
 
-Knowing this, can you answer the original message to the best of your ability given this context (codedump)?
-"""
+            Knowing this, can you answer the original message to the best of your ability given this context (codedump)?
+            """
+        )
     except Exception as e:
         print(colors.red(f"Codedump failed due to: {e}"))
         return None

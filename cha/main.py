@@ -1,12 +1,24 @@
 import sys
 
+# NOTE: account for early keyboard exist
 try:
     import argparse
     import time
     import json
     import os
 
-    from cha import scraper, colors, utils, config, loading, platforms, codedump, answer
+    from cha import (
+        scraper,
+        colors,
+        utils,
+        config,
+        loading,
+        platforms,
+        codedump,
+        answer,
+        helpers,
+    )
+
     from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
@@ -27,24 +39,23 @@ CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bo
 def title_print(selected_model):
     print(
         colors.yellow(
-            "\n".join(
-                line.strip()
-                for line in f"""
-Chatting With OpenAI's '{selected_model}' Model
-- '{config.EXIT_STRING_KEY}' or CTRL-C to exit
-- '{config.CLEAR_HISTORY_TEXT}' to clear chat history
-- '{config.SAVE_CHAT_HISTORY}' to save chat history
-- '{config.LOAD_MESSAGE_CONTENT}' to load a file
-- '{config.HELP_PRINT_OPTIONS_KEY}' to list all options
-- '{config.RUN_ANSWER_FEATURE}' to run answer search
-- '{config.TEXT_EDITOR_INPUT_MODE}' for text-editor input mode
-- '{config.MULTI_LINE_MODE_TEXT}' for single/multi-line switching
-- '{config.MULTI_LINE_SEND}' to end in multi-line mode
-- '{config.SWITCH_MODEL_TEXT}' switch between models during a session
-- '{config.USE_CODE_DUMP}' to codedump a directory as context
-- `{config.QUICK_WEB_SEARCH_ANSWER}` answer prompt with a quick web search
-- `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files generated my the model
-                """.strip().splitlines()
+            helpers.rls(
+                f"""
+                Chatting With OpenAI's '{selected_model}' Model
+                - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
+                - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
+                - '{config.SAVE_CHAT_HISTORY}' to save chat history
+                - '{config.LOAD_MESSAGE_CONTENT}' to load a file
+                - '{config.HELP_PRINT_OPTIONS_KEY}' to list all options
+                - '{config.RUN_ANSWER_FEATURE}' to run answer search
+                - '{config.TEXT_EDITOR_INPUT_MODE}' for text-editor input mode
+                - '{config.MULTI_LINE_MODE_TEXT}' for single/multi-line switching
+                - '{config.MULTI_LINE_SEND}' to end in multi-line mode
+                - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
+                - '{config.USE_CODE_DUMP}' to codedump a directory as context
+                - `{config.QUICK_WEB_SEARCH_ANSWER}` answer prompt with a quick web search
+                - `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files generated my the model
+                """
             )
         )
     )

@@ -8,7 +8,7 @@ import os
 
 from bs4 import BeautifulSoup
 
-from cha import colors, utils, loading, config
+from cha import colors, utils, loading, config, helpers
 
 
 def clean_yt_dlp_transcript(input_text):
@@ -234,18 +234,16 @@ def scraped_prompt(prompt):
     if htmls == {}:
         return prompt
 
-    new_prompt = """
-Here is the content from the following url(s) in the form of a JSON:
-```
-{0}
-```
+    return helpers.rls(
+        f"""
+            Here is the content from the following url(s) in the form of a JSON:
+            ```
+            {htmls}
+            ```
 
-Knowing this, can you answer the following prompt: {1}
-""".format(
-        json.dumps(htmls), prompt
+            Knowing this, can you answer the following prompt: {prompt}
+        """
     )
-
-    return new_prompt
 
 
 def scrape_pdf_url(url):

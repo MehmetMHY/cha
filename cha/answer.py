@@ -6,36 +6,38 @@ import time
 import json
 import os
 
-from cha import scraper, colors, utils, config, loading
+from cha import scraper, colors, utils, config, loading, helpers
 
 
 def create_mega_prompt(search_results, prompt, is_final=False):
-    mega_prompt = f"""
-For your answer, understand that today's date is: {datetime.now(timezone.utc).isoformat()}
+    mega_prompt = helpers.rls(
+        f"""
+        For your answer, understand that today's date is: {datetime.now(timezone.utc).isoformat()}
 
-Here is some additional context that may be useful:
-```json
-{json.dumps(search_results)}
-```
+        Here is some additional context that may be useful:
+        ```json
+        {json.dumps(search_results)}
+        ```
 
-Please answer the following question using both your existing knowledge and the context provided above:
-```
-{prompt}
-```
+        Please answer the following question using both your existing knowledge and the context provided above:
+        ```
+        {prompt}
+        ```
 
-Instructions:
-1. Integrate your own knowledge with the context provided.
-2. Reference relevant information from the context above where appropriate.
-3. Include inline citations using square brackets, e.g., [1], in IEEE format for any referenced content. Do not include anything else (url, title, description, etc).
-4. Make sure there is a space between a word and the referenced content. Meaning, "word[1]" is NOT ok, rather it should be "word [1]"
-5. Ensure all citations contain a URL and are formatted correctly.
-6. Present your final answer as plain text, without using Markdown-specific tags or formatting (e.g., no ```markdown, or similar tags).
+        Instructions:
+        1. Integrate your own knowledge with the context provided.
+        2. Reference relevant information from the context above where appropriate.
+        3. Include inline citations using square brackets, e.g., [1], in IEEE format for any referenced content. Do not include anything else (url, title, description, etc).
+        4. Make sure there is a space between a word and the referenced content. Meaning, "word[1]" is NOT ok, rather it should be "word [1]"
+        5. Ensure all citations contain a URL and are formatted correctly.
+        6. Present your final answer as plain text, without using Markdown-specific tags or formatting (e.g., no ```markdown, or similar tags).
 
-IEEE Citation Format Example:
-- [1] Author(s), "Article Title," *Journal Title*, vol. number, no. number, pp. pages, Month, Year. [Online]. Available: URL
+        IEEE Citation Format Example:
+        - [1] Author(s), "Article Title," *Journal Title*, vol. number, no. number, pp. pages, Month, Year. [Online]. Available: URL
 
-Make sure to clearly refer to each citation in the body of your response. Your answer should be clear, concise, and well-structured!
-"""
+        Make sure to clearly refer to each citation in the body of your response. Your answer should be clear, concise, and well-structured!
+        """
+    )
 
     if is_final:
         mega_prompt = (
@@ -49,22 +51,24 @@ Make sure to clearly refer to each citation in the body of your response. Your a
 def generate_search_queries(
     client, user_prompt, model_name, min_results=config.DEFAULT_GEN_SEARCH_QUERY_COUNT
 ):
-    prompt = f"""
-Today's date, in ISO 8601 format, is: {datetime.now(timezone.utc).isoformat()}.
+    prompt = helpers.rls(
+        f"""
+        Today's date, in ISO 8601 format, is: {datetime.now(timezone.utc).isoformat()}.
 
-Your task is to generate at least {min_results} distinct search engine queries based on the user's prompt provided below:
-```md
-{user_prompt}
-```
+        Your task is to generate at least {min_results} distinct search engine queries based on the user's prompt provided below:
+        ```md
+        {user_prompt}
+        ```
 
-Instructions:
-1. Create search engine queries that extract the most relevant results for the user's prompt.
-2. Ensure each query is optimized to explore different aspects or angles of the user's intent.
-3. Format the queries as an array of strings.
+        Instructions:
+        1. Create search engine queries that extract the most relevant results for the user's prompt.
+        2. Ensure each query is optimized to explore different aspects or angles of the user's intent.
+        3. Format the queries as an array of strings.
 
-Example Format:
-- ["Query 1", "Query 2", "Query 3"]
-"""
+        Example Format:
+        - ["Query 1", "Query 2", "Query 3"]
+        """
+    )
 
     # NOTE: this insures the output is always an array of strings as it should be
     class SearchQueries(BaseModel):
@@ -364,25 +368,27 @@ def quick_search(user_input, min_search_result=3):
                 content = str(description)
             output.append({"url": url, "content": content})
 
-        return f"""
-Here is the user's prompt/question:
-```
-{user_input}
-```
+        return helpers.rls(
+            f"""
+            Here is the user's prompt/question:
+            ```
+            {user_input}
+            ```
 
-Here is some context extracted from the internet:
-```json
-{output}
-```
+            Here is some context extracted from the internet:
+            ```json
+            {output}
+            ```
 
-Instructions:
-1. Use your own knowledge and the context provided above to answer the question.
-2. Reference relevant information from the context above where appropriate.
-3. Include inline citations using square brackets, e.g., [1], formatted in IEEE style for any referenced content.
-4. Ensure all citations contain a URL and are formatted correctly.
-5. Present your final answer as plain text, without using Markdown-specific tags or formatting.
+            Instructions:
+            1. Use your own knowledge and the context provided above to answer the question.
+            2. Reference relevant information from the context above where appropriate.
+            3. Include inline citations using square brackets, e.g., [1], formatted in IEEE style for any referenced content.
+            4. Ensure all citations contain a URL and are formatted correctly.
+            5. Present your final answer as plain text, without using Markdown-specific tags or formatting.
 
-Your answer should be clear, concise, and well-structured!
-""".strip()
+            Your answer should be clear, concise, and well-structured!
+            """
+        )
     except:
         return None
