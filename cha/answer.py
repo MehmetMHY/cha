@@ -6,11 +6,11 @@ import time
 import json
 import os
 
-from cha import scraper, colors, utils, config, loading, helpers
+from cha import scraper, colors, utils, config, loading
 
 
 def create_mega_prompt(search_results, prompt, is_final=False):
-    mega_prompt = helpers.rls(
+    mega_prompt = utils.rls(
         f"""
         For your answer, understand that today's date is: {datetime.now(timezone.utc).isoformat()}
 
@@ -51,7 +51,7 @@ def create_mega_prompt(search_results, prompt, is_final=False):
 def generate_search_queries(
     client, user_prompt, model_name, min_results=config.DEFAULT_GEN_SEARCH_QUERY_COUNT
 ):
-    prompt = helpers.rls(
+    prompt = utils.rls(
         f"""
         Today's date, in ISO 8601 format, is: {datetime.now(timezone.utc).isoformat()}.
 
@@ -368,7 +368,7 @@ def quick_search(user_input, min_search_result=3):
                 content = str(description)
             output.append({"url": url, "content": content})
 
-        return helpers.rls(
+        return utils.rls(
             f"""
             Here is the user's prompt/question:
             ```

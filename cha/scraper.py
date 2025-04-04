@@ -8,7 +8,7 @@ import os
 
 from bs4 import BeautifulSoup
 
-from cha import colors, utils, loading, config, helpers
+from cha import colors, utils, loading, config
 
 
 def clean_yt_dlp_transcript(input_text):
@@ -234,7 +234,7 @@ def scraped_prompt(prompt):
     if htmls == {}:
         return prompt
 
-    return helpers.rls(
+    return utils.rls(
         f"""
             Here is the content from the following url(s) in the form of a JSON:
             ```
