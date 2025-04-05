@@ -1,3 +1,5 @@
+# NOTE: This script is used to easily and quickly update Cha's "setup.py" file
+
 import subprocess
 import sys
 import os

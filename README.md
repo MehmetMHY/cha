@@ -2,7 +2,7 @@
 
 ![image](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)
 
-Check out the [demo](https://www.youtube.com/watch?v=7zG8iFZjKtM)
+Check out the complete [demo](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
 ## Overview
 
@@ -266,6 +266,8 @@ For those interested in contributing or experimenting with Cha:
    ```bash
    python3 ./assets/update.py
    ```
+
+5. **(Optional) Run code formatter if changes are made to Cha's codebase**: To keep the code clean and organized, make sure to run the Cha's code formatter which is **[fm](https://github.com/MehmetMHY/fm)**.
 
 ## Other Platform(s) Compatibility
 
