@@ -1,5 +1,7 @@
 # Cha
 
+![image](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)
+
 Check out the [demo](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
 ## Overview
