@@ -12,7 +12,7 @@ import sys
 import re
 import os
 
-from cha import colors, utils, config, answer, loading
+from cha import colors, config, answer, loading
 
 
 def extract_code_blocks(text, file_start_str=""):
@@ -271,7 +271,7 @@ def load_most_files(
 
         llm_method = response.choices[0].message.content
 
-        return utils.rls(
+        return rls(
             f"""
             The LLM model "{model_name}" extracted the following from the image:
 
@@ -347,7 +347,7 @@ def load_most_files(
             return None
         if transcript.endswith("\n"):
             transcript = transcript[:-1]
-        return utils.rls(
+        return rls(
             f"""
             Audio File's Name:
             ```
@@ -419,7 +419,7 @@ def msg_content_load(client):
 
     # handle text-editor input
     if prompt.strip() == config.TEXT_EDITOR_INPUT_MODE:
-        editor_content = utils.check_terminal_editors_and_edit()
+        editor_content = check_terminal_editors_and_edit()
         if editor_content != None and len(editor_content) > 0:
             prompt = editor_content
             for line in prompt.rstrip("\n").split("\n"):
@@ -454,7 +454,7 @@ def msg_content_load(client):
 
 def run_answer_search(client, prompt=None, user_input_mode=True):
     try:
-        utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
+        check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
         return answer.answer_search(
             client=client, prompt=prompt, user_input_mode=user_input_mode
         )
@@ -463,7 +463,7 @@ def run_answer_search(client, prompt=None, user_input_mode=True):
 
 
 def act_as_ocr(client, filepath, prompt=None):
-    default_prompt = utils.rls(
+    default_prompt = rls(
         f"""
         Analyze the provided image and perform the following tasks:
         1. Extract all visible text accurately, including any embedded or obscured text.
@@ -479,7 +479,7 @@ def act_as_ocr(client, filepath, prompt=None):
             current_prompt = default_prompt
         if "/" not in filepath:
             filepath = "./" + filepath
-        content = utils.load_most_files(
+        content = load_most_files(
             file_path=filepath, client=client, prompt=current_prompt
         )
         return str(content)
@@ -576,13 +576,6 @@ def normalize_whitespace(text: str, tab_size: int = 4) -> str:
     return leading + middle + trailing
 
 
-def count_leading_ws(s: str) -> int:
-    match = re.match(r"^\s*", s)
-    if match:
-        return len(match.group())
-    return 0
-
-
 def rls(text: str, fast_mode: bool = False) -> str:
     lines = text.split("\n")
 
@@ -590,7 +583,10 @@ def rls(text: str, fast_mode: bool = False) -> str:
     for line in lines:
         if fast_mode == False:
             line = normalize_whitespace(line)
-        c = count_leading_ws(line)
+
+        match = re.match(r"^\s*", line)
+        c = len(match.group()) if match else 0
+
         if (lc > c and c > 0) or (lc == 0 and c > lc):
             lc = c
 
