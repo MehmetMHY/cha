@@ -94,6 +94,13 @@ def export_file_logic():
         if extracted["total"] == 0:
             print(colors.yellow("No blocks found for exporting"))
 
+        if extracted["brute_method"] == True:
+            print(
+                colors.red(
+                    f"Failed to extract code blocks, entire response is saved to a single text file"
+                )
+            )
+
         if len(extracted["errors"]) > 0:
             print(
                 colors.red(
