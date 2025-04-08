@@ -1,26 +1,7 @@
 import os
 import sys
 
-
-# Colors class for colored output.
-class Colors:
-    def red(self, s):
-        return f"\033[91m{s}\033[0m"
-
-    def yellow(self, s):
-        return f"\033[93m{s}\033[0m"
-
-    def blue(self, s):
-        return f"\033[94m{s}\033[0m"
-
-    def green(self, s):
-        return f"\033[92m{s}\033[0m"
-
-    def magenta(self, s):
-        return f"\033[95m{s}\033[0m"
-
-
-colors = Colors()
+from cha import colors
 
 
 def print_commands():
@@ -49,7 +30,7 @@ def print_listing(current_dir, selected_files, prefix_selected=False):
             print(colors.yellow("Selected files:"))
             for k, path in enumerate(external_selected, start=1):
                 print(f"  {k}) {path}")
-    print(colors.magenta("Current Directory:"), current_dir)
+    print(colors.magenta(f"{current_dir}/"))
     # Get directories and files separately and sort them.
     all_entries = os.listdir(current_dir)
     dirs = sorted(
