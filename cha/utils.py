@@ -65,10 +65,25 @@ def run_a_shell():
 
 
 def extract_code_blocks(text, file_start_str=""):
-    output = {"created": [], "errors": [], "total": 0}
+    output = {"created": [], "errors": [], "total": 0, "brute_method": False}
 
     pattern = r"```([a-zA-Z0-9+\-#]*)\n(.*?)```"
     matches = re.findall(pattern, text, re.DOTALL)
+
+    # if no code blocks were found, save the entire text as a .txt file
+    if not matches:
+        output["total"] += 1
+        output["brute_method"] = True
+        filename = str(file_start_str) + str(uuid.uuid4()).replace("-", "")[:8] + ".txt"
+        filename = os.path.join(os.getcwd(), filename)
+        try:
+            with open(filename, "w", encoding="utf-8") as f:
+                f.write(text.strip())
+            output["created"].append(filename)
+        except Exception as e:
+            output["errors"].append(e)
+        return output
+
     for lang, code in matches:
         output["total"] += 1
         filename = None
@@ -86,7 +101,7 @@ def extract_code_blocks(text, file_start_str=""):
             output["created"].append(filename)
         except Exception as e:
             output["errors"].append(e)
-            if filename != None and os.path.exists(filename):
+            if filename is not None and os.path.exists(filename):
                 os.remove(filename)
 
     return output
