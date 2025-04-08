@@ -45,6 +45,7 @@ def title_print(selected_model):
                 - '{config.USE_CODE_DUMP}' to codedump a directory as context
                 - `{config.QUICK_WEB_SEARCH_ANSWER}` answer prompt with a quick web search
                 - `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files generated my the model
+                - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 """
             )
         )
@@ -321,6 +322,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     print(colors.red(f"Failed to do a quick web search"))
                 else:
                     message = new_message
+
+            if message.startswith(config.PICK_AND_RUN_A_SHELL_OPTION):
+                utils.run_a_shell()
+                continue
 
             # check for an answer-search command
             if message.startswith(config.RUN_ANSWER_FEATURE):
