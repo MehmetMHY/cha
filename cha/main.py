@@ -116,10 +116,12 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
     global client
     global CURRENT_CHAT_HISTORY
 
-    is_o1 = utils.is_o_model(selected_model)
+    reasoning_model = utils.is_slow_model(selected_model)
 
     # for models (e.g. "o1") that do NOT accept system prompts, skip the system message
-    messages = [] if is_o1 else [{"role": "user", "content": config.INITIAL_PROMPT}]
+    messages = (
+        [] if reasoning_model else [{"role": "user", "content": config.INITIAL_PROMPT}]
+    )
     multi_line_input = False
 
     # handle file input or direct content string (non-interactive mode)
@@ -208,7 +210,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             print(
                                 colors.magenta(f"Switched to model: {selected_model}")
                             )
-                            is_o1 = utils.is_o_model(selected_model)
+                            reasoning_model = utils.is_slow_model(selected_model)
                         else:
                             print(colors.red("Invalid model number."))
                     else:
@@ -218,7 +220,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     # NOTE: this is not user-safe and can cause an error if the user inputs a model name wrong, but it's much faster to do this
                     selected_model = parts[1].strip()
                     print(colors.magenta(f"Switched to model: {selected_model}"))
-                    is_o1 = utils.is_o_model(selected_model)
+                    reasoning_model = utils.is_slow_model(selected_model)
 
                 continue
 
@@ -232,7 +234,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
                 messages = (
                     []
-                    if is_o1
+                    if reasoning_model
                     else [{"role": "user", "content": config.INITIAL_PROMPT}]
                 )
                 print(colors.yellow("Chat history cleared."))
@@ -366,7 +368,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
         # attempt to send the user's prompt to the selected model
         try:
-            if is_o1:
+            if reasoning_model:
                 loading.start_loading("Thinking", "braille")
                 response = client.chat.completions.create(
                     model=selected_model, messages=messages
@@ -398,7 +400,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if full_response:
                 messages.append({"role": "assistant", "content": full_response})
-                if not is_o1 and not full_response.endswith("\n"):
+                if not reasoning_model and not full_response.endswith("\n"):
                     sys.stdout.write("\n")
                     sys.stdout.flush()
 

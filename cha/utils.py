@@ -92,7 +92,7 @@ def extract_code_blocks(text, file_start_str=""):
     return output
 
 
-def is_o_model(model_name):
+def is_slow_model(model_name):
     return re.match(r"^o\d+", model_name) is not None
 
 
