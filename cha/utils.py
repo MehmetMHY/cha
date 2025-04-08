@@ -3,6 +3,7 @@ import statistics
 import subprocess
 import datetime
 import tempfile
+import random
 import base64
 import uuid
 import json
@@ -13,6 +14,54 @@ import re
 import os
 
 from cha import colors, config, answer, loading
+
+
+def run_a_shell():
+    shell_dir = "/etc/shells"
+
+    try:
+        with open(shell_dir) as f:
+            shells = [line.strip() for line in f if line.startswith("/")]
+
+        shells = list(set(shells))
+        shells.sort()
+
+        if len(shells) == 0:
+            raise Exception(f"Zero shells found")
+
+        print(colors.yellow("Available Shell(s):"))
+        for i, shell in enumerate(shells, start=1):
+            print(colors.white(f"   {i}) {shell}"))
+
+        chosen_name = None
+        user_input = safe_input(colors.yellow("Chosen Shell (e.g. 1): "))
+        try:
+            user_input = int(user_input) - 1
+            if user_input >= 0 and user_input < len(shells):
+                chosen_name = shells[user_input]
+        except:
+            pass
+
+        # invalid option picked, picking a random shell instead
+        if chosen_name == None:
+            chosen_name = random.choice(shells)
+
+        columns, _ = os.get_terminal_size()
+        padding_length = (columns - len(chosen_name) - 2) // 2
+        left_padding = "=" * padding_length
+        right_padding = "=" * (columns - len(left_padding) - len(chosen_name) - 2)
+        line_text = f"{left_padding}[{chosen_name}]{right_padding}"
+
+        print(colors.green(line_text))
+        subprocess.run(chosen_name)
+        print(colors.green(line_text))
+
+    except FileNotFoundError:
+        print(colors.red(f"Shell dir `{shell_dir}` is not found!"))
+    except Exception as e:
+        print(colors.red(f"Error running shell: {e}"))
+
+    return
 
 
 def extract_code_blocks(text, file_start_str=""):
