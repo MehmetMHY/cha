@@ -25,7 +25,14 @@ start_time = time.time()
 
 output = []
 for comment in islice(comments, count):
-    output.append(comment)
+    output.append(comment) ; continue
+    output.append({
+        "text": comment["text"],
+        "time": comment["time"],
+        "author": comment["author"],
+        "votes": comment["votes"],
+        "time_parsed": comment["time_parsed"]
+    })
 
 runtime = time.time() - start_time
 
