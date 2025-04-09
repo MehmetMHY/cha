@@ -1,3 +1,4 @@
+from itertools import islice
 import concurrent.futures
 import subprocess
 import tempfile
@@ -6,6 +7,7 @@ import json
 import re
 import os
 
+from youtube_comment_downloader import *
 from bs4 import BeautifulSoup
 
 from cha import colors, utils, loading, config
@@ -135,7 +137,28 @@ def video_transcript(url, always_use_yt_dlp=False):
             )
         output = yt_dlp_transcript_extractor(url, "en")
 
-    return output
+    final_output = {"youtube_video": url, "transcript": output, "comments": []}
+
+    try:
+        downloader = YoutubeCommentDownloader()
+        comments = downloader.get_comments_from_url(url, sort_by=SORT_BY_POPULAR)
+        # NOTE: grabbing the top 25 comments is the best in balance terms of time and data amount
+        for comment in islice(comments, 25):
+            final_output["comments"].append(
+                {
+                    "text": comment["text"],
+                    "time": comment["time"],
+                    "author": comment["author"],
+                    "votes": comment["votes"],
+                    "time_parsed": comment["time_parsed"],
+                }
+            )
+    except Exception as e:
+        loading.print_message(
+            colors.yellow(f"Failed to fully scrape YouTube video's comments")
+        )
+
+    return final_output
 
 
 def extract_urls(text):

@@ -1,13 +1,23 @@
 import sys
 
-# NOTE: account for early keyboard exist
+# catch below accounts for early keyboard exist
 try:
     import argparse
     import time
     import json
     import os
 
-    from cha import scraper, colors, utils, config, loading, platforms, codedump, answer
+    from cha import (
+        scraper,
+        colors,
+        utils,
+        config,
+        loading,
+        platforms,
+        codedump,
+        answer,
+        traverse,
+    )
 
     from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
@@ -85,41 +95,16 @@ def cleanly_print_models(openai_models):
     return openai_models
 
 
-def export_file_logic():
-    try:
-        extracted = utils.extract_code_blocks(
-            text=CURRENT_CHAT_HISTORY[-1]["bot"], file_start_str="export_"
-        )
-
-        if extracted["total"] == 0:
-            print(colors.yellow("No blocks found for exporting"))
-
-        if len(extracted["errors"]) > 0:
-            print(
-                colors.red(
-                    f"Failed to export {len(extracted['errors'])} blocks to files: {extracted}"
-                )
-            )
-
-        if len(extracted["created"]) > 0:
-            print(colors.green(f"Created following file(s):"))
-            for f in extracted["created"]:
-                print(colors.green(f"- {f}"))
-
-    except Exception as e:
-        print(colors.red(f"Failed to export code block(s) due to {e}"))
-
-    return
-
-
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
     global client
     global CURRENT_CHAT_HISTORY
 
-    is_o1 = utils.is_o_model(selected_model)
+    reasoning_model = utils.is_slow_model(selected_model)
 
     # for models (e.g. "o1") that do NOT accept system prompts, skip the system message
-    messages = [] if is_o1 else [{"role": "user", "content": config.INITIAL_PROMPT}]
+    messages = (
+        [] if reasoning_model else [{"role": "user", "content": config.INITIAL_PROMPT}]
+    )
     multi_line_input = False
 
     # handle file input or direct content string (non-interactive mode)
@@ -208,7 +193,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             print(
                                 colors.magenta(f"Switched to model: {selected_model}")
                             )
-                            is_o1 = utils.is_o_model(selected_model)
+                            reasoning_model = utils.is_slow_model(selected_model)
                         else:
                             print(colors.red("Invalid model number."))
                     else:
@@ -218,7 +203,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     # NOTE: this is not user-safe and can cause an error if the user inputs a model name wrong, but it's much faster to do this
                     selected_model = parts[1].strip()
                     print(colors.magenta(f"Switched to model: {selected_model}"))
-                    is_o1 = utils.is_o_model(selected_model)
+                    reasoning_model = utils.is_slow_model(selected_model)
 
                 continue
 
@@ -232,7 +217,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
                 messages = (
                     []
-                    if is_o1
+                    if reasoning_model
                     else [{"role": "user", "content": config.INITIAL_PROMPT}]
                 )
                 print(colors.yellow("Chat history cleared."))
@@ -257,7 +242,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 continue
 
             if message.strip() == config.EXPORT_FILES_IN_OUTPUT_KEY:
-                export_file_logic()
+                utils.export_file_logic(CURRENT_CHAT_HISTORY[-1]["bot"])
                 continue
 
             # print help
@@ -267,12 +252,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             # prompt user to load a file
             if message == config.LOAD_MESSAGE_CONTENT:
-                try:
-                    message = utils.msg_content_load(openai_client)
-                except:
-                    message = None
+                message = traverse.msg_content_load(openai_client)
                 if message is None:
-                    print()
                     continue
 
             if message.startswith(config.USE_CODE_DUMP):
@@ -366,7 +347,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
         # attempt to send the user's prompt to the selected model
         try:
-            if is_o1:
+            if reasoning_model:
                 loading.start_loading("Thinking", "braille")
                 response = client.chat.completions.create(
                     model=selected_model, messages=messages
@@ -398,7 +379,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if full_response:
                 messages.append({"role": "assistant", "content": full_response})
-                if not is_o1 and not full_response.endswith("\n"):
+                if not reasoning_model and not full_response.endswith("\n"):
                     sys.stdout.write("\n")
                     sys.stdout.flush()
 
@@ -640,7 +621,7 @@ def cli():
 
         if args.export_parsed_text:
             print()
-            export_file_logic()
+            utils.export_file_logic(CURRENT_CHAT_HISTORY[-1]["bot"])
 
     except (KeyboardInterrupt, EOFError):
         print()
