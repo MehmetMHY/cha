@@ -28,8 +28,8 @@ QUICK_WEB_SEARCH_ANSWER = "!b"
 EXPORT_FILES_IN_OUTPUT_KEY = "!e"
 PICK_AND_RUN_A_SHELL_OPTION = "!sh"
 
-# last updated on 11-19-2024
-CHA_DEFAULT_MODEL = "gpt-4o"
+# last updated on 4-9-2024
+CHA_DEFAULT_MODEL = "gpt-4o-mini"
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
 
 # answer feature config
