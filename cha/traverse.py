@@ -207,23 +207,9 @@ def traverse_and_select_files():
     # end of selection loop—final removal prompt
     if selected_files:
         sorted_sel = sorted(selected_files)
-        print(colors.yellow("Selected files before finalizing:"))
+        print(colors.yellow("Selected files:"))
         for k, path in enumerate(sorted_sel, start=1):
-            print(f"  {k}) {path}")
-        removal = input(colors.yellow("Selected files to remove: ")).strip()
-        if removal:
-            removal_indices = parse_selection_input(removal)
-            if removal_indices is None:
-                print(colors.red("Invalid removal input, no files removed!"))
-            else:
-                for r in removal_indices:
-                    if 1 <= r <= len(sorted_sel):
-                        file_to_remove = sorted_sel[r - 1]
-                        if file_to_remove in selected_files:
-                            selected_files.remove(file_to_remove)
-                            print(colors.yellow(f"Removed: {file_to_remove}"))
-                    else:
-                        print(colors.red(f"Invalid removal index: {r}"))
+            print(f"  - {path}")
 
     return sorted(selected_files)
 
