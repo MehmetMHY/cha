@@ -1,6 +1,6 @@
 import sys
 
-# NOTE: account for early keyboard exist
+# catch below accounts for early keyboard exist
 try:
     import argparse
     import time
