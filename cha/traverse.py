@@ -1,10 +1,11 @@
 import os
-import sys
 
-from cha import colors, utils, scraper
+from cha import colors
 
 
 def print_commands():
+    from cha import utils
+
     print(
         colors.red(
             utils.rls(
@@ -211,9 +212,7 @@ def traverse_and_select_files():
         print(colors.yellow("Selected files before finalizing:"))
         for k, path in enumerate(sorted_sel, start=1):
             print(f"  {k}) {path}")
-        removal = input(
-            colors.yellow("Selected files to remove (e.g. 1,2 or 2-4): ")
-        ).strip()
+        removal = input(colors.yellow("Selected files to remove: ")).strip()
         if removal:
             removal_indices = parse_selection_input(removal)
             if removal_indices is None:
@@ -231,15 +230,49 @@ def traverse_and_select_files():
     return sorted(selected_files)
 
 
-def main():
-    file_paths = traverse_and_select_files()
-    if file_paths:
-        print(colors.yellow("\nFinal Selected Files:"))
-        for path in file_paths:
-            print(path)
-    else:
-        print(colors.red("No files were selected."))
+def msg_content_load(client):
+    try:
+        from cha import utils, loading, config
 
+        file_paths = traverse_and_select_files()
 
-if __name__ == "__main__":
-    main()
+        if type(file_paths) != list:
+            raise Exception(f"Failed to determine filepaths")
+
+        prompt = input(colors.yellow("Additional Prompt: "))
+
+        # handle text-editor input
+        if prompt.strip() == config.TEXT_EDITOR_INPUT_MODE:
+            editor_content = utils.check_terminal_editors_and_edit()
+            if editor_content != None and len(editor_content) > 0:
+                prompt = editor_content
+                for line in prompt.rstrip("\n").split("\n"):
+                    print(colors.yellow(">"), line)
+
+        contents = []
+        try:
+            for file_path in file_paths:
+                loading.start_loading(f"Loading {file_path}", "rectangles")
+                content = utils.load_most_files(
+                    client=client,
+                    file_path=file_path,
+                    model_name=config.CHA_DEFAULT_IMAGE_MODEL,
+                    prompt=prompt,
+                )
+                contents.append((file_path, content))
+        except Exception as e:
+            raise Exception(f"Failed to load files: {e}")
+        finally:
+            loading.stop_loading()
+
+        output = "\n".join(
+            f"CONTENT FOR {file_path}:\n``````````\n{content}\n``````````\n"
+            for file_path, content in contents
+        )
+
+        if len(prompt) > 0:
+            output = f"PROMPT: {prompt}\n\n{output}"
+
+        return output
+    except Exception as e:
+        return None
