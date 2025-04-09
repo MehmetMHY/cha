@@ -136,7 +136,7 @@ def interactive_exclusion(root_path, files_dict):
             display_dir = os.path.relpath(d, root_path)
             print(colors.yellow(f"  {i+1}. {display_dir}/"))
         while True:
-            selection = input(colors.blue("> ")).strip()
+            selection = input(colors.blue(">>> ")).strip()
             if not selection:
                 break
             try:
