@@ -49,7 +49,7 @@ OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5"]
 
 # terminal/console config
 SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
-PREFERRED_TERMINAL_IDE = "vim"
+PREFERRED_TERMINAL_IDE = "nvim"
 MOVE_CURSOR_ONE_LINE = "\033[F"
 HIDE_CURSOR = "\033[?25l"
 SHOW_CURSOR = "\033[?25h"
