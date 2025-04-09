@@ -64,6 +64,38 @@ def run_a_shell():
     return
 
 
+def export_file_logic(text_content):
+    try:
+        extracted = extract_code_blocks(text=text_content, file_start_str="export_")
+
+        if extracted["total"] == 0:
+            print(colors.yellow("No blocks found for exporting"))
+
+        if extracted["brute_method"] == True:
+            print(
+                colors.red(
+                    f"Failed to extract code blocks, entire response is saved to a single text file"
+                )
+            )
+
+        if len(extracted["errors"]) > 0:
+            print(
+                colors.red(
+                    f"Failed to export {len(extracted['errors'])} blocks to files: {extracted}"
+                )
+            )
+
+        if len(extracted["created"]) > 0:
+            print(colors.green(f"Created following file(s):"))
+            for f in extracted["created"]:
+                print(colors.green(f"- {f}"))
+
+    except Exception as e:
+        print(colors.red(f"Failed to export code block(s) due to {e}"))
+
+    return
+
+
 def extract_code_blocks(text, file_start_str=""):
     output = {"created": [], "errors": [], "total": 0, "brute_method": False}
 
