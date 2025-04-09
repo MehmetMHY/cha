@@ -14,6 +14,7 @@ setup(
         "beautifulsoup4==4.13.3",
         "yt-dlp==2025.3.31",
         "youtube-transcript-api==1.0.3",
+        "youtube-comment-downloader==0.1.76",
         "PyMuPDF==1.25.5",
         "tiktoken==0.9.0",
         "duckduckgo_search==2025.4.4",
