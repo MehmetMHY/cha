@@ -7,7 +7,17 @@ try:
     import json
     import os
 
-    from cha import scraper, colors, utils, config, loading, platforms, codedump, answer
+    from cha import (
+        scraper,
+        colors,
+        utils,
+        config,
+        loading,
+        platforms,
+        codedump,
+        answer,
+        traverse,
+    )
 
     from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
@@ -276,12 +286,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             # prompt user to load a file
             if message == config.LOAD_MESSAGE_CONTENT:
-                try:
-                    message = utils.msg_content_load(openai_client)
-                except:
-                    message = None
+                message = traverse.msg_content_load(openai_client)
                 if message is None:
-                    print()
                     continue
 
             if message.startswith(config.USE_CODE_DUMP):

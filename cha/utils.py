@@ -13,7 +13,7 @@ import sys
 import re
 import os
 
-from cha import colors, config, answer, loading
+from cha import colors, config, answer
 
 
 def run_a_shell():
@@ -446,74 +446,6 @@ def load_most_files(
 
         with open(file_path, "r", encoding=encoding, errors="replace") as file:
             return file.read()
-
-
-def msg_content_load(client):
-    files = [
-        f for f in os.listdir() if os.path.isfile(f) and f not in config.FILES_TO_IGNORE
-    ]
-
-    if len(files) == 0:
-        print(colors.red(f"No files found in the current directory"), end="")
-        return None
-
-    print(colors.yellow(f"Current Directory:"), os.getcwd())
-    print(colors.yellow("File(s):"))
-    for i in range(len(files)):
-        print(f"   {i+1}) {files[i]}")
-
-    while True:
-        try:
-            file_pick = input(colors.yellow(f"File ID(s) (e.g. 1,2,3): "))
-            file_indices = [
-                int(x.strip()) - 1 for x in file_pick.replace(" ", "").split(",")
-            ]
-            if all(0 <= idx < len(files) for idx in file_indices):
-                file_paths = [files[idx] for idx in file_indices]
-                break
-        except KeyboardInterrupt:
-            return None
-        except EOFError:
-            return None
-        except ValueError:
-            pass
-        print(colors.red("Invalid input, please try again."))
-
-    prompt = input(colors.yellow("Additional Prompt: "))
-
-    # handle text-editor input
-    if prompt.strip() == config.TEXT_EDITOR_INPUT_MODE:
-        editor_content = check_terminal_editors_and_edit()
-        if editor_content != None and len(editor_content) > 0:
-            prompt = editor_content
-            for line in prompt.rstrip("\n").split("\n"):
-                print(colors.yellow(">"), line)
-
-    contents = []
-    try:
-        for file_path in file_paths:
-            loading.start_loading(f"Loading {file_path}", "rectangles")
-            content = load_most_files(
-                client=client,
-                file_path=file_path,
-                model_name=config.CHA_DEFAULT_IMAGE_MODEL,
-                prompt=prompt,
-            )
-            contents.append((file_path, content))
-    except Exception as e:
-        raise Exception(f"Failed to load files: {e}")
-    finally:
-        loading.stop_loading()
-
-    output = "\n".join(
-        f"CONTENT FOR {file_path}:\n``````````\n{content}\n``````````\n"
-        for file_path, content in contents
-    )
-
-    if len(prompt) > 0:
-        output = f"PROMPT: {prompt}\n\n{output}"
-
-    return output
 
 
 def run_answer_search(client, prompt=None, user_input_mode=True):

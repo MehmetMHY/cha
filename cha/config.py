@@ -48,7 +48,7 @@ FILES_TO_IGNORE = [".DS_Store", ".env", ".env.local"]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5"]
 
 # terminal/console config
-SUPPORTED_TERMINAL_IDES = ["vim", "vi", "nano", "emacs", "pico", "micro"]
+SUPPORTED_TERMINAL_IDES = ["nvim", "vim", "vi", "nano", "emacs", "pico", "micro"]
 PREFERRED_TERMINAL_IDE = "nvim"
 MOVE_CURSOR_ONE_LINE = "\033[F"
 HIDE_CURSOR = "\033[?25l"
