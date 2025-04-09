@@ -89,13 +89,11 @@ def traverse_and_select_files():
     current_dir = original_dir
     selected_files = set()
 
-    # print_commands()
-
     print_listing(current_dir, selected_files)
 
     while True:
         try:
-            user_input = input(colors.yellow(colors.bold("> "))).strip()
+            user_input = input(colors.yellow(colors.bold(">>> "))).strip()
         except (KeyboardInterrupt, EOFError):
             print()
             break
@@ -236,6 +234,9 @@ def msg_content_load(client):
 
         file_paths = traverse_and_select_files()
 
+        if len(file_paths) == 0:
+            raise Exception("No filepaths selected")
+
         if type(file_paths) != list:
             raise Exception(f"Failed to determine filepaths")
 
@@ -275,4 +276,6 @@ def msg_content_load(client):
 
         return output
     except Exception as e:
+        return None
+    except (KeyboardInterrupt, EOFError):
         return None
