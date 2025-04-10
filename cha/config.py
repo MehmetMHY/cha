@@ -28,8 +28,8 @@ QUICK_WEB_SEARCH_ANSWER = "!b"
 EXPORT_FILES_IN_OUTPUT_KEY = "!e"
 PICK_AND_RUN_A_SHELL_OPTION = "!sh"
 
-# last updated on 4-9-2024
-CHA_DEFAULT_MODEL = "gpt-4o-mini"
+# last updated on 4-10-2024
+CHA_DEFAULT_MODEL = "gpt-4o"
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
 
 # answer feature config
@@ -47,7 +47,7 @@ FILES_TO_IGNORE = [".DS_Store", ".env", ".env.local"]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5"]
 
 # terminal/console config
-SUPPORTED_TERMINAL_IDES = ["vim", "nvim", "vi", "nano", "emacs", "hx", "pico", "micro"]
+SUPPORTED_TERMINAL_IDES = ["vim", "nvim", "vi", "nano", "hx", "pico", "micro", "emacs"]
 PREFERRED_TERMINAL_IDE = "hx"
 MOVE_CURSOR_ONE_LINE = "\033[F"
 HIDE_CURSOR = "\033[?25l"
@@ -138,7 +138,13 @@ BINARY_EXTENSIONS = {
 # | turbo  | 809M   | ~6 GB  | ~8x   | ~7.7%      |
 # *--------*--------*--------*-------*------------*
 DEFAULT_WHISPER_MODEL_NAME = "tiny"
-LOCAL_WHISPER_SUPPORTED_FORMATS = [
+
+# support file formats
+SUPPORTED_IMG_FORMATS = [".jpg", ".jpeg", ".png"]
+SUPPORTED_PDF_FORMATS = [".pdf"]
+SUPPORTED_DOC_FORMATS = [".doc", ".docx"]
+SUPPORTED_SPREAD_SHEET_FORMATS = [".xls", ".xlsx"]
+SUPPORTED_AUDIO_FORMATS = [
     ".mp3",
     ".mp4",
     ".wav",
@@ -176,13 +182,6 @@ SUPPORTED_VIDEO_FORMATS = [
     ".svi",
     ".mod",
 ]
-
-SUPPORTED_IMG_FORMATS = [".jpg", ".jpeg", ".png"]
-SUPPORTED_PDF_FORMATS = [".pdf"]
-SUPPORTED_DOC_FORMATS = [".doc", ".docx"]
-SUPPORTED_SPREAD_SHEET_FORMATS = [".xls", ".xlsx"]
-SUPPORTED_AUDIO_FORMATS = LOCAL_WHISPER_SUPPORTED_FORMATS
-SUPPORTED_VIDEO_FORMATS = SUPPORTED_VIDEO_FORMATS
 
 # last updated on 03-11-2025
 SCRAPE_MODEL_NAME_FOR_PLATFORMS = "gpt-4o-mini"
