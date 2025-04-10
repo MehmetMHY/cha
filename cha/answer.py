@@ -183,7 +183,7 @@ def answer_search(
         print(colors.red(colors.underline("Question Prompt:")))
         print(prompt)
 
-    loading.start_loading("Generating Search Queries", "circles")
+    loading.start_loading("Crafting Queries", "circles")
 
     search_queries = generate_search_queries(client, prompt, small_model)
 
