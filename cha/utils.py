@@ -336,7 +336,7 @@ def load_most_files(
 ):
     file_ext = os.path.splitext(file_path)[1].lower()
 
-    if file_ext in [".jpg", ".jpeg", ".png"]:
+    if file_ext in config.SUPPORTED_IMG_FORMATS:
         from PIL import Image
         import pytesseract
 
@@ -387,7 +387,7 @@ def load_most_files(
             """
         )
 
-    elif file_ext == ".pdf":
+    elif file_ext in config.SUPPORTED_PDF_FORMATS:
         import fitz
 
         document = fitz.open(file_path)
@@ -398,13 +398,13 @@ def load_most_files(
         document.close()
         return text
 
-    elif file_ext in [".doc", ".docx"]:
+    elif file_ext in config.SUPPORTED_DOC_FORMATS:
         from docx import Document
 
         doc = Document(file_path)
         return "\n".join([paragraph.text for paragraph in doc.paragraphs])
 
-    elif file_ext in [".xls", ".xlsx"]:
+    elif file_ext in config.SUPPORTED_SPREAD_SHEET_FORMATS:
         import openpyxl
 
         workbook = openpyxl.load_workbook(file_path, data_only=True)
@@ -431,7 +431,7 @@ def load_most_files(
         text = text.strip()
         return text
 
-    elif file_ext in config.LOCAL_WHISPER_SUPPORTED_FORMATS:
+    elif file_ext in config.SUPPORTED_AUDIO_FORMATS:
         from mutagen import File
 
         audio_data = str(File(file_path).pprint()).strip()
