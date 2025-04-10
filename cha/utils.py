@@ -23,28 +23,13 @@ def run_a_shell():
         with open(shell_dir) as f:
             shells = [line.strip() for line in f if line.startswith("/")]
 
-        shells = list(set(shells))
+        shells = [x for x in list(set(shells)) if x != os.environ.get("SHELL")]
         shells.sort()
 
         if len(shells) == 0:
             raise Exception(f"Zero shells found")
 
-        print(colors.yellow("Available Shell(s):"))
-        for i, shell in enumerate(shells, start=1):
-            print(colors.white(f"   {i}) {shell}"))
-
-        chosen_name = None
-        user_input = safe_input(colors.yellow("Chosen Shell (e.g. 1): "))
-        try:
-            user_input = int(user_input) - 1
-            if user_input >= 0 and user_input < len(shells):
-                chosen_name = shells[user_input]
-        except:
-            pass
-
-        # invalid option picked, picking a random shell instead
-        if chosen_name == None:
-            chosen_name = random.choice(shells)
+        chosen_name = random.choice(shells)
 
         columns, _ = os.get_terminal_size()
         padding_length = (columns - len(chosen_name) - 2) // 2
