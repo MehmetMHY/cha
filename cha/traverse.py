@@ -167,7 +167,7 @@ def traverse_and_select_files():
         # assume file toggle selection input
         indices = parse_selection_input(user_input)
         if indices is None:
-            print(colors.red("Invalid input!"))
+            # print(colors.red("Invalid input!"))
             continue
 
         # recompute directories and files in the current directory
@@ -236,10 +236,25 @@ def msg_content_load(client):
                 for line in prompt.rstrip("\n").split("\n"):
                     print(colors.yellow(">"), line)
 
+        run_loading_animation = False
+
+        complex_file_types = (
+            config.SUPPORTED_AUDIO_FORMATS
+            + config.SUPPORTED_IMG_FORMATS
+            + config.SUPPORTED_VIDEO_FORMATS
+        )
+        for file_path in file_paths:
+            file_ext = os.path.splitext(file_path)[1].lower()
+            if file_ext in complex_file_types:
+                run_loading_animation = True
+                break
+
+        if run_loading_animation:
+            loading.start_loading(f"Loading files", "rectangles")
+
         contents = []
         try:
             for file_path in file_paths:
-                loading.start_loading(f"Loading {file_path}", "rectangles")
                 content = utils.load_most_files(
                     client=client,
                     file_path=file_path,
@@ -250,7 +265,8 @@ def msg_content_load(client):
         except Exception as e:
             raise Exception(f"Failed to load files: {e}")
         finally:
-            loading.stop_loading()
+            if run_loading_animation:
+                loading.stop_loading()
 
         output = "\n".join(
             f"CONTENT FOR {file_path}:\n``````````\n{content}\n``````````\n"
