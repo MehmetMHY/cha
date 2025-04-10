@@ -85,6 +85,8 @@ def parse_selection_input(selection_input):
 
 
 def traverse_and_select_files():
+    possible_additional_prompt_value = None
+
     original_dir = os.getcwd()
     current_dir = original_dir
     selected_files = set()
@@ -104,6 +106,16 @@ def traverse_and_select_files():
         if user_input.strip().lower() in ["help", "--help", "-h", "--h"]:
             print_commands()
             continue
+
+        if (
+            user_input.lower().startswith("cd") == False
+            and user_input.lower().startswith("ls") == False
+            and user_input.isdigit() == False
+            and len(selected_files) > 0
+            and len(user_input) > 10
+        ):
+            possible_additional_prompt_value = user_input
+            break
 
         tokens = user_input.split()
         cmd = tokens[0].lower()
@@ -211,14 +223,14 @@ def traverse_and_select_files():
         for k, path in enumerate(sorted_sel, start=1):
             print(f"  - {path}")
 
-    return sorted(selected_files)
+    return sorted(selected_files), possible_additional_prompt_value
 
 
 def msg_content_load(client):
     try:
         from cha import utils, loading, config
 
-        file_paths = traverse_and_select_files()
+        file_paths, prompt = traverse_and_select_files()
 
         if len(file_paths) == 0:
             raise Exception("No filepaths selected")
@@ -226,7 +238,8 @@ def msg_content_load(client):
         if type(file_paths) != list:
             raise Exception(f"Failed to determine filepaths")
 
-        prompt = input(colors.yellow("Additional Prompt: "))
+        if prompt == None:
+            prompt = input(colors.yellow("Additional Prompt: "))
 
         # handle text-editor input
         if prompt.strip() == config.TEXT_EDITOR_INPUT_MODE:
