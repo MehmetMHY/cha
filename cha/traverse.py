@@ -35,7 +35,7 @@ def print_listing(current_dir, selected_files, prefix_selected=False):
             for k, path in enumerate(external_selected, start=1):
                 print(f"  {k}) {path}")
 
-    print(colors.bold(colors.magenta(f"{current_dir}/")))
+    print(colors.magenta(f"{current_dir}/"))
 
     # get directories and files separately and sort them.
     all_entries = os.listdir(current_dir)
