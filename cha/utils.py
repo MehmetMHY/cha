@@ -22,7 +22,6 @@ def run_a_shell():
     try:
         with open(shell_dir) as f:
             shells = [line.strip() for line in f if line.startswith("/")]
-
         shells = [x for x in list(set(shells)) if x != os.environ.get("SHELL")]
         shells.sort()
 
@@ -128,7 +127,7 @@ def is_slow_model(model_name):
     return re.match(r"^o\d+", model_name) is not None
 
 
-def count_tokens(text, model_name, fast_mode=False, language=None, rounding=1.1):
+def count_tokens(text, model_name, fast_mode=False, language=None, rounding=1.25):
     try:
         if fast_mode == False:
             import tiktoken
