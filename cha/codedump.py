@@ -258,7 +258,7 @@ def extract_code(dir_path):
         output_text, config.DEFAULT_SEARCH_BIG_MODEL, False
     )
 
-    print(colors.magenta(f"Token Count:"), colors.red(f"~{token_count}"))
+    print(colors.magenta(f"Token Count:"), colors.red(f"{token_count}"))
 
     return output_text
 
