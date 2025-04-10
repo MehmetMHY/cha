@@ -280,4 +280,5 @@ def msg_content_load(client):
     except Exception as e:
         return None
     except (KeyboardInterrupt, EOFError):
+        print()
         return None
