@@ -329,6 +329,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 if message is not None:
                     messages.append({"role": "user", "content": message})
 
+                    CURRENT_CHAT_HISTORY.append(
+                        {"time": time.time(), "user": answer_prompt, "bot": message}
+                    )
+
                 continue
 
             # skip if user typed something blank
