@@ -146,7 +146,7 @@ def auto_select_a_platform(client, platform_key=None, model_name=None):
 
         print(colors.yellow("Available models:"))
         for idx, model in enumerate(models_list, start=1):
-            print(colors.yellow(f"  {idx}. {model}"))
+            print(colors.yellow(f"   {idx}) {model}"))
         while True:
             try:
                 model_choice = int(utils.safe_input(colors.blue("Select a model: ")))
