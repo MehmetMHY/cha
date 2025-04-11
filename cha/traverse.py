@@ -33,7 +33,7 @@ def print_listing(current_dir, selected_files, prefix_selected=False):
         if external_selected:
             print(colors.yellow("Selected files:"))
             for k, path in enumerate(external_selected, start=1):
-                print(f"  {k}) {path}")
+                print(f"   {k}) {path}")
 
     print(colors.magenta(f"{current_dir}/"))
 
@@ -51,12 +51,12 @@ def print_listing(current_dir, selected_files, prefix_selected=False):
     # list all current dirs and files
     index = 1
     for d in dirs:
-        print(f"  {index}) {colors.blue(d + '/')}")
+        print(f"   {index}) {colors.blue(d + '/')}")
         index += 1
     for f in files:
         full_path = os.path.join(current_dir, f)
         mark = "[x]" if full_path in selected_files else "[ ]"
-        print(f"  {index}) {mark} {f}")
+        print(f"   {index}) {mark} {f}")
         index += 1
 
 

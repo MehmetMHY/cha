@@ -134,7 +134,7 @@ def interactive_exclusion(root_path, files_dict):
         )
         for i, d in enumerate(directories):
             display_dir = os.path.relpath(d, root_path)
-            print(colors.yellow(f"  {i+1}. {display_dir}/"))
+            print(colors.yellow(f"   {i+1}) {display_dir}/"))
         while True:
             selection = input(colors.blue(">>> ")).strip()
             if not selection:
@@ -163,7 +163,7 @@ def interactive_exclusion(root_path, files_dict):
         )
         for i, rf in enumerate(sorted(remaining_files)):
             display_file = os.path.relpath(rf, root_path)
-            print(colors.yellow(f"  {i+1}. {display_file}"))
+            print(colors.yellow(f"   {i+1}) {display_file}"))
         while True:
             selection = input(colors.blue("> ")).strip()
             if not selection:
