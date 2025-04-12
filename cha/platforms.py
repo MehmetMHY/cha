@@ -80,7 +80,7 @@ def auto_select_a_platform(client, platform_key=None, model_name=None):
     if platform_key is None or platform_key not in config.THIRD_PARTY_PLATFORMS.keys():
         print(colors.yellow("Available platforms:"))
         for index, platform in enumerate(config.THIRD_PARTY_PLATFORMS.keys(), start=1):
-            print(colors.yellow(f"  {index}. {platform}"))
+            print(colors.yellow(f"   {index}) {platform}"))
         while True:
             try:
                 choice = int(utils.safe_input(colors.blue("Select a platform: ")))
