@@ -46,7 +46,49 @@ def check_installed_packages_with_pip(packages):
     return {"installed": installed, "missing": missing}
 
 
+def num_of_valid_shells():
+    shells = []
+    try:
+        current_shell = os.environ.get("SHELL")
+
+        try:
+            shell_dir = "/etc/shells"
+            with open(shell_dir) as f:
+                shells = [line.strip() for line in f if line.startswith("/")]
+            shells = [x for x in list(set(shells)) if x != current_shell]
+        except:
+            pass
+
+        try:
+            result = subprocess.run(
+                ["which", "fish"], capture_output=True, text=True, check=True
+            )
+            shells.append(result.stdout.strip())
+        except subprocess.CalledProcessError:
+            pass
+    except:
+        pass
+    return len(shells)
+
+
 def checkup():
+    try:
+        response = requests.get("http://www.google.com", timeout=5)
+        if response.status_code != 200:
+            raise Exception("")
+        print(f"✓ You are connected to the internet!")
+    except:
+        print("✗ Not connected to the internet; failing ALL tests")
+        return
+
+    try:
+        response = requests.get("https://duckduckgo.com", timeout=5)
+        if response.status_code != 200:
+            raise Exception("")
+        print(f"✓ DuckDuckGo search engine seems to be up and running")
+    except requests.exceptions.RequestException as e:
+        print("✗ DuckDuckGo search engine seems to be down")
+
     try:
         PYTHON_SETUP_FILE_PATH = None
         for i in range(4):
@@ -180,6 +222,12 @@ def checkup():
         print("✓ yt-dlp found (for YouTube transcripts)")
     else:
         print("✗ yt-dlp not installed or not on PATH")
+
+    valid_shell_count = num_of_valid_shells()
+    if valid_shell_count > 0:
+        print("✓ One valid shell was found for Cha's shell mode")
+    else:
+        print("✗ Zero valid shells found for Cha's shell mode")
 
 
 if __name__ == "__main__":
