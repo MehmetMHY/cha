@@ -344,6 +344,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             # skip if user typed something blank
             if len("".join(str(message)).split()) == 0:
+                if auto_scrape_detection_mode == True:
+                    auto_scrape_detection_mode = False
                 continue
 
             # add user's message
