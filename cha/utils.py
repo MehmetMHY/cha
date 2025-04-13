@@ -17,18 +17,33 @@ from cha import colors, config, answer
 
 
 def run_a_shell():
-    shell_dir = "/etc/shells"
-
     try:
-        with open(shell_dir) as f:
-            shells = [line.strip() for line in f if line.startswith("/")]
-        shells = [x for x in list(set(shells)) if x != os.environ.get("SHELL")]
-        shells.sort()
+        current_shell = os.environ.get("SHELL")
+        chosen_name = None
 
-        if len(shells) == 0:
+        # use fish shell by default
+        try:
+            result = subprocess.run(
+                ["which", "fish"], capture_output=True, text=True, check=True
+            )
+            fish_shell = result.stdout.strip()
+            if current_shell != fish_shell:
+                chosen_name = fish_shell
+        except subprocess.CalledProcessError:
+            pass
+
+        # use random but already installed shell if the fish shell is not installed
+        if chosen_name == None:
+            shell_dir = "/etc/shells"
+            with open(shell_dir) as f:
+                shells = [line.strip() for line in f if line.startswith("/")]
+            shells = [x for x in list(set(shells)) if x != current_shell]
+            shells.sort()
+            if len(shells) > 0:
+                chosen_name = random.choice(shells)
+
+        if chosen_name == None:
             raise Exception(f"Zero shells found")
-
-        chosen_name = random.choice(shells)
 
         columns, _ = os.get_terminal_size()
         padding_length = (columns - len(chosen_name) - 2) // 2
@@ -40,8 +55,6 @@ def run_a_shell():
         subprocess.run(chosen_name)
         print(colors.green(line_text))
 
-    except FileNotFoundError:
-        print(colors.red(f"Shell dir `{shell_dir}` is not found!"))
     except Exception as e:
         print(colors.red(f"Error running shell: {e}"))
 
