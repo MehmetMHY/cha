@@ -62,8 +62,7 @@ fi\n\
 # Create a custom shell startup script\n\
 echo "#!/bin/bash" > /custom_shell.sh\n\
 echo "source /opt/venv/bin/activate" >> /custom_shell.sh\n\
-echo "cha -h" >> /custom_shell.sh\n\
-echo "echo" >> /custom_shell.sh\n\
+echo "cha -h | awk '\''/^$/{exit} {print}'\''" >> /custom_shell.sh\n\
 echo "cha -pt" >> /custom_shell.sh\n\
 echo "exec bash" >> /custom_shell.sh\n\
 chmod +x /custom_shell.sh\n\

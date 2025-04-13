@@ -6,29 +6,22 @@ Run Cha using Docker to access the CLI tool via your browser. This is useful if 
 
 ## How To Run (Easily Steps)
 
-1. Make sure [Docker](https://www.docker.com/) is installed
+1. Make sure [Docker](https://www.docker.com/) is installed.
 
-2. Run the main run script (only run one of them):
+2. Run the main script:
+
+   When you execute the script, you will be prompted to decide whether to build the Docker image and whether to open the application URL in your browser. Enter "yes" or "y" to proceed with these actions.
 
    ```bash
-   # run the docker container and build+run the image if it does not exist
+   # run the docker container, with optional image build and URL opening based on user input
    bash run.sh
-
-   # same as the default option but open the link in the browser
-   bash run.sh -o
-
-   # same as the default option but rebuild the image
-   bash run.sh -b
-
-   # same as the default but rebuild the image and open the link in the browser
-   bash run.sh -o -b
    ```
 
 3. (NOTE) If this does not work, follow the steps below...
 
 ## Setup Instructions (MacOS & Linux)
 
-1. Make sure [Docker](https://www.docker.com/) is installed
+1. Make sure [Docker](https://www.docker.com/) is installed.
 
 2. Configure your **.env** file with the necessary API keys. See Cha's main README for details on required keys.
 
@@ -66,7 +59,7 @@ Run Cha using Docker to access the CLI tool via your browser. This is useful if 
 
 ## Setup Instructions (Windows)
 
-1. Make sure [Docker](https://www.docker.com/) is installed
+1. Make sure [Docker](https://www.docker.com/) is installed.
 
 2. Build the Docker image:
 
