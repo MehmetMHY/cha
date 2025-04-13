@@ -28,6 +28,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Quick Web Search**: Well chatting you can ask a question/prompt and have Cha browse the web real quick before answering your question.
 - **Export Markdown Fences**: If desired, export any Markdown fence in the latest message from a model to file(s).
 - **Integrated Shell Access**: Execute shell commands directly within Cha's environment, enhancing workflow efficiency by providing immediate terminal access.
+- **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
 
 ## Getting Started
 
