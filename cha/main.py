@@ -56,6 +56,7 @@ def title_print(selected_model):
                 - `{config.QUICK_WEB_SEARCH_ANSWER}` answer prompt with a quick web search
                 - `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files generated my the model
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
+                - '{config.ENABLE_OR_DISABLE_AUTO_SD} enable or disable auto url detection and scraping'
                 """
             )
         )
@@ -100,6 +101,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
     global CURRENT_CHAT_HISTORY
 
     reasoning_model = utils.is_slow_model(selected_model)
+
+    auto_scrape_detection_mode = False
 
     # for models (e.g. "o1") that do NOT accept system prompts, skip the system message
     messages = (
@@ -162,6 +165,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     )
                 )
                 user_input_string = colors.red("[M] ") + colors.blue("User: ")
+
+            if auto_scrape_detection_mode:
+                user_input_string = colors.yellow("[S] ") + colors.blue("User: ")
 
             message = utils.safe_input(user_input_string).rstrip("\n")
 
@@ -234,6 +240,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 message = "\n".join(message_lines)
                 multi_line_input = False
 
+            if message.strip() == config.ENABLE_OR_DISABLE_AUTO_SD:
+                auto_scrape_detection_mode = not auto_scrape_detection_mode
+                continue
+
             # save chat history to a JSON file
             if message == config.SAVE_CHAT_HISTORY:
                 cha_filepath = f"cha_{int(time.time())}.json"
@@ -271,23 +281,24 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     continue
 
             # check for URLs -> scraping
-            detected_urls = len(scraper.extract_urls(message))
-            if detected_urls > 0:
-                du_print = f"{detected_urls} URL{'s' if detected_urls > 1 else ''}"
-                prompt = f"{du_print} detected, continue web scraping (y/n)? "
-                sys.stdout.write(colors.red(prompt))
-                sys.stdout.flush()
-                du_user = utils.safe_input().strip()
-                sys.stdout.write(config.MOVE_CURSOR_ONE_LINE)
-                sys.stdout.write(config.CLEAR_LINE)
-                sys.stdout.flush()
+            if auto_scrape_detection_mode:
+                detected_urls = len(scraper.extract_urls(message))
+                if detected_urls > 0:
+                    du_print = f"{detected_urls} URL{'s' if detected_urls > 1 else ''}"
+                    prompt = f"{du_print} detected, continue web scraping (y/n)? "
+                    sys.stdout.write(colors.red(prompt))
+                    sys.stdout.flush()
+                    du_user = utils.safe_input().strip()
+                    sys.stdout.write(config.MOVE_CURSOR_ONE_LINE)
+                    sys.stdout.write(config.CLEAR_LINE)
+                    sys.stdout.flush()
 
-                if du_user.lower() in ["y", "yes"]:
-                    loading.start_loading("Scraping URLs", "star")
-                    try:
-                        message = scraper.scraped_prompt(message)
-                    finally:
-                        loading.stop_loading()
+                    if du_user.lower() in ["y", "yes"]:
+                        loading.start_loading("Scraping URLs", "star")
+                        try:
+                            message = scraper.scraped_prompt(message)
+                        finally:
+                            loading.stop_loading()
 
             if message.startswith(config.QUICK_WEB_SEARCH_ANSWER):
                 if len(message) <= len(str(config.QUICK_WEB_SEARCH_ANSWER)) * 2:
