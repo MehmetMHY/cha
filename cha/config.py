@@ -16,7 +16,7 @@ Always return any code or file output in a Markdown code fence, with syntax ```<
 MULTI_LINE_SEND = "END"
 MULTI_LINE_MODE_TEXT = "!m"
 CLEAR_HISTORY_TEXT = "!c"
-SAVE_CHAT_HISTORY = "!s"
+SAVE_CHAT_HISTORY = "!dw"
 EXIT_STRING_KEY = "!q"
 HELP_PRINT_OPTIONS_KEY = "!h"
 LOAD_MESSAGE_CONTENT = "!l"
@@ -27,7 +27,7 @@ USE_CODE_DUMP = "!d"
 QUICK_WEB_SEARCH_ANSWER = "!b"
 EXPORT_FILES_IN_OUTPUT_KEY = "!e"
 PICK_AND_RUN_A_SHELL_OPTION = "!sh"
-ENABLE_OR_DISABLE_AUTO_SD = "!w"
+ENABLE_OR_DISABLE_AUTO_SD = "!s"
 
 # last updated on 4-10-2024
 CHA_DEFAULT_MODEL = "gpt-4o"

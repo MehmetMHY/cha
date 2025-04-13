@@ -242,6 +242,12 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if message.strip() == config.ENABLE_OR_DISABLE_AUTO_SD:
                 auto_scrape_detection_mode = not auto_scrape_detection_mode
+                if auto_scrape_detection_mode:
+                    print(
+                        colors.yellow(
+                            f"Entered auto url detection & scraping. Type '{config.ENABLE_OR_DISABLE_AUTO_SD}' to exist"
+                        )
+                    )
                 continue
 
             # save chat history to a JSON file
@@ -284,21 +290,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if auto_scrape_detection_mode:
                 detected_urls = len(scraper.extract_urls(message))
                 if detected_urls > 0:
-                    du_print = f"{detected_urls} URL{'s' if detected_urls > 1 else ''}"
-                    prompt = f"{du_print} detected, continue web scraping (y/n)? "
-                    sys.stdout.write(colors.red(prompt))
-                    sys.stdout.flush()
-                    du_user = utils.safe_input().strip()
-                    sys.stdout.write(config.MOVE_CURSOR_ONE_LINE)
-                    sys.stdout.write(config.CLEAR_LINE)
-                    sys.stdout.flush()
-
-                    if du_user.lower() in ["y", "yes"]:
-                        loading.start_loading("Scraping URLs", "star")
-                        try:
-                            message = scraper.scraped_prompt(message)
-                        finally:
-                            loading.stop_loading()
+                    loading.start_loading("Scraping URLs", "star")
+                    try:
+                        message = scraper.scraped_prompt(message)
+                    finally:
+                        loading.stop_loading()
 
             if message.startswith(config.QUICK_WEB_SEARCH_ANSWER):
                 if len(message) <= len(str(config.QUICK_WEB_SEARCH_ANSWER)) * 2:
