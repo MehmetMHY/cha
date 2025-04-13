@@ -176,6 +176,20 @@ def traverse_and_select_files():
             print_listing(current_dir, selected_files, prefix_selected=True)
             continue
 
+        # when the input is a single number and it falls within the directory range, then navigate into that directory instead of toggling file selection.
+        if user_input.isdigit():
+            idx = int(user_input)
+            all_entries = os.listdir(current_dir)
+            dirs = sorted(
+                [e for e in all_entries if os.path.isdir(os.path.join(current_dir, e))],
+                key=str.lower,
+            )
+            if 1 <= idx <= len(dirs):
+                chosen = dirs[idx - 1]
+                current_dir = os.path.join(current_dir, chosen)
+                print_listing(current_dir, selected_files)
+                continue
+
         # assume file toggle selection input
         indices = parse_selection_input(user_input)
         if indices is None:
