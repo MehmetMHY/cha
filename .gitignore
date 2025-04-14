@@ -178,6 +178,22 @@ cython_debug/
 *.ppt
 *.pptx
 
+# Compressed Files
+*.7z
+*.zip
+*.tar
+*.gz
+*.bz2
+*.xz
+*.rar
+*.z
+*.tgz
+*.zipx
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.Z
+
 # Custom
 .DS_Store
 *.jpg
@@ -189,12 +205,8 @@ sd.json
 cha_*.json
 ig_*.json
 ig_*.jpg
-NOTES.md
 code_dump_*.txt
 codedump*.txt
 codedump_*.txt
 .sandbox/
-.future
-.plans.md
 export_*
-

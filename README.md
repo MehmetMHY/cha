@@ -34,6 +34,34 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 
 ### Installation
 
+You can install Cha using one of the following methods
+
+#### Pip
+
+If you have Python installed, you can install Cha via pip, which should be available by default:
+
+```bash
+pip install git+https://github.com/MehmetMHY/cha.git
+```
+
+#### Pipx
+
+To install using pipx, first make sure you have [pipx](https://pipx.pypa.io/stable/installation/) installed, then run:
+
+```bash
+pipx install 'git+https://github.com/MehmetMHY/cha.git'
+```
+
+#### Uv
+
+If you prefer using uv, ensure it is installed from [uv installation guide](https://github.com/astral-sh/uv). Then, execute:
+
+```bash
+uv pip install "git+https://github.com/MehmetMHY/cha.git"
+```
+
+### Manually
+
 1. **Clone the Repository**:
 
    ```bash
