@@ -34,6 +34,8 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 
 ### Installation
 
+Ensure you have [pipx](https://pipx.pypa.io/stable/installation/). Then run `pipx install 'git+https://github.com/MehmetMHY/cha'`.
+
 1. **Clone the Repository**:
 
    ```bash
