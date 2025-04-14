@@ -352,8 +352,9 @@ def msg_content_load(client):
             output = f"PROMPT: {prompt}\n\n{output}"
 
         return output
-    except Exception as e:
-        return None
     except (KeyboardInterrupt, EOFError):
         print()
+        return None
+    except Exception as e:
+        print(colors.red(f"Error occurred during traverse: {e}"))
         return None
