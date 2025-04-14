@@ -1,6 +1,18 @@
 import os
 
-from cha import colors
+from cha import colors, config
+
+
+def collect_files(directory):
+    # recursively traverse the given directory and return a list of file paths
+    collected = []
+    for root, _, files in os.walk(directory):
+        for f in files:
+            ext = os.path.splitext(f)[1].lower()
+            if ext in config.BINARY_EXTENSIONS or f in config.FILES_TO_IGNORE:
+                continue
+            collected.append(os.path.join(root, f))
+    return collected
 
 
 def print_commands():
@@ -108,9 +120,9 @@ def traverse_and_select_files():
             continue
 
         if (
-            user_input.lower().startswith("cd") == False
-            and user_input.lower().startswith("ls") == False
-            and user_input.isdigit() == False
+            not user_input.lower().startswith("cd")
+            and not user_input.lower().startswith("ls")
+            and not user_input.isdigit()
             and len(selected_files) > 0
             and len(user_input) > 10
         ):
@@ -154,15 +166,36 @@ def traverse_and_select_files():
                 if arg.isdigit():
                     idx = int(arg)
                     if 1 <= idx <= len(dirs):
+                        # select ALL files recursively from it
                         chosen = dirs[idx - 1]
-                        current_dir = os.path.join(current_dir, chosen)
-                        print_listing(current_dir, selected_files)
+                        target_dir = os.path.join(current_dir, chosen)
+                        new_files = collect_files(target_dir)
+                        if not new_files:
+                            print(
+                                colors.yellow(
+                                    f"No selectable files found in {target_dir}"
+                                )
+                            )
+                        for file_path in new_files:
+                            if file_path not in selected_files:
+                                selected_files.add(file_path)
+                                print(colors.green(f"Selected: {file_path}"))
                     else:
                         print(colors.red("Directory index out of range."))
                 else:
                     if arg in dirs:
-                        current_dir = os.path.join(current_dir, arg)
-                        print_listing(current_dir, selected_files)
+                        target_dir = os.path.join(current_dir, arg)
+                        new_files = collect_files(target_dir)
+                        if not new_files:
+                            print(
+                                colors.yellow(
+                                    f"No selectable files found in {target_dir}"
+                                )
+                            )
+                        for file_path in new_files:
+                            if file_path not in selected_files:
+                                selected_files.add(file_path)
+                                print(colors.green(f"Selected: {file_path}"))
                     else:
                         print(
                             colors.red(
@@ -176,7 +209,7 @@ def traverse_and_select_files():
             print_listing(current_dir, selected_files, prefix_selected=True)
             continue
 
-        # when the input is a single number and it falls within the directory range, then navigate into that directory instead of toggling file selection.
+        # when the input is a single number, decide whether it is a dir or file selection
         if user_input.isdigit():
             idx = int(user_input)
             all_entries = os.listdir(current_dir)
@@ -184,16 +217,22 @@ def traverse_and_select_files():
                 [e for e in all_entries if os.path.isdir(os.path.join(current_dir, e))],
                 key=str.lower,
             )
+            # when the index/input refers to a directory, recursively select all files in it
             if 1 <= idx <= len(dirs):
                 chosen = dirs[idx - 1]
-                current_dir = os.path.join(current_dir, chosen)
-                print_listing(current_dir, selected_files)
+                target_dir = os.path.join(current_dir, chosen)
+                new_files = collect_files(target_dir)
+                if not new_files:
+                    print(colors.yellow(f"No selectable files found in {target_dir}"))
+                for file_path in new_files:
+                    if file_path not in selected_files:
+                        selected_files.add(file_path)
+                        print(colors.green(f"Selected: {file_path}"))
                 continue
 
         # assume file toggle selection input
         indices = parse_selection_input(user_input)
         if indices is None:
-            # print(colors.red("Invalid input!"))
             continue
 
         # recompute directories and files in the current directory
@@ -223,6 +262,15 @@ def traverse_and_select_files():
 
             filename = files[file_idx]
             full_path = os.path.join(current_dir, filename)
+            extension = os.path.splitext(filename)[1].lower()
+
+            if (
+                extension in config.BINARY_EXTENSIONS
+                or filename in config.FILES_TO_IGNORE
+            ):
+                print(colors.yellow(f"Ignoring file: {full_path}"))
+                continue
+
             if full_path in selected_files:
                 selected_files.remove(full_path)
                 print(colors.yellow(f"Unselected: {full_path}"))
@@ -233,7 +281,7 @@ def traverse_and_select_files():
     # end of selection loop—final removal prompt
     if selected_files:
         sorted_sel = sorted(selected_files)
-        print(colors.yellow("Selected files:"))
+        print(colors.magenta("Selected files:"))
         for k, path in enumerate(sorted_sel, start=1):
             print(f"  - {path}")
 
@@ -242,7 +290,7 @@ def traverse_and_select_files():
 
 def msg_content_load(client):
     try:
-        from cha import utils, loading, config
+        from cha import utils, loading
 
         file_paths, prompt = traverse_and_select_files()
 
@@ -250,15 +298,15 @@ def msg_content_load(client):
             raise Exception("No filepaths selected")
 
         if type(file_paths) != list:
-            raise Exception(f"Failed to determine filepaths")
+            raise Exception("Failed to determine filepaths")
 
-        if prompt == None:
+        if prompt is None:
             prompt = input(colors.yellow("Additional Prompt: "))
 
         # handle text-editor input
         if prompt.strip() == config.TEXT_EDITOR_INPUT_MODE:
             editor_content = utils.check_terminal_editors_and_edit()
-            if editor_content != None and len(editor_content) > 0:
+            if editor_content is not None and len(editor_content) > 0:
                 prompt = editor_content
                 for line in prompt.rstrip("\n").split("\n"):
                     print(colors.yellow(">"), line)
