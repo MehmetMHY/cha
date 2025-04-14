@@ -60,7 +60,7 @@ If you prefer using uv, ensure it is installed from [uv installation guide](http
 uv pip install "git+https://github.com/MehmetMHY/cha.git"
 ```
 
-### Manually
+#### Manually
 
 1. **Clone the Repository**:
 
