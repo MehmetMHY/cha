@@ -9,54 +9,59 @@ from cha import scraper, colors, utils, config, loading
 
 
 def create_mega_prompt(search_results, prompt):
-    mega_prompt = f"""
-For your answer, understand that today's date is: {datetime.now(timezone.utc).isoformat()}
+    mega_prompt = utils.rls(
+        f"""
+        For your answer, understand that today's date is: {datetime.now(timezone.utc).isoformat()}
 
-Here is some additional context that may be useful:
-```json
-{json.dumps(search_results)}
-```
+        Here is some additional context that may be useful:
+        ```json
+        {json.dumps(search_results)}
+        ```
 
-Please answer the following question using both your existing knowledge and the context provided above:
-```md
-{prompt}
-```
+        Please answer the following question using both your existing knowledge and the context provided above:
+        ```md
+        {prompt}
+        ```
 
-Instructions:
-1. Integrate your own knowledge with the context provided.
-2. Reference relevant information from the context above where appropriate.
-3. Include inline citations using square brackets, e.g., [1], in IEEE format for any referenced content. Do not include anything else (url, title, description, etc).
-4. Make sure there is a space between a word and the referenced content. Meaning, "word[1]" is NOT ok, rather it should be "word [1]"
-5. Ensure all citations contain a URL and are formatted correctly.
-6. Present your final answer in markdown format.
+        Instructions:
+        1. Integrate your own knowledge with the context provided.
+        2. Reference relevant information from the context above where appropriate.
+        3. Include inline citations using square brackets, e.g., [1], in IEEE format for any referenced content. Do not include anything else (url, title, description, etc).
+        4. Make sure there is a space between a word and the referenced content. Meaning, "word[1]" is NOT ok, rather it should be "word [1]"
+        5. Ensure all citations contain a URL and are formatted correctly.
+        6. Present your final answer in markdown format.
 
-IEEE Citation Format Example:
-- [1] Author(s), "Article Title," *Journal Title*, vol. number, no. number, pp. pages, Month, Year. [Online]. Available: URL
+        IEEE Citation Format Example:
+        - [1] Author(s), "Article Title," *Journal Title*, vol. number, no. number, pp. pages, Month, Year. [Online]. Available: URL
 
-Make sure to clearly refer to each citation in the body of your response. Your answer should be clear, concise, and well-structured!
-"""
+        Make sure to clearly refer to each citation in the body of your response. Your answer should be clear, concise, and well-structured!
+        """
+    )
+
     return mega_prompt
 
 
 def generate_search_queries(
     client, user_prompt, model_name, min_results=config.DEFAULT_GEN_SEARCH_QUERY_COUNT
 ):
-    prompt = f"""
-Today's date, in ISO 8601 format, is: {datetime.now(timezone.utc).isoformat()}.
+    prompt = utils.rls(
+        f"""
+        Today's date, in ISO 8601 format, is: {datetime.now(timezone.utc).isoformat()}.
 
-Your task is to generate at least {min_results} distinct search engine queries based on the user's prompt provided below:
-```md
-{user_prompt}
-```
+        Your task is to generate at least {min_results} distinct search engine queries based on the user's prompt provided below:
+        ```md
+        {user_prompt}
+        ```
 
-Instructions:
-1. Create search engine queries that extract the most relevant results for the user's prompt.
-2. Ensure each query is optimized to explore different aspects or angles of the user's intent.
-3. Format the queries as an array of strings.
+        Instructions:
+        1. Create search engine queries that extract the most relevant results for the user's prompt.
+        2. Ensure each query is optimized to explore different aspects or angles of the user's intent.
+        3. Format the queries as an array of strings.
 
-Example Format:
-- ["Query 1", "Query 2", "Query 3"]
-"""
+        Example Format:
+        - ["Query 1", "Query 2", "Query 3"]
+        """
+    )
 
     # NOTE: this insures the output is always an array of strings as it should be
     class SearchQueries(BaseModel):
