@@ -231,6 +231,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if multi_line_input:
                 # keep appending lines until user types the MULTI_LINE_SEND text
+                if message.lower() == config.MULTI_LINE_SEND.lower():
+                    multi_line_input = False
+                    continue
                 message_lines = [message]
                 while True:
                     line = utils.safe_input().rstrip("\n")
