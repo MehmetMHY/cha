@@ -124,7 +124,6 @@ def traverse_and_select_files():
             and not user_input.lower().startswith("ls")
             and not user_input.isdigit()
             and len(selected_files) > 0
-            and len(user_input) > 10
         ):
             possible_additional_prompt_value = user_input
             break
