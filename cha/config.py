@@ -13,7 +13,7 @@ Always return any code or file output in a Markdown code fence, with syntax ```<
 """.strip()
 
 # key words
-MULTI_LINE_SEND = "END"
+MULTI_LINE_SEND = "q"
 MULTI_LINE_MODE_TEXT = "!m"
 CLEAR_HISTORY_TEXT = "!c"
 SAVE_CHAT_HISTORY = "!dw"
