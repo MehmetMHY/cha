@@ -145,8 +145,13 @@ def count_tokens(text, model_name, fast_mode=False, language=None, rounding=1.25
         if fast_mode == False:
             import tiktoken
 
-            encoding = tiktoken.encoding_for_model(model_name)
-            return len(encoding.encode(text))
+            try:
+                encoding = tiktoken.encoding_for_model(model_name)
+                return len(encoding.encode(text))
+            except:
+                new_model_name = "o1" if model_name.startswith("o") else "gpt-4o"
+                encoding = tiktoken.encoding_for_model(new_model_name)
+                return len(encoding.encode(text))
 
         word_count = len(text.split())
 
