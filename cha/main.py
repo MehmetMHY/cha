@@ -415,12 +415,6 @@ def cli():
     try:
         parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
         parser.add_argument(
-            "-pt",
-            "--print_title",
-            help="Print initial title during interactive mode",
-            action="store_true",
-        )
-        parser.add_argument(
             "-m",
             "--model",
             help="Model to use for chatting",
@@ -487,7 +481,7 @@ def cli():
             action="store_true",
         )
         parser.add_argument(
-            "-i", 
+            "-i",
             "--init",
             help="Initialize the local directory and files in your home directory",
             action="store_true",
@@ -530,7 +524,7 @@ def cli():
             )
             sys.exit(1 if output is None else 0)
 
-        title_print_value = args.print_title
+        title_print_value = config.CHA_DEFAULT_SHOW_PRINT_TITLE
         selected_model = args.model
 
         if args.platform or args.platform == True:

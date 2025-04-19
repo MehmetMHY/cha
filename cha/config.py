@@ -32,6 +32,7 @@ ENABLE_OR_DISABLE_AUTO_SD = "!s"
 # last updated on 4-10-2024
 CHA_DEFAULT_MODEL = "gpt-4.1"
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
+CHA_DEFAULT_SHOW_PRINT_TITLE = True
 
 # answer feature config
 DEFAULT_SEARCH_BIG_MODEL = "o4-mini"

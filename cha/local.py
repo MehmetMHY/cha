@@ -25,21 +25,10 @@ def setup_cha_config_dir():
     else:
         return
 
-    # create settings.json with default content if it doesn't exist
-    default_settings = {
-        "version": None,
-        "history": False,
-        "settings": {},
-        "url": "https://github.com/MehmetMHY/cha",
-    }
-    try:
-        default_settings["version"] = version("cha")
-    except:
-        pass
-
+    # create config file
     if not os.path.isfile(settings_file):
-        with open(settings_file, "w") as f:
-            json.dump(default_settings, f, indent=4)
+        with open(settings_file, "w") as file:
+            file.write("")
 
     # create history directory if it doesn't exist
     if not os.path.exists(history_dir):
