@@ -486,8 +486,18 @@ def cli():
             help="Input a one-short query using your default terminal text editor (IDE)",
             action="store_true",
         )
+        parser.add_argument(
+            "-i", 
+            "--init",
+            help="Initialize the local directory and files in your home directory",
+            action="store_true",
+        )
 
         args = parser.parse_args()
+
+        if args.init:
+            print("INIT GOES HERE!!!")
+            return
 
         if args.code_dump == True:
             codedump.code_dump(None, True)
