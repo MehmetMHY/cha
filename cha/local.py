@@ -3,63 +3,52 @@ from pathlib import Path
 import json
 import os
 
-from cha import utils
-
-
-def load_json(file_path):
-    with open(file_path, "r") as file:
-        data = json.load(file)
-    return data
-
 
 def setup_cha_config_dir():
-    home_dir = os.path.expanduser("~")
-    cha_dir = os.path.join(home_dir, ".cha")
-    settings_file = os.path.join(cha_dir, "config.py")
-    history_dir = os.path.join(cha_dir, "history")
-    tools_dir = os.path.join(cha_dir, "tools")
+    try:
+        home_dir = os.path.expanduser("~")
+        cha_dir = os.path.join(home_dir, ".cha")
+        settings_file = os.path.join(cha_dir, "config.py")
+        history_dir = os.path.join(cha_dir, "history")
+        tools_dir = os.path.join(cha_dir, "tools")
 
-    # create .cha directory if it doesn't exist
-    if not os.path.exists(cha_dir):
-        os.makedirs(cha_dir)
-    else:
-        return
+        # create .cha directory if it doesn't exist
+        if not os.path.exists(cha_dir):
+            os.makedirs(cha_dir)
+        else:
+            return False
 
-    # create config file
-    if not os.path.isfile(settings_file):
-        with open(settings_file, "w") as file:
-            file.write("")
+        # create config file
+        if not os.path.isfile(settings_file):
+            with open(settings_file, "w") as file:
+                file.write("")
 
-    # create history directory if it doesn't exist
-    if not os.path.exists(history_dir):
-        os.makedirs(history_dir)
+        # create history directory if it doesn't exist
+        if not os.path.exists(history_dir):
+            os.makedirs(history_dir)
 
-    # create tools directory if it doesn't exist
-    if not os.path.exists(tools_dir):
-        os.makedirs(tools_dir)
+        # create tools directory if it doesn't exist
+        if not os.path.exists(tools_dir):
+            os.makedirs(tools_dir)
 
-    return
+        return True
+    except:
+        return None
 
 
 if __name__ == "__main__":
-    setup_cha_config_dir()
+    output = setup_cha_config_dir()
 
     cha_config_dir = os.path.join(str(Path.home()), ".cha/")
 
-    cha_config_file = os.path.join(cha_config_dir, "config.json")
-
-    cha_saved_history_dir = os.path.join(cha_config_dir, "history/")
-
-    cha_tools_dir = os.path.join(cha_config_dir, "tools/")
-
-    print(cha_config_dir)
-    print()
-    print(cha_config_file)
-    print()
-    print(cha_saved_history_dir)
-    print()
-    print(cha_tools_dir)
-
-    cha_config = utils.read_json(cha_config_file)
-
-    print(json.dumps(cha_config, indent=4))
+    if output == False:
+        print(f"Cha config directory already exists: {cha_config_dir}")
+    elif output == None:
+        print(
+            f"An unexpected error happened well trying to create the Cha config directory"
+        )
+    else:
+        print("CHA CONFIG DIRECTORY: ", os.path.join(str(Path.home()), ".cha/"))
+        print("CHA CONFIG FILEPATH:  ", os.path.join(cha_config_dir, "config.py"))
+        print("CHA HISTORY DIRECTORY:", os.path.join(cha_config_dir, "history/"))
+        print("CHA TOOLS DIRECTORY:  ", os.path.join(cha_config_dir, "tools/"))

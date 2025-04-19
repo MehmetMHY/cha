@@ -1,4 +1,5 @@
 # NOTE: do NOT modify any of the "import" lines below, just the variables!
+from pathlib import Path
 import importlib.util
 import os
 
@@ -564,8 +565,14 @@ FILETYPE_TO_EXTENSION = {
 
 # NOTE: do NOT modify the code below because it allows the loading of custom configs if provided!
 CUSTOM_CONFIG_PATH = os.environ.get("CHA_PYTHON_CUSTOM_CONFIG_PATH")
+LOCAL_CONFIG_PATH = os.path.join(os.path.join(str(Path.home()), ".cha/"), "config.py")
+OVERRIGHT_CONFIG = None
 if CUSTOM_CONFIG_PATH and os.path.exists(CUSTOM_CONFIG_PATH):
-    spec = importlib.util.spec_from_file_location("external_config", CUSTOM_CONFIG_PATH)
+    OVERRIGHT_CONFIG = CUSTOM_CONFIG_PATH
+elif LOCAL_CONFIG_PATH and os.path.exists(LOCAL_CONFIG_PATH):
+    OVERRIGHT_CONFIG = LOCAL_CONFIG_PATH
+if OVERRIGHT_CONFIG != None:
+    spec = importlib.util.spec_from_file_location("external_config", OVERRIGHT_CONFIG)
     external_config = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(external_config)
 
