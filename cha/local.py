@@ -41,13 +41,12 @@ if __name__ == "__main__":
 
     cha_config_dir = os.path.join(str(Path.home()), ".cha/")
 
-    if output == False:
-        print(f"Cha config directory already exists: {cha_config_dir}")
-    elif output == None:
+    if output == None:
         print(
             f"An unexpected error happened well trying to create the Cha config directory"
         )
     else:
+        print("CHA INIT RAW OUTPUT:  ", output, f"(False = Config Dir Exists)")
         print("CHA CONFIG DIRECTORY: ", os.path.join(str(Path.home()), ".cha/"))
         print("CHA CONFIG FILEPATH:  ", os.path.join(cha_config_dir, "config.py"))
         print("CHA HISTORY DIRECTORY:", os.path.join(cha_config_dir, "history/"))

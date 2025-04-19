@@ -210,3 +210,5 @@ codedump*.txt
 codedump_*.txt
 .sandbox/
 export_*
+cha_hs_*.json
+cha_hs_*.txt
