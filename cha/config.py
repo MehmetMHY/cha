@@ -33,7 +33,10 @@ ENABLE_OR_DISABLE_AUTO_SD = "!s"
 # last updated on 4-10-2024
 CHA_DEFAULT_MODEL = "gpt-4.1"
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
+
+# local config variables
 CHA_DEFAULT_SHOW_PRINT_TITLE = True
+CHA_LOCAL_SAVE_ALL_CHA_CHATS = False
 
 # answer feature config
 DEFAULT_SEARCH_BIG_MODEL = "o4-mini"
@@ -564,13 +567,19 @@ FILETYPE_TO_EXTENSION = {
 }
 
 # NOTE: do NOT modify the code below because it allows the loading of custom configs if provided!
+
+LOCAL_CHA_CONFIG_DIR = os.path.join(str(Path.home()), ".cha/")
+LOCAL_CHA_CONFIG_HISTORY_DIR = os.path.join(LOCAL_CHA_CONFIG_DIR, "history/")
+LOCAL_CHA_CONFIG_TOOLS_DIR = os.path.join(LOCAL_CHA_CONFIG_DIR, "tools/")
+LOCAL_CHA_CONFIG_FILE = os.path.join(LOCAL_CHA_CONFIG_DIR, "config.py")
+
 CUSTOM_CONFIG_PATH = os.environ.get("CHA_PYTHON_CUSTOM_CONFIG_PATH")
-LOCAL_CONFIG_PATH = os.path.join(os.path.join(str(Path.home()), ".cha/"), "config.py")
 OVERRIGHT_CONFIG = None
 if CUSTOM_CONFIG_PATH and os.path.exists(CUSTOM_CONFIG_PATH):
     OVERRIGHT_CONFIG = CUSTOM_CONFIG_PATH
-elif LOCAL_CONFIG_PATH and os.path.exists(LOCAL_CONFIG_PATH):
-    OVERRIGHT_CONFIG = LOCAL_CONFIG_PATH
+elif LOCAL_CHA_CONFIG_FILE and os.path.exists(LOCAL_CHA_CONFIG_FILE):
+    OVERRIGHT_CONFIG = LOCAL_CHA_CONFIG_FILE
+
 if OVERRIGHT_CONFIG != None:
     spec = importlib.util.spec_from_file_location("external_config", OVERRIGHT_CONFIG)
     external_config = importlib.util.module_from_spec(spec)

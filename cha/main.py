@@ -412,6 +412,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 def cli():
     global client
 
+    save_chat_state = True
+    args = None
+
     try:
         parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
         parser.add_argument(
@@ -522,7 +525,9 @@ def cli():
             output = utils.run_answer_search(
                 client=openai_client, prompt=None, user_input_mode=True
             )
-            sys.exit(1 if output is None else 0)
+            save_chat_state = False
+            if output is None:
+                raise Exception("Answer search existed with None")
 
         title_print_value = config.CHA_DEFAULT_SHOW_PRINT_TITLE
         selected_model = args.model
@@ -574,10 +579,12 @@ def cli():
 
                 print(colors.magenta(f"Platform switched to {BASE_URL_VALUE}"))
             except Exception as e:
-                print(colors.red(f"Failed to switch platform due to {e}"))
-                return
+                save_chat_state = False
+                raise Exception(f"Failed to switch platform due to {e}")
 
         if args.token_count:
+            save_chat_state = False
+
             text, content_mode = None, None
 
             if args.file:
@@ -606,9 +613,9 @@ def cli():
                 print(colors.green("Selected Model:"), args.model)
                 print(colors.green("Text Length:"), len(text), "chars")
                 print(colors.green("Token Count:"), token_count, "tokens")
+                return
             except Exception as e:
-                print(colors.red(f"Error counting tokens: {e}"))
-            return
+                raise Exception(f"Error counting tokens: {e}")
 
         if args.select_model:
             openai_models = cleanly_print_models(openai_models=list_models())
@@ -633,8 +640,8 @@ def cli():
         elif args.integrated_dev_env:
             editor_content = utils.check_terminal_editors_and_edit()
             if editor_content is None:
-                print(colors.red(f"No text editor available or editing cancelled"))
-                sys.exit(1)
+                save_chat_state = False
+                raise Exception(f"No text editor available or editing cancelled")
             chatbot(selected_model, title_print_value, content_string=editor_content)
         else:
             chatbot(selected_model=selected_model, print_title=title_print_value)
@@ -647,8 +654,53 @@ def cli():
         print()
     except Exception as err:
         if str(err):
-            # NOTE: a newline is needed to prevent text overlap during streaming cancellation
-            print(colors.red(f"\nAn error occurred: {err}"))
+            err_msg = f"{err}"
+            if save_chat_state:
+                # NOTE: a newline is needed to prevent text overlap during streaming cancellation
+                err_msg = "\n" + err_msg
+            print(colors.red(err_msg))
         else:
             print(colors.red("Exited unexpectedly"))
-        sys.exit(1)
+    except SystemExit:
+        # account for when main input function exists
+        pass
+
+    # save chat locally if desired
+    if (
+        config.CHA_LOCAL_SAVE_ALL_CHA_CHATS == True
+        and save_chat_state == True
+        and len(CURRENT_CHAT_HISTORY) > 1
+        and os.path.exists(config.LOCAL_CHA_CONFIG_HISTORY_DIR)
+    ):
+        from datetime import datetime, timezone
+        from importlib.metadata import version
+        import uuid
+
+        try:
+            version_id = str(version("cha"))
+        except:
+            version_id = "?"
+
+        epoch_time_seconds = time.time()
+        file_id = str(uuid.uuid4())
+
+        history_save = {
+            "id": file_id,
+            "version": version_id,
+            "date": {
+                "epoch": {"seconds": epoch_time_seconds},
+                "utc": f"{datetime.now(timezone.utc)} UTC",
+            },
+            "args": {},
+            "chat": CURRENT_CHAT_HISTORY,
+        }
+
+        if args != None:
+            history_save["args"] = vars(args)
+
+        file_path = os.path.join(
+            config.LOCAL_CHA_CONFIG_HISTORY_DIR,
+            f"cha_hs_{int(epoch_time_seconds)}.json",
+        )
+
+        utils.write_json(file_path, history_save)
