@@ -682,6 +682,7 @@ def cli():
             version_id = "?"
 
         epoch_time_seconds = time.time()
+        utc_time_stamp = f"{datetime.now(timezone.utc)} UTC"
         file_id = str(uuid.uuid4())
 
         history_save = {
@@ -689,7 +690,7 @@ def cli():
             "version": version_id,
             "date": {
                 "epoch": {"seconds": epoch_time_seconds},
-                "utc": f"{datetime.now(timezone.utc)} UTC",
+                "utc": utc_time_stamp,
             },
             "args": {},
             "chat": CURRENT_CHAT_HISTORY,
