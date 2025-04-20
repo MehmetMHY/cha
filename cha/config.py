@@ -84,6 +84,9 @@ TERMINAL_THEME_CODES = {
     },
 }
 
+# external, custom, 3rd party tools if defined by the user externally
+EXTERNAL_TOOLS = []
+
 # http request configs
 REQUEST_DEFAULT_TIMEOUT_SECONDS = 10
 REQUEST_DEFAULT_RETRY_COUNT = 1
