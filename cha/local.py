@@ -138,8 +138,8 @@ def execute_tool(tool_data, chat_history=None, piped_question=None):
     args = {}
     if tool_data["include_history"] == True and chat_history != None:
         args["chat_history"] = chat_history
-    if tool_data["pipe_input"] == True and piped_question != None:
-        args["piped_input"] = piped_question
+    if tool_data["pipe_input"] == True:
+        args["piped_input"] = piped_question if piped_question else ""
 
     signal.signal(signal.SIGALRM, timeout_handler)
     signal.alarm(tool_data["timeout_sec"])
