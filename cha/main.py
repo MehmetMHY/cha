@@ -6,6 +6,7 @@ try:
     import time
     import json
     import os
+    import re
 
     from cha import (
         scraper,
@@ -62,6 +63,12 @@ def title_print(selected_model):
             )
         )
     )
+
+    if config.EXTERNAL_TOOLS_EXECUTE != None:
+        for tool in config.EXTERNAL_TOOLS_EXECUTE:
+            alias = tool["alias"]
+            about = re.sub(r"[.!?]+$", "", tool["description"].lower())
+            print(colors.magenta(f"- '{alias}' {about}"))
 
 
 def list_models():
@@ -252,6 +259,35 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             f"Entered auto url detection & scraping. Type '{config.ENABLE_OR_DISABLE_AUTO_SD}' to exist"
                         )
                     )
+                continue
+
+            # account for external tools
+            exist_early_due_to_tool_calling_config = False
+            for tool_data in config.EXTERNAL_TOOLS_EXECUTE:
+                alias = tool_data["alias"]
+                if message.strip().startswith(alias):
+                    tool_call_output = local.execute_tool(
+                        tool_data=tool_data,
+                        chat_history=messages,
+                        piped_question=message.replace(alias, "").strip(),
+                    )
+                    if tool_call_output["error"] != None:
+                        print(
+                            colors.red(
+                                f"Failed to run tool '{alias}' due to: {tool_call_output['error']}"
+                            )
+                        )
+                        exist_early_due_to_tool_calling_config == True
+                    else:
+                        messages.append(
+                            {"role": "assistant", "content": tool_call_output["result"]}
+                        )
+                        exist_early_due_to_tool_calling_config = not tool_call_output[
+                            "continue"
+                        ]
+                    break
+
+            if exist_early_due_to_tool_calling_config:
                 continue
 
             # save chat history to a JSON file

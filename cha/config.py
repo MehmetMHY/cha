@@ -606,8 +606,6 @@ if OVERRIGHT_CONFIG != None:
         if key.isupper():
             globals()[key] = value
 
-
-import json
-
-tools = local.get_tools()
-print(json.dumps(local.execute_tool(tools[0]), indent=4))
+EXTERNAL_TOOLS_EXECUTE = None
+if len(EXTERNAL_TOOLS) > 0:
+    EXTERNAL_TOOLS_EXECUTE = local.get_tools()
