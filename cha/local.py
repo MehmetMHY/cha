@@ -1,5 +1,6 @@
 from importlib.metadata import version
 from pathlib import Path
+import signal
 import inspect
 import json
 import sys
@@ -125,7 +126,35 @@ def get_tools():
     return advance_tools
 
 
-def execute_tool(tool_data):
-    for key in tool_data:
-        print(key, "=", tool_data[key])
-    return None
+def execute_tool(tool_data, chat_history=None, piped_question=None):
+    class TimeoutException(Exception):
+        pass
+
+    def timeout_handler(signum, frame):
+        raise TimeoutException("Operation timed out!")
+
+    output = {}
+
+    args = {}
+    if tool_data["include_history"] == True and chat_history != None:
+        args["chat_history"] = chat_history
+    if tool_data["pipe_input"] == True and piped_question != None:
+        args["piped_input"] = piped_question
+
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(tool_data["timeout_sec"])
+    try:
+        output["result"] = tool_data["pointer"].execute(**args)
+        output["error"] = None
+    except TimeoutException as e:
+        output["error"] = "Timed out the tool"
+        output["result"] = None
+    except Exception as e:
+        output["error"] = f"{e}"
+        output["result"] = None
+    finally:
+        signal.alarm(0)
+
+    output["continue"] = tool_data["pipe_output"]
+
+    return output
