@@ -261,11 +261,12 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     )
                 continue
 
-            # account for external tools
+            # NOTE: account for external tools
             exist_early_due_to_tool_calling_config = False
             for tool_data in config.EXTERNAL_TOOLS_EXECUTE:
                 alias = tool_data["alias"]
                 if message.strip().startswith(alias):
+                    loading.start_loading("Running External Tool", "dots")
                     tool_call_output = local.execute_tool(
                         tool_data=tool_data,
                         chat_history=messages,
@@ -288,6 +289,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         exist_early_due_to_tool_calling_config = not tool_call_output[
                             "continue"
                         ]
+                    loading.stop_loading()
                     break
 
             if exist_early_due_to_tool_calling_config:
