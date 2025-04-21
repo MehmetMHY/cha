@@ -17,6 +17,7 @@ try:
         codedump,
         answer,
         traverse,
+        local,
     )
 
     from openai import OpenAI
