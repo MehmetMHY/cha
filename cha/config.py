@@ -3,6 +3,8 @@ from pathlib import Path
 import importlib.util
 import os
 
+from cha import local
+
 # links
 OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
 
@@ -571,6 +573,16 @@ FILETYPE_TO_EXTENSION = {
 
 # NOTE: do NOT modify the code below because it allows the loading of custom configs if provided!
 
+TOOL_MOST_HAVE_VARIABLES = {
+    "name": {"type": str, "required": True},
+    "description": {"type": str, "required": True},
+    "alias": {"type": str, "required": True},
+    "include_history": {"type": [bool, int], "required": False, "default": False},
+    "timeout_sec": {"type": int, "required": False, "default": 15},
+    "pipe_input": {"type": bool, "required": False, "default": False},
+    "pipe_output": {"type": bool, "required": False, "default": True},
+}
+
 LOCAL_CHA_CONFIG_DIR = os.path.join(str(Path.home()), ".cha/")
 LOCAL_CHA_CONFIG_HISTORY_DIR = os.path.join(LOCAL_CHA_CONFIG_DIR, "history/")
 LOCAL_CHA_CONFIG_TOOLS_DIR = os.path.join(LOCAL_CHA_CONFIG_DIR, "tools/")
@@ -593,3 +605,7 @@ if OVERRIGHT_CONFIG != None:
         # assuming all config variables are in uppercase
         if key.isupper():
             globals()[key] = value
+
+
+tools = local.get_tools()
+print(tools)

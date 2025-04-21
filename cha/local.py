@@ -41,50 +41,33 @@ def setup_cha_config_dir():
 
 
 def validate_tools(tools):
-    # NOTE: this is hard coded but valid
-    TOOL_MOST_HAVE_VARIABLES = {
-        "name": {"type": str, "required": True},
-        "description": {"type": str, "required": True},
-        "alias": {"type": str, "required": True},
-        "include_history": {"type": [bool, int], "required": False, "default": False},
-        "timeout_sec": {"type": int, "required": False, "default": 15},
-        "pipe_input": {"type": bool, "required": False, "default": False},
-        "pipe_output": {"type": bool, "required": False, "default": True},
-    }
-
     valid = []
     invalid = []
     errors = []
+    seen_names = set()
 
     for tool in tools:
-        # a friendly identifier string for error messages
         tool_id = getattr(tool, "name", repr(tool))
-
-        # collect this tool's errors
         tool_errors = []
 
-        for var_name, spec in TOOL_MOST_HAVE_VARIABLES.items():
+        for var_name, spec in config.TOOL_MOST_HAVE_VARIABLES.items():
             required = spec.get("required", False)
             has_default = "default" in spec
             default = spec.get("default")
             expected_type = spec["type"]
 
-            # normalize to a tuple of types
             if isinstance(expected_type, list):
                 expected_types = tuple(expected_type)
             else:
                 expected_types = (expected_type,)
 
-            # check for missing attributes
             if not hasattr(tool, var_name):
                 if required:
                     tool_errors.append(f"missing required attribute '{var_name}'")
                 else:
-                    # fill in default for optional
                     setattr(tool, var_name, default)
                 continue
 
-            # check if required attributes are none or not
             val = getattr(tool, var_name)
             if val is None:
                 if required:
@@ -93,17 +76,21 @@ def validate_tools(tools):
                     setattr(tool, var_name, default)
                 continue
 
-            # validate that each attribute is the current type
             if not isinstance(val, expected_types):
                 tool_errors.append(
                     f"attribute '{var_name}' expected type "
                     f"{expected_types}, got {type(val)}"
                 )
 
-        # decide valid/invalid
+        # Check for duplicate 'name' value
+        name = getattr(tool, "name", None)
+        if name is not None:
+            if name in seen_names:
+                tool_errors.append(f"duplicate tool name '{name}' is not allowed")
+            seen_names.add(name)
+
         if tool_errors:
             invalid.append(tool)
-            # prefix each message with tool_id
             for msg in tool_errors:
                 errors.append(f"{tool_id}: {msg}")
         else:
@@ -116,7 +103,9 @@ def get_tools():
     if len(config.EXTERNAL_TOOLS) == 0:
         return []
 
-    valid_tools, invalid_tools, tool_errors = validate_tools(config.EXTERNAL_TOOLS)
+    valid_tools, invalid_tools, tool_errors = validate_tools(
+        config.EXTERNAL_TOOLS
+    )
 
     if len(invalid_tools) > 0:
         print(colors.red("Errors well loading tools:"))
@@ -126,7 +115,16 @@ def get_tools():
     if len(valid_tools) == 0:
         return []
 
-    return valid_tools
+    advance_tools = []
+    for tool in valid_tools:
+        tmp = tool.__dict__
+        for key in config.TOOL_MOST_HAVE_VARIABLES:
+            if key not in tmp:
+                tmp[key] = config.TOOL_MOST_HAVE_VARIABLES[key]["default"]
+        tmp["pointer"] = tool
+        advance_tools.append(tmp)
+
+    return advance_tools
 
 
 if __name__ == "__main__":
