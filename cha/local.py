@@ -103,9 +103,7 @@ def get_tools():
     if len(config.EXTERNAL_TOOLS) == 0:
         return []
 
-    valid_tools, invalid_tools, tool_errors = validate_tools(
-        config.EXTERNAL_TOOLS
-    )
+    valid_tools, invalid_tools, tool_errors = validate_tools(config.EXTERNAL_TOOLS)
 
     if len(invalid_tools) > 0:
         print(colors.red("Errors well loading tools:"))
@@ -127,24 +125,7 @@ def get_tools():
     return advance_tools
 
 
-if __name__ == "__main__":
-    tools = get_tools()
-
-    print(tools)
-
-    sys.exit(0)
-
-    output = setup_cha_config_dir()
-
-    cha_config_dir = os.path.join(str(Path.home()), ".cha/")
-
-    if output == None:
-        print(
-            f"An unexpected error happened well trying to create the Cha config directory"
-        )
-    else:
-        print("CHA INIT RAW OUTPUT:  ", output, f"(False = Config Dir Exists)")
-        print("CHA CONFIG DIRECTORY: ", os.path.join(str(Path.home()), ".cha/"))
-        print("CHA CONFIG FILEPATH:  ", os.path.join(cha_config_dir, "config.py"))
-        print("CHA HISTORY DIRECTORY:", os.path.join(cha_config_dir, "history/"))
-        print("CHA TOOLS DIRECTORY:  ", os.path.join(cha_config_dir, "tools/"))
+def execute_tool(tool_data):
+    for key in tool_data:
+        print(key, "=", tool_data[key])
+    return None

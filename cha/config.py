@@ -608,4 +608,5 @@ if OVERRIGHT_CONFIG != None:
 
 
 tools = local.get_tools()
-print(tools)
+# print(tools)
+print(local.execute_tool(tools[0]))
