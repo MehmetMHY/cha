@@ -527,7 +527,7 @@ def cli():
         parser.add_argument(
             "-i",
             "--init",
-            help="Initialize the local directory and files in your home directory",
+            help="(Optional) Initialize local directory and files in your home directory for configuring Cha",
             action="store_true",
         )
 
