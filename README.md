@@ -249,7 +249,7 @@ When you run the example command above, it will answer your question in one shot
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 
 ```txt
-usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [string ...]
+usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -258,7 +258,6 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -pt, --print_title    Print initial title during interactive mode
   -m MODEL, --model MODEL
                         Model to use for chatting
   -sm, --select_model   Select one model from OpenAI's supported models
@@ -275,6 +274,7 @@ options:
                         Extract code blocks from the final output and save them as files
   -ide, --integrated_dev_env
                         Input a one-short query using your default terminal text editor (IDE)
+  -i, --init            (Optional) Initialize local directory and files in your home directory for configuring Cha
 ```
 
 ## Development
