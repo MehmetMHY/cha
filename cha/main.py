@@ -534,7 +534,17 @@ def cli():
         args = parser.parse_args()
 
         if args.init:
-            print("INIT GOES HERE!!!")
+            output = local.setup_cha_config_dir()
+            if output == False:
+                print(colors.red(f"Failed to create .cha/ local config setup"))
+            elif output == True:
+                print(colors.green(f"Successfully created .cha/ local config setup"))
+            else:
+                print(
+                    colors.red(
+                        f"Failed to create .cha/ local config setup due to an unexpected error"
+                    )
+                )
             return
 
         if args.code_dump == True:

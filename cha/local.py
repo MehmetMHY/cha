@@ -1,9 +1,4 @@
-from importlib.metadata import version
-from pathlib import Path
 import signal
-import inspect
-import json
-import sys
 import os
 
 from cha import config, colors
