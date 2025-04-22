@@ -261,7 +261,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     )
                 continue
 
-            # NOTE: account for external tools
+            # NOTE: handle logic for external tool calling and processing
             exist_early_due_to_tool_calling_config = False
             for tool_data in config.EXTERNAL_TOOLS_EXECUTE:
                 alias = tool_data["alias"]
@@ -291,7 +291,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         ]
                     loading.stop_loading()
                     break
-
             if exist_early_due_to_tool_calling_config:
                 continue
 
