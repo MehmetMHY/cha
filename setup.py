@@ -9,7 +9,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
-        "openai==1.75.0",
+        "openai==1.76.0",
         "anthropic==0.50.0",
         "beautifulsoup4==4.13.4",
         "yt-dlp==2025.3.31",
