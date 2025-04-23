@@ -321,7 +321,13 @@ Also, you can refer to the [config.py](./cha/config.py) file and the `THIRD_PART
 
 ## Local Config (Optional)
 
-TODO
+Cha supports the ability for you to store local files that effect how Cha works, like the ability to:
+
+- Configure variables/settings in Cha e.g. have your own config for Cha
+- Import or develop external tools that you can utilize inside of Cha
+- Save all your conversations, locally, with Cha incase you want to do something with that
+
+By default this is disabled when you use Cha. You do not need to create any local files for Cha to work. But if you want to, you can follow these [docs](./assets/dot-cha/README.md) and/or check out the content [here](./assets/dot-cha/).
 
 ## Contributing
 
