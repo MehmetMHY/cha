@@ -319,6 +319,10 @@ cha -p "https://api.together.xyz/v1|TOGETHER_API_KEY" -m "deepseek-ai/DeepSeek-V
 
 Also, you can refer to the [config.py](./cha/config.py) file and the `THIRD_PARTY_PLATFORMS` variable to see all the other platforms you can try and/or use.
 
+## Local Config (Optional)
+
+TODO
+
 ## Contributing
 
 Any contribution is welcomed! Please feel free to submit issues or pull requests for any bugs or features.
