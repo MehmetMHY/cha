@@ -1,36 +1,36 @@
 # Cha Weather Tool
 
-This is a weather information tool for [Cha](https://github.com/MehmetMHY/cha/) that retrieves and displays the user's current weather stats using [wttr.in](https://wttr.in/).
+This is a weather information tool for [Cha](https://github.com/MehmetMHY/cha/) that retrieves and displays the user’s current weather stats using [wttr.in](https://wttr.in/).
 
 ## Features
 
 - Fetches up-to-date weather stats in JSON from wttr.in
 - Answers user questions about the weather using Cha's tool interface
 - Can be called with the alias `!weather`
-- User input (question) is piped into the tool for contextual answers
+- User input (question) and most recent chat history are piped into the tool for contextual answers
 
 ## Usage
 
 ### Within Cha
 
-1. Integrate this tool into your `.cha/tools/weather/` directory.
-2. You can invoke the tool in Cha chat using the alias:
+Integrate this tool into your `.cha/tools/weather/` directory.  
+You can invoke the tool in Cha chat using the alias:
 
-   ```
-   !weather <your weather question>
-   ```
+```
+!weather <your weather question>
+```
 
-   **Example:**
+**Example:**
 
-   ```
-   !weather will it be sunny today?
-   ```
+```
+!weather will it be sunny today?
+```
 
-3. The tool will fetch current weather data and answer your question accordingly.
+The tool will fetch current weather data and answer your question accordingly, taking into account your question and up to two of your most recent chat messages.
 
 ### As Standalone
 
-Run the script directly:
+Run the script directly from the terminal:
 
 ```shell
 python main.py
@@ -42,10 +42,10 @@ Follow the prompt to enter your weather-related query, starting with `!weather`,
 !weather Is it raining right now?
 ```
 
-## Options
+## Options / Integration Details
 
 - **Alias**: `!weather`
-- **Includes chat history**: No (does not include prior chat by default)
+- **Includes chat history**: Yes (uses up to the last 2 chat messages for context)
 - **User input piped**: Yes (your query is passed to the tool)
 - **Output piped to chat**: Yes (tool output is returned as the assistant's reply)
 - **Timeout**: 30 seconds
@@ -54,4 +54,16 @@ Follow the prompt to enter your weather-related query, starting with `!weather`,
 
 - [Cha](https://github.com/MehmetMHY/cha/)
 - Python 3.7+
-- `requests` library (for HTTP requests). Install via `pip install requests` if needed.
+- `requests` library (for HTTP requests):  
+  Install via
+  ```shell
+  pip install requests
+  ```
+- The latest version of `cha` as specified in `requirements.txt`:
+  ```
+  git+ssh://git@github.com/MehmetMHY/cha.git@d9e5f8b8559e40abac1e40c588f8a69db9fb13da#egg=cha
+  ```
+
+**Note:**
+
+If the user does not provide a weather question, the tool will attempt to infer the user's intent from the two most recent chat messages.
