@@ -23,8 +23,8 @@ def print_commands():
             utils.rls(
                 """
                 Commands List:
-                - cd <index>    : Enter a dir by its index
-                - cd <dir_name> : Enter a dir by its name
+                - cd <index>    : Enter a dir by its index (will recursively select files)
+                - cd <dir_name> : Enter a dir by its name (change the current directory)
                 - cd ..         : Go back one dir
                 - cd            : Return to the original starting dir
                 - ls            : List current dir's contents and selected files
@@ -150,10 +150,8 @@ def traverse_and_select_files():
                     print(colors.red("Already at the top-most directory"))
                 continue
             else:
-                # both digit and string cases are allowed
-                all_entries = os.listdir(current_dir)
-
                 # get only directories.
+                all_entries = os.listdir(current_dir)
                 dirs = sorted(
                     [
                         e
@@ -162,6 +160,7 @@ def traverse_and_select_files():
                     ],
                     key=str.lower,
                 )
+                # if the argument is a digit, process by index (select recursively)
                 if arg.isdigit():
                     idx = int(arg)
                     if 1 <= idx <= len(dirs):
@@ -182,19 +181,11 @@ def traverse_and_select_files():
                     else:
                         print(colors.red("Directory index out of range."))
                 else:
+                    # when providing a directory name, change into that directory
                     if arg in dirs:
                         target_dir = os.path.join(current_dir, arg)
-                        new_files = collect_files(target_dir)
-                        if not new_files:
-                            print(
-                                colors.yellow(
-                                    f"No selectable files found in {target_dir}"
-                                )
-                            )
-                        for file_path in new_files:
-                            if file_path not in selected_files:
-                                selected_files.add(file_path)
-                                print(colors.green(f"Selected: {file_path}"))
+                        current_dir = target_dir
+                        print_listing(current_dir, selected_files)
                     else:
                         print(
                             colors.red(

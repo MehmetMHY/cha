@@ -249,7 +249,7 @@ When you run the example command above, it will answer your question in one shot
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 
 ```txt
-usage: cha [-h] [-pt] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [string ...]
+usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -258,7 +258,6 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -pt, --print_title    Print initial title during interactive mode
   -m MODEL, --model MODEL
                         Model to use for chatting
   -sm, --select_model   Select one model from OpenAI's supported models
@@ -275,6 +274,7 @@ options:
                         Extract code blocks from the final output and save them as files
   -ide, --integrated_dev_env
                         Input a one-short query using your default terminal text editor (IDE)
+  -i, --init            (Optional) Initialize local directory and files in your home directory for configuring Cha
 ```
 
 ## Development
@@ -318,6 +318,16 @@ cha -p "https://api.together.xyz/v1|TOGETHER_API_KEY" -m "deepseek-ai/DeepSeek-V
 ```
 
 Also, you can refer to the [config.py](./cha/config.py) file and the `THIRD_PARTY_PLATFORMS` variable to see all the other platforms you can try and/or use.
+
+## Local Config (Optional)
+
+Cha lets you store local files to tweak how it works, including:
+
+- Setting your own variables or config for Cha
+- Importing or building your own external tools to use inside Cha
+- Saving all your conversations locally so you can do whatever you want with them
+
+By default, this is turned off, so there’s no need to create any local files for Cha to run. But if you want to set this up, you can follow these [docs](./assets/dot-cha/README.md) and check out what’s [here](./assets/dot-cha/).
 
 ## Contributing
 
