@@ -1,4 +1,4 @@
-####################################[IMPORT-LOGIC-CONFIGURATION]####################################
+# TOOL IMPORTING LOGIC CONFIGURATION (DO NOT EDIT)
 
 import os, sys
 
@@ -6,13 +6,13 @@ ROOT = os.path.dirname(__file__)
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-##################################[LOADING-EXTERNAL-TOOLS-CONFIG]###################################
+# LOAD EXTERNAL TOOLS (EDIT AS NEEDED)
 
 from tools.weather.main import UsersCurrentWeatherStats
 
 EXTERNAL_TOOLS = [UsersCurrentWeatherStats()]
 
-################################[OVERRIDE-DEFAULT-CONFIG-VARIABLES]#################################
+# OVERRIDE DEFAULT CONFIG CHA VARIABLES (EDIT AS NEEDED)
 
 CHA_DEFAULT_SHOW_PRINT_TITLE = False
 
