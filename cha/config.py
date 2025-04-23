@@ -1,6 +1,9 @@
 # NOTE: do NOT modify any of the "import" lines below, just the variables!
+from pathlib import Path
 import importlib.util
 import os
+
+from cha import local
 
 # links
 OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
@@ -32,6 +35,10 @@ ENABLE_OR_DISABLE_AUTO_SD = "!s"
 # last updated on 4-10-2024
 CHA_DEFAULT_MODEL = "gpt-4.1"
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
+
+# local config variables
+CHA_DEFAULT_SHOW_PRINT_TITLE = True
+CHA_LOCAL_SAVE_ALL_CHA_CHATS = False
 
 # answer feature config
 DEFAULT_SEARCH_BIG_MODEL = "o4-mini"
@@ -78,6 +85,9 @@ TERMINAL_THEME_CODES = {
         "white": "\033[47m",
     },
 }
+
+# external, custom, 3rd party tools if defined by the user externally
+EXTERNAL_TOOLS = []
 
 # http request configs
 REQUEST_DEFAULT_TIMEOUT_SECONDS = 10
@@ -562,9 +572,31 @@ FILETYPE_TO_EXTENSION = {
 }
 
 # NOTE: do NOT modify the code below because it allows the loading of custom configs if provided!
+
+TOOL_MOST_HAVE_VARIABLES = {
+    "name": {"type": str, "required": True},
+    "description": {"type": str, "required": True},
+    "alias": {"type": str, "required": True},
+    "include_history": {"type": [bool, int], "required": False, "default": False},
+    "timeout_sec": {"type": int, "required": False, "default": 15},
+    "pipe_input": {"type": bool, "required": False, "default": False},
+    "pipe_output": {"type": bool, "required": False, "default": True},
+}
+
+LOCAL_CHA_CONFIG_DIR = os.path.join(str(Path.home()), ".cha/")
+LOCAL_CHA_CONFIG_HISTORY_DIR = os.path.join(LOCAL_CHA_CONFIG_DIR, "history/")
+LOCAL_CHA_CONFIG_TOOLS_DIR = os.path.join(LOCAL_CHA_CONFIG_DIR, "tools/")
+LOCAL_CHA_CONFIG_FILE = os.path.join(LOCAL_CHA_CONFIG_DIR, "config.py")
+
 CUSTOM_CONFIG_PATH = os.environ.get("CHA_PYTHON_CUSTOM_CONFIG_PATH")
+OVERRIGHT_CONFIG = None
 if CUSTOM_CONFIG_PATH and os.path.exists(CUSTOM_CONFIG_PATH):
-    spec = importlib.util.spec_from_file_location("external_config", CUSTOM_CONFIG_PATH)
+    OVERRIGHT_CONFIG = CUSTOM_CONFIG_PATH
+elif LOCAL_CHA_CONFIG_FILE and os.path.exists(LOCAL_CHA_CONFIG_FILE):
+    OVERRIGHT_CONFIG = LOCAL_CHA_CONFIG_FILE
+
+if OVERRIGHT_CONFIG != None:
+    spec = importlib.util.spec_from_file_location("external_config", OVERRIGHT_CONFIG)
     external_config = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(external_config)
 
@@ -573,3 +605,7 @@ if CUSTOM_CONFIG_PATH and os.path.exists(CUSTOM_CONFIG_PATH):
         # assuming all config variables are in uppercase
         if key.isupper():
             globals()[key] = value
+
+EXTERNAL_TOOLS_EXECUTE = None
+if len(EXTERNAL_TOOLS) > 0:
+    EXTERNAL_TOOLS_EXECUTE = local.get_tools()

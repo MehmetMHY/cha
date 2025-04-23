@@ -184,6 +184,16 @@ def answer_search(
     if user_input_mode or prompt == None:
         print(colors.red(colors.underline(f"Answer Search - User Input")))
         prompt = utils.safe_input(colors.blue(f"Question: "))
+        if prompt == config.TEXT_EDITOR_INPUT_MODE.strip():
+            editor_content = utils.check_terminal_editors_and_edit()
+            if editor_content is None or len(editor_content) < 5:
+                prompt = utils.safe_input(
+                    colors.red("[retrying] ") + colors.blue(f"Question: ")
+                )
+            else:
+                for line in str(editor_content).rstrip("\n").split("\n"):
+                    print(colors.blue(">"), line)
+                prompt = editor_content
     else:
         print(colors.red(colors.underline("Question Prompt:")))
         print(prompt)
