@@ -585,7 +585,6 @@ def cli():
 
         if args.platform or args.platform == True:
             try:
-                print(colors.red("WARNING: Switching platforms is experimental!"))
                 API_KEY_NAME = None
                 BASE_URL_VALUE = None
                 if (
