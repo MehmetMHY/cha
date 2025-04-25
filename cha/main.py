@@ -281,10 +281,17 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         exist_early_due_to_tool_calling_config = True
                     else:
                         tool_result = tool_call_output["result"]
-                        messages.append({"role": "assistant", "content": tool_result})
-                        CURRENT_CHAT_HISTORY.append(
-                            {"time": time.time(), "user": message, "bot": tool_result}
-                        )
+                        if len(str(tool_result)) > 0:
+                            messages.append(
+                                {"role": "assistant", "content": tool_result}
+                            )
+                            CURRENT_CHAT_HISTORY.append(
+                                {
+                                    "time": time.time(),
+                                    "user": message,
+                                    "bot": tool_result,
+                                }
+                            )
                         message = tool_result
                         exist_early_due_to_tool_calling_config = not tool_call_output[
                             "continue"
