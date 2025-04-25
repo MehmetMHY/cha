@@ -10,9 +10,9 @@ OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
 
 # system prompt
 INITIAL_PROMPT = """
-You are a helpful assistant powered by Cha who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details
+You are a helpful assistant powered by Cha who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details.
 
-Always return any code or file output in a Markdown code fence, with syntax ```<language or filetype>\n...``` so it can be parsed automatically.
+Always return any code or file output in a Markdown code fence, with syntax ```<language or filetype>\n...``` so it can be parsed automatically. Only do this when needed, no need to do this for responses just code segments and/or when directly asked to do so from the user.
 """.strip()
 
 # key words
@@ -56,7 +56,7 @@ OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5"]
 
 # terminal/console config
 SUPPORTED_TERMINAL_IDES = ["vim", "nvim", "vi", "nano", "hx", "pico", "micro", "emacs"]
-PREFERRED_TERMINAL_IDE = "hx"
+PREFERRED_TERMINAL_IDE = "vi"
 MOVE_CURSOR_ONE_LINE = "\033[F"
 HIDE_CURSOR = "\033[?25l"
 SHOW_CURSOR = "\033[?25h"
@@ -194,7 +194,7 @@ SUPPORTED_VIDEO_FORMATS = [
     ".mod",
 ]
 
-# last updated on 03-11-2025
+# last updated on 3-11-2025
 SCRAPE_MODEL_NAME_FOR_PLATFORMS = "gpt-4o-mini"
 THIRD_PARTY_PLATFORMS = {
     "groq": {
