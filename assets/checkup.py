@@ -254,4 +254,7 @@ def checkup():
 
 
 if __name__ == "__main__":
-    checkup()
+    try:
+        checkup()
+    except (KeyboardInterrupt, EOFError):
+        print()
