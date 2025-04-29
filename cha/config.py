@@ -35,6 +35,7 @@ ENABLE_OR_DISABLE_AUTO_SD = "!s"
 # last updated on 4-10-2024
 CHA_DEFAULT_MODEL = "gpt-4.1"
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
+CHA_DEBUG_MODE = False
 
 # local config variables
 CHA_DEFAULT_SHOW_PRINT_TITLE = True
@@ -606,6 +607,6 @@ if OVERRIGHT_CONFIG != None:
         if key.isupper():
             globals()[key] = value
 
-EXTERNAL_TOOLS_EXECUTE = None
+EXTERNAL_TOOLS_EXECUTE = []
 if len(EXTERNAL_TOOLS) > 0:
     EXTERNAL_TOOLS_EXECUTE = local.get_tools()

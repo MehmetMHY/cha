@@ -3,6 +3,7 @@ import sys
 # catch below accounts for early keyboard exist
 try:
     import argparse
+    import traceback
     import time
     import json
     import os
@@ -64,7 +65,7 @@ def title_print(selected_model):
         )
     )
 
-    if config.EXTERNAL_TOOLS_EXECUTE != None:
+    if len(config.EXTERNAL_TOOLS_EXECUTE) > 0:
         for tool in config.EXTERNAL_TOOLS_EXECUTE:
             alias = tool["alias"]
             about = re.sub(r"[.!?]+$", "", tool["description"].lower())
@@ -710,7 +711,9 @@ def cli():
     except (KeyboardInterrupt, EOFError):
         print()
     except Exception as err:
-        if str(err):
+        if config.CHA_DEBUG_MODE:
+            print(colors.red(str(traceback.format_exc())))
+        elif str(err):
             err_msg = f"{err}"
             if save_chat_state:
                 # NOTE: a newline is needed to prevent text overlap during streaming cancellation
@@ -723,42 +726,48 @@ def cli():
         pass
 
     # save chat locally if desired
-    if (
-        config.CHA_LOCAL_SAVE_ALL_CHA_CHATS == True
-        and save_chat_state == True
-        and len(CURRENT_CHAT_HISTORY) > 1
-        and os.path.exists(config.LOCAL_CHA_CONFIG_HISTORY_DIR)
-    ):
-        from datetime import datetime, timezone
-        from importlib.metadata import version
-        import uuid
+    try:
+        if (
+            config.CHA_LOCAL_SAVE_ALL_CHA_CHATS == True
+            and save_chat_state == True
+            and len(CURRENT_CHAT_HISTORY) > 1
+            and os.path.exists(config.LOCAL_CHA_CONFIG_HISTORY_DIR)
+        ):
+            from datetime import datetime, timezone
+            from importlib.metadata import version
+            import uuid
 
-        try:
-            version_id = str(version("cha"))
-        except:
-            version_id = "?"
+            try:
+                version_id = str(version("cha"))
+            except:
+                version_id = "?"
 
-        epoch_time_seconds = time.time()
-        utc_time_stamp = f"{datetime.now(timezone.utc)} UTC"
-        file_id = str(uuid.uuid4())
+            epoch_time_seconds = time.time()
+            utc_time_stamp = f"{datetime.now(timezone.utc)} UTC"
+            file_id = str(uuid.uuid4())
 
-        history_save = {
-            "id": file_id,
-            "version": version_id,
-            "date": {
-                "epoch": {"seconds": epoch_time_seconds},
-                "utc": utc_time_stamp,
-            },
-            "args": {},
-            "chat": CURRENT_CHAT_HISTORY,
-        }
+            history_save = {
+                "id": file_id,
+                "version": version_id,
+                "date": {
+                    "epoch": {"seconds": epoch_time_seconds},
+                    "utc": utc_time_stamp,
+                },
+                "args": {},
+                "chat": CURRENT_CHAT_HISTORY,
+            }
 
-        if args != None:
-            history_save["args"] = vars(args)
+            if args != None:
+                history_save["args"] = vars(args)
 
-        file_path = os.path.join(
-            config.LOCAL_CHA_CONFIG_HISTORY_DIR,
-            f"cha_hs_{int(epoch_time_seconds)}.json",
-        )
+            file_path = os.path.join(
+                config.LOCAL_CHA_CONFIG_HISTORY_DIR,
+                f"cha_hs_{int(epoch_time_seconds)}.json",
+            )
 
-        utils.write_json(file_path, history_save)
+            utils.write_json(file_path, history_save)
+    except Exception as e:
+        if config.CHA_DEBUG_MODE:
+            print(colors.red(str(traceback.format_exc())))
+        else:
+            print(colors.red(f"Unexpected error well handling local logic: {str(e)}"))
