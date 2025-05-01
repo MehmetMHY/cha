@@ -252,15 +252,25 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 message = "\n".join(message_lines)
                 multi_line_input = False
 
-            if message.strip() == config.ENABLE_OR_DISABLE_AUTO_SD:
-                auto_scrape_detection_mode = not auto_scrape_detection_mode
-                if auto_scrape_detection_mode:
-                    print(
-                        colors.yellow(
-                            f"Entered auto url detection & scraping. Type '{config.ENABLE_OR_DISABLE_AUTO_SD}' to exist"
+            if message.strip().startswith(config.ENABLE_OR_DISABLE_AUTO_SD):
+                if (
+                    auto_scrape_detection_mode == False
+                    and len(scraper.extract_urls(message)) > 0
+                ):
+                    loading.start_loading("Scraping URL(s)", "basic")
+                    try:
+                        message = scraper.scraped_prompt(message)
+                    finally:
+                        loading.stop_loading()
+                else:
+                    auto_scrape_detection_mode = not auto_scrape_detection_mode
+                    if auto_scrape_detection_mode:
+                        print(
+                            colors.yellow(
+                                f"Entered auto url detection & scraping. Type '{config.ENABLE_OR_DISABLE_AUTO_SD}' to exist"
+                            )
                         )
-                    )
-                continue
+                    continue
 
             # NOTE: handle logic for external tool calling and processing
             exist_early_due_to_tool_calling_config = False
