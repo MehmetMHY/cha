@@ -255,8 +255,10 @@ def traverse_and_select_files():
             extension = os.path.splitext(filename)[1].lower()
 
             if (
-                extension in config.BINARY_EXTENSIONS
-                or filename in config.FILES_TO_IGNORE
+                # extension in config.BINARY_EXTENSIONS
+                # or filename in config.FILES_TO_IGNORE
+                filename
+                in config.FILES_TO_IGNORE
             ):
                 print(colors.yellow(f"Ignoring file: {full_path}"))
                 continue
@@ -285,7 +287,8 @@ def msg_content_load(client):
         file_paths, prompt = traverse_and_select_files()
 
         if len(file_paths) == 0:
-            raise Exception("No filepaths selected")
+            # raise Exception("No filepaths selected")
+            return None
 
         if type(file_paths) != list:
             raise Exception("Failed to determine filepaths")
