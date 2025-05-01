@@ -9,7 +9,7 @@ from cha import scraper, colors, utils, config, loading
 
 
 def create_mega_prompt(search_results, prompt):
-    mega_prompt = utils.rls(
+    return utils.rls(
         f"""
         For your answer, understand that today's date is: {datetime.now(timezone.utc).isoformat()}
 
@@ -37,8 +37,6 @@ def create_mega_prompt(search_results, prompt):
         Make sure to clearly refer to each citation in the body of your response. Your answer should be clear, concise, and well-structured!
         """
     )
-
-    return mega_prompt
 
 
 def generate_search_queries(
