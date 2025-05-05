@@ -585,6 +585,12 @@ def cli():
             help="(Optional) Initialize local directory and files in your home directory for configuring Cha",
             action="store_true",
         )
+        parser.add_argument(
+            "-hs",
+            "--history_search",
+            help="Search and display a previous chat history without starting a new session",
+            action="store_true",
+        )
 
         args = parser.parse_args()
 
@@ -634,6 +640,30 @@ def cli():
             save_chat_state = False
             if output is None:
                 raise Exception("Answer search existed with None")
+            return
+
+        if args.history_search:
+            save_chat_state = False
+            if not os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR):
+                print(
+                    colors.red(
+                        f"History directory not found: {config.LOCAL_CHA_CONFIG_HISTORY_DIR}"
+                    )
+                )
+                return
+
+            try:
+                hs_output = local.browse_and_select_history_file()
+                if hs_output:
+                    local.print_history_browse_and_select_history_file(
+                        chat=hs_output["chat"], include_timestamp=False
+                    )
+            except (KeyboardInterrupt, EOFError):
+                print()
+            except Exception as e:
+                pass
+            finally:
+                return
 
         title_print_value = config.CHA_DEFAULT_SHOW_PRINT_TITLE
         selected_model = args.model
