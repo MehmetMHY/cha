@@ -60,11 +60,17 @@ def title_print(selected_model):
                 - `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files generated the model (latest response)
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - '{config.ENABLE_OR_DISABLE_AUTO_SD} enable or disable auto url detection and scraping'
-                - '{config.LOAD_HISTORY_TRIGGER} search and load previous chats (local setup most be configured)'
                 """
             )
         )
     )
+
+    if os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR):
+        print(
+            colors.magenta(
+                f"- '{config.LOAD_HISTORY_TRIGGER} search and load previous chats"
+            )
+        )
 
     if len(config.EXTERNAL_TOOLS_EXECUTE) > 0:
         for tool in config.EXTERNAL_TOOLS_EXECUTE:
@@ -230,13 +236,18 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
                 break
 
-            elif message.strip().lower().startswith(config.LOAD_HISTORY_TRIGGER):
+            elif os.path.isdir(
+                config.LOCAL_CHA_CONFIG_HISTORY_DIR
+            ) and message.strip().lower().startswith(config.LOAD_HISTORY_TRIGGER):
                 hs_output = None
                 try:
                     hs_output = local.browse_and_select_history_file()
                     selected_path = hs_output["path"]
                     content = hs_output["content"]
                     chat_msgs = hs_output["chat"]
+                except (KeyboardInterrupt, EOFError):
+                    print()
+                    continue
                 except Exception as e:
                     pass
                 if hs_output != None:
@@ -253,8 +264,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             ),
                         }
                     )
-                else:
-                    print(colors.red("Error loading history file"))
                 continue
 
             elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:

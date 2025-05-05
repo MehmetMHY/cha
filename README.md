@@ -29,6 +29,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Export Markdown Fences**: If desired, export any Markdown fence in the latest message from a model to file(s).
 - **Integrated Shell Access**: Execute shell commands directly within Cha's environment, enhancing workflow efficiency by providing immediate terminal access.
 - **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
+  **Browse & Select History via fzf**: Quickly browse, search, and load previous chat histories using `fzf`.
 
 ## Getting Started
 
@@ -326,6 +327,8 @@ Cha lets you store local files to tweak how it works, including:
 - Setting your own variables or config for Cha
 - Importing or building your own external tools to use inside Cha
 - Saving all your conversations locally so you can do whatever you want with them
+
+Once local history is enabled, features like browsing and searching your past chats are available.
 
 By default, this is turned off, so there’s no need to create any local files for Cha to run. But if you want to set this up, you can follow these [docs](./assets/dot-cha/README.md) and check out what’s [here](./assets/dot-cha/).
 
