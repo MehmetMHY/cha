@@ -60,6 +60,7 @@ def title_print(selected_model):
                 - `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files generated the model (latest response)
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - '{config.ENABLE_OR_DISABLE_AUTO_SD} enable or disable auto url detection and scraping'
+                - '{config.LOAD_HISTORY_TRIGGER} search and load previous chats (local setup most be configured)'
                 """
             )
         )
@@ -228,6 +229,33 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
                 break
+
+            elif message.strip().lower().startswith(config.LOAD_HISTORY_TRIGGER):
+                hs_output = None
+                try:
+                    hs_output = local.browse_and_select_history_file()
+                    selected_path = hs_output["path"]
+                    content = hs_output["content"]
+                    chat_msgs = hs_output["chat"]
+                except Exception as e:
+                    pass
+                if hs_output != None:
+                    print(colors.magenta(selected_path))
+                    local.print_history_browse_and_select_history_file(chat_msgs)
+                    messages.append(
+                        {
+                            "role": "user",
+                            "content": utils.rls(
+                                f"""
+                                Load the following chat history into the current chat:
+                                {str(content)}
+                                """
+                            ),
+                        }
+                    )
+                else:
+                    print(colors.red("Error loading history file"))
+                continue
 
             elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
                 messages = (
