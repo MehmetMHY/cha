@@ -344,14 +344,13 @@ def browse_and_select_history_file():
     return {"path": selected_path, "content": file_content, "chat": chat_content}
 
 
-def print_history_browse_and_select_history_file(chat):
+def print_history_browse_and_select_history_file(chat, include_timestamp=True):
     # NOTE: make sure to send the entire chat history, ALL of it!
     for msg in chat[1:]:
         timestamp = msg.get("time")
         user = msg.get("user")
         bot = msg.get("bot")
-        print(
-            colors.red(f"[{timestamp}] ") + colors.blue(f"User: ") + colors.white(user)
-        )
-        print(colors.red(f"[{timestamp}] ") + colors.green(bot))
+        timestamp_str = f"[{timestamp}]" if include_timestamp else ""
+        print(colors.red(timestamp_str) + colors.blue(f"User: ") + colors.white(user))
+        print(colors.red(timestamp_str) + colors.green(bot))
     return

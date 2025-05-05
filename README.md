@@ -250,7 +250,7 @@ When you run the example command above, it will answer your question in one shot
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 
 ```txt
-usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [string ...]
+usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [-hs] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -276,6 +276,8 @@ options:
   -ide, --integrated_dev_env
                         Input a one-short query using your default terminal text editor (IDE)
   -i, --init            (Optional) Initialize local directory and files in your home directory for configuring Cha
+  -hs, --history_search
+                        Search and display a previous chat history without starting a new session
 ```
 
 ## Development
