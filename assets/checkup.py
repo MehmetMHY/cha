@@ -241,6 +241,12 @@ def checkup():
     else:
         failed("yt-dlp not installed or not on PATH")
 
+    # check if fzf is installed or not
+    if shutil.which("fzf"):
+        passed("fzf found (for fuzzy finding)")
+    else:
+        failed("fzf not installed or not on PATH")
+
     valid_shell_count = num_of_valid_shells()
     if valid_shell_count > 0:
         passed("One valid shell was found for Cha's shell mode")
