@@ -272,6 +272,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     )
                 continue
 
+            if message.startswith(config.PICK_AND_RUN_A_SHELL_OPTION):
+                utils.run_a_shell()
+                continue
+
             elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
                 messages = (
                     []
@@ -400,10 +404,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         message = scraper.scraped_prompt(message)
                     finally:
                         loading.stop_loading()
-
-            if message.startswith(config.PICK_AND_RUN_A_SHELL_OPTION):
-                utils.run_a_shell()
-                continue
 
             # check for an answer-search command
             if message.startswith(config.RUN_ANSWER_FEATURE):
