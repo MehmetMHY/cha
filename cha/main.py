@@ -57,7 +57,7 @@ def title_print(selected_model):
                 - '{config.USE_CODE_DUMP}' to codedump a directory as context
                 - `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files from latest response
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
-                - '{config.ENABLE_OR_DISABLE_AUTO_SD} enable or disable auto url detection and scraping'
+                - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
                 """
             )
         )
