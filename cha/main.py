@@ -420,8 +420,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     new_message = answer.quick_search(user_input=message)
                     if new_message == None:
                         print(colors.red(f"Failed to do a quick web search"))
-                    else:
-                        message = new_message
+                        continue
+                    message = new_message
                 else:
                     message = utils.run_answer_search(
                         client=openai_client,
