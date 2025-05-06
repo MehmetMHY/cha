@@ -55,7 +55,6 @@ def title_print(selected_model):
                 - '{config.MULTI_LINE_MODE_TEXT}' for multi-line switching (type '{config.MULTI_LINE_SEND}' to send)
                 - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
                 - '{config.USE_CODE_DUMP}' to codedump a directory as context
-                - `{config.QUICK_WEB_SEARCH_ANSWER}` answer prompt with a quick web search
                 - `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files from latest response
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - '{config.ENABLE_OR_DISABLE_AUTO_SD} enable or disable auto url detection and scraping'
@@ -402,51 +401,42 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     finally:
                         loading.stop_loading()
 
-            if message.startswith(config.QUICK_WEB_SEARCH_ANSWER):
-                if len(message) <= len(str(config.QUICK_WEB_SEARCH_ANSWER)) * 2:
-                    print(
-                        colors.red(
-                            f"Usage: {config.QUICK_WEB_SEARCH_ANSWER} <question>"
-                        )
-                    )
-                    continue
-                message = message.replace(config.QUICK_WEB_SEARCH_ANSWER, "").strip()
-                new_message = answer.quick_search(user_input=message)
-                if new_message == None:
-                    print(colors.red(f"Failed to do a quick web search"))
-                else:
-                    message = new_message
-
             if message.startswith(config.PICK_AND_RUN_A_SHELL_OPTION):
                 utils.run_a_shell()
                 continue
 
             # check for an answer-search command
             if message.startswith(config.RUN_ANSWER_FEATURE):
-                user_input_mode = True
-                answer_prompt = None
+                quick_browse_mode = False
                 if len(message) > len(config.RUN_ANSWER_FEATURE):
                     answer_prompt_draft = message[
                         len(config.RUN_ANSWER_FEATURE) :
                     ].strip()
                     if len(answer_prompt_draft) > 10:
-                        user_input_mode = False
-                        answer_prompt = answer_prompt_draft
+                        quick_browse_mode = True
 
-                message = utils.run_answer_search(
-                    client=openai_client,
-                    prompt=answer_prompt,
-                    user_input_mode=user_input_mode,
-                )
-
-                if message is not None:
-                    messages.append({"role": "user", "content": message})
-
-                    CURRENT_CHAT_HISTORY.append(
-                        {"time": time.time(), "user": answer_prompt, "bot": message}
+                if quick_browse_mode:
+                    message = message.replace(config.RUN_ANSWER_FEATURE, "").strip()
+                    new_message = answer.quick_search(user_input=message)
+                    if new_message == None:
+                        print(colors.red(f"Failed to do a quick web search"))
+                    else:
+                        message = new_message
+                else:
+                    message = utils.run_answer_search(
+                        client=openai_client,
+                        prompt=None,
+                        user_input_mode=True,
                     )
 
-                continue
+                    if message is not None:
+                        messages.append({"role": "user", "content": message})
+
+                        CURRENT_CHAT_HISTORY.append(
+                            {"time": time.time(), "user": "", "bot": message}
+                        )
+
+                    continue
 
             # skip if user typed something blank
             if len("".join(str(message)).split()) == 0:
