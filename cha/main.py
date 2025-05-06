@@ -770,28 +770,63 @@ def cli():
                 selection = int(selection) - 1
                 if 0 <= selection < len(openai_models):
                     selected_model = openai_models[selection][0]
-            else:
-                print(colors.red("Invalid number selected. Exiting."))
-                return
+                else:
+                    print(colors.red("Invalid number selected. Exiting."))
+                    return
 
-        if args.file:
-            chatbot(selected_model, title_print_value, filepath=args.file)
+        input_mode = "interactive"
+        processed_input_for_chatbot = (
+            None  # content string or None if using filepath/interactive
+        )
+
+        # check for piped input first
+        if not sys.stdin.isatty():
+            piped_content = sys.stdin.read()
+            if args.string:
+                # combine piped content and command-line string args
+                processed_input_for_chatbot = (
+                    f"{piped_content}\\n\\n---\\n\\n{' '.join(args.string)}"
+                )
+                input_mode = "pipe_with_args"
+            else:
+                # use only piped content
+                processed_input_for_chatbot = piped_content
+                input_mode = "pipe_only"
+        elif args.file:
+            input_mode = "file"
         elif args.string:
-            chatbot(
-                selected_model, title_print_value, content_string=" ".join(args.string)
-            )
+            processed_input_for_chatbot = " ".join(args.string)
+            input_mode = "string_args"
         elif args.integrated_dev_env:
+            # use IDE input only if not piped, no file, no string args
             editor_content = utils.check_terminal_editors_and_edit()
             if editor_content is None:
                 save_chat_state = False
-                raise Exception(f"No text editor available or editing cancelled")
-            chatbot(selected_model, title_print_value, content_string=editor_content)
+                raise Exception("No text editor available or editing cancelled")
+            processed_input_for_chatbot = editor_content
+            input_mode = "ide"
+
+        # call chatbot based on input mode
+        if input_mode in ["pipe_with_args", "pipe_only", "string_args", "ide"]:
+            chatbot(
+                selected_model,
+                title_print_value,
+                content_string=processed_input_for_chatbot,
+            )
+        elif input_mode == "file":
+            chatbot(selected_model, title_print_value, filepath=args.file)
         else:
             chatbot(selected_model=selected_model, print_title=title_print_value)
 
-        if args.export_parsed_text:
+        # handle export logic only if export flag is set and it wasn't an interactive session
+        if args.export_parsed_text and input_mode != "interactive":
             print()
-            utils.export_file_logic(CURRENT_CHAT_HISTORY[-1]["bot"])
+            # check if there's history to export from (chatbot appends even in non-interactive modes)
+            # the first entry is the initial prompt, so we need at least 2 entries for a response.
+            if CURRENT_CHAT_HISTORY and len(CURRENT_CHAT_HISTORY) > 1:
+                utils.export_file_logic(CURRENT_CHAT_HISTORY[-1]["bot"])
+            else:
+                print(colors.yellow("No chat response found to export files from."))
 
     except (KeyboardInterrupt, EOFError):
         print()
