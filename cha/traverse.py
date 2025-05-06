@@ -1,347 +1,296 @@
 import os
-
 from cha import colors, config
 
 
-def collect_files(directory):
-    # recursively traverse the given directory and return a list of file paths
-    collected = []
+def collect_files(directory: str) -> list[str]:
+    # recursively collect selectable files from a directory
+    gathered: list[str] = []
     for root, _, files in os.walk(directory):
-        for f in files:
-            ext = os.path.splitext(f)[1].lower()
-            if ext in config.BINARY_EXTENSIONS or f in config.FILES_TO_IGNORE:
+        for name in files:
+            ext = os.path.splitext(name)[1].lower()
+            if ext in config.BINARY_EXTENSIONS or name in config.FILES_TO_IGNORE:
                 continue
-            collected.append(os.path.join(root, f))
-    return collected
+            gathered.append(os.path.join(root, name))
+    return gathered
 
 
-def print_commands():
+def print_commands() -> None:
     from cha import utils
 
     print(
         colors.red(
             utils.rls(
                 """
-                Commands List:
-                - cd <index>    : Enter a dir by its index (will recursively select files)
-                - cd <dir_name> : Enter a dir by its name (change the current directory)
-                - cd ..         : Go back one dir
-                - cd            : Return to the original starting dir
-                - ls            : List current dir's contents and selected files
-                - e.g. 1 or 1-3 : Toggle file selection (only files are toggled)
-                - exist         : Exist, also triggered on CTRL-C/D or empty str
-                """
+Commands:
+  cd <index|dir_name>   : change directory
+  cd .. / cd            : up / back to root
+  ls                    : list directory & selections
+  <n> or 1,3-5          : toggle file(s) by index
+  <dir‑index>           : toggle ALL files in that directory
+  help / exit           : this help / quit
+"""
             )
         )
     )
 
 
-def print_listing(current_dir, selected_files, prefix_selected=False):
-    # when prefix_selected is True (for ls), list only selected files that are not in the current directory
-    if prefix_selected:
-        external_selected = sorted(
-            [f for f in selected_files if os.path.dirname(f) != current_dir]
-        )
-        if external_selected:
-            print(colors.yellow("Selected files:"))
-            for k, path in enumerate(external_selected, start=1):
-                print(f"   {k}) {path}")
+def _dir_selected_mark(dir_path: str, selected: set[str]) -> str:
+    # return [x] if any file inside *dir_path* is selected, else [ ]
+    for f in selected:
+        if f.startswith(dir_path + os.sep):
+            return "[x]"
+    return "[ ]"
+
+
+def print_listing(
+    current_dir: str, selected: set[str], *, show_external: bool = False
+) -> None:
+    # pretty list of current dir with selection markers
+    if show_external and selected:
+        print(colors.yellow("Selected files:"))
+        for k, path in enumerate(sorted(selected), 1):
+            print(f"   {k}) {path}")
 
     print(colors.magenta(f"{current_dir}/"))
 
-    # get directories and files separately and sort them.
-    all_entries = os.listdir(current_dir)
+    entries = os.listdir(current_dir)
     dirs = sorted(
-        [e for e in all_entries if os.path.isdir(os.path.join(current_dir, e))],
+        [e for e in entries if os.path.isdir(os.path.join(current_dir, e))],
         key=str.lower,
     )
     files = sorted(
-        [e for e in all_entries if os.path.isfile(os.path.join(current_dir, e))],
+        [e for e in entries if os.path.isfile(os.path.join(current_dir, e))],
         key=str.lower,
     )
 
-    # list all current dirs and files
-    index = 1
+    idx = 1
     for d in dirs:
-        print(f"   {index}) {colors.blue(d + '/')}")
-        index += 1
+        dir_path = os.path.join(current_dir, d)
+        print(
+            f"   {idx}) {_dir_selected_mark(dir_path, selected)} {colors.blue(d + '/')}"
+        )
+        idx += 1
     for f in files:
-        full_path = os.path.join(current_dir, f)
-        mark = "[x]" if full_path in selected_files else "[ ]"
-        print(f"   {index}) {mark} {f}")
-        index += 1
+        file_path = os.path.join(current_dir, f)
+        mark = "[x]" if file_path in selected else "[ ]"
+        print(f"   {idx}) {mark} {f}")
+        idx += 1
 
 
-def parse_selection_input(selection_input):
-    # accepts a string like "1,3,5-7" and returns a list of integers
-    selection_input = selection_input.replace(" ", "")
-    indices = []
-    parts = selection_input.split(",")
-    for part in parts:
+def parse_selection_input(text: str) -> list[int] | None:
+    # return the list of numeric indices contained in *text* (e.g. "1,3-5")
+    text = text.replace(" ", "")
+    if not text:
+        return None
+
+    out: list[int] = []
+    for part in text.split(","):
         if "-" in part:
             try:
-                start_str, end_str = part.split("-", 1)
-                start = int(start_str)
-                end = int(end_str)
-                if start > end:
-                    start, end = end, start
-                indices.extend(range(start, end + 1))
+                a, b = map(int, part.split("-", 1))
             except ValueError:
                 return None
+            if a > b:
+                a, b = b, a
+            out.extend(range(a, b + 1))
+        elif part.isdigit():
+            out.append(int(part))
         else:
-            if part.isdigit():
-                indices.append(int(part))
-            else:
-                return None
-    return indices
+            return None
+    return out
 
 
 def traverse_and_select_files():
-    possible_additional_prompt_value = None
+    maybe_prompt: str | None = None
+    root_dir = os.getcwd()
+    curr_dir = root_dir
+    selected: set[str] = set()
 
-    original_dir = os.getcwd()
-    current_dir = original_dir
-    selected_files = set()
-
-    print_listing(current_dir, selected_files)
+    print_listing(curr_dir, selected)
 
     while True:
         try:
-            user_input = input(colors.yellow(colors.bold(">>> "))).strip()
+            user = input(colors.yellow(colors.bold(">>> "))).strip()
         except (KeyboardInterrupt, EOFError):
             print()
             break
 
-        if user_input == "" or user_input.strip().lower() == "exist":
+        if user == "" or user.lower() in {"exit", "quit"}:
             break
-
-        if user_input.strip().lower() in ["help", "--help", "-h", "--h"]:
+        if user.lower() in {"help", "--help", "-h"}:
             print_commands()
             continue
 
+        # free‑form prompt, if we already have selections
         if (
-            not user_input.lower().startswith("cd")
-            and not user_input.lower().startswith("ls")
-            and not user_input.isdigit()
-            and len(selected_files) > 0
+            not (
+                user.startswith("cd")
+                or user.startswith("ls")
+                or user.replace(" ", "").replace(",", "").replace("-", "").isdigit()
+            )
+            and selected
         ):
-            possible_additional_prompt_value = user_input
+            maybe_prompt = user
             break
 
-        tokens = user_input.split()
+        tokens = user.split()
         cmd = tokens[0].lower()
 
         if cmd == "cd":
-            # no extra argument is given, go to the original directory
             if len(tokens) == 1:
-                if current_dir != original_dir:
-                    current_dir = original_dir
-                print_listing(current_dir, selected_files)
+                curr_dir = root_dir
+                print_listing(curr_dir, selected)
                 continue
 
-            # additional argument(s) is provided
             arg = tokens[1]
             if arg == "..":
-                parent = os.path.dirname(current_dir)
-                if parent and parent != current_dir:
-                    current_dir = parent
-                    print_listing(current_dir, selected_files)
-                else:
-                    print(colors.red("Already at the top-most directory"))
-                continue
-            else:
-                # get only directories.
-                all_entries = os.listdir(current_dir)
-                dirs = sorted(
-                    [
-                        e
-                        for e in all_entries
-                        if os.path.isdir(os.path.join(current_dir, e))
-                    ],
-                    key=str.lower,
-                )
-                # if the argument is a digit, process by index (select recursively)
-                if arg.isdigit():
-                    idx = int(arg)
-                    if 1 <= idx <= len(dirs):
-                        # select ALL files recursively from it
-                        chosen = dirs[idx - 1]
-                        target_dir = os.path.join(current_dir, chosen)
-                        new_files = collect_files(target_dir)
-                        if not new_files:
-                            print(
-                                colors.yellow(
-                                    f"No selectable files found in {target_dir}"
-                                )
-                            )
-                        for file_path in new_files:
-                            if file_path not in selected_files:
-                                selected_files.add(file_path)
-                                print(colors.green(f"Selected: {file_path}"))
-                    else:
-                        print(colors.red("Directory index out of range."))
-                else:
-                    # when providing a directory name, change into that directory
-                    if arg in dirs:
-                        target_dir = os.path.join(current_dir, arg)
-                        current_dir = target_dir
-                        print_listing(current_dir, selected_files)
-                    else:
-                        print(
-                            colors.red(
-                                f"Directory '{arg}' not found in current directory"
-                            )
-                        )
+                curr_dir = os.path.dirname(curr_dir) or curr_dir
+                print_listing(curr_dir, selected)
                 continue
 
-        # list current contents with external selected files shown above
-        if cmd == "ls":
-            print_listing(current_dir, selected_files, prefix_selected=True)
-            continue
-
-        # when the input is a single number, decide whether it is a dir or file selection
-        if user_input.isdigit():
-            idx = int(user_input)
-            all_entries = os.listdir(current_dir)
+            entries = os.listdir(curr_dir)
             dirs = sorted(
-                [e for e in all_entries if os.path.isdir(os.path.join(current_dir, e))],
+                [e for e in entries if os.path.isdir(os.path.join(curr_dir, e))],
                 key=str.lower,
             )
-            # when the index/input refers to a directory, recursively select all files in it
-            if 1 <= idx <= len(dirs):
-                chosen = dirs[idx - 1]
-                target_dir = os.path.join(current_dir, chosen)
-                new_files = collect_files(target_dir)
-                if not new_files:
-                    print(colors.yellow(f"No selectable files found in {target_dir}"))
-                for file_path in new_files:
-                    if file_path not in selected_files:
-                        selected_files.add(file_path)
-                        print(colors.green(f"Selected: {file_path}"))
+
+            # cd by *index*
+            if arg.isdigit():
+                idx = int(arg)
+                if 1 <= idx <= len(dirs):
+                    curr_dir = os.path.join(curr_dir, dirs[idx - 1])
+                    print_listing(curr_dir, selected)
+                else:
+                    print(colors.red("Directory index out of range."))
                 continue
 
-        # assume file toggle selection input
-        indices = parse_selection_input(user_input)
+            # cd by *name*
+            if arg in dirs:
+                curr_dir = os.path.join(curr_dir, arg)
+                print_listing(curr_dir, selected)
+            else:
+                print(colors.red(f"Directory '{arg}' not found."))
+            continue
+
+        if cmd == "ls":
+            print_listing(curr_dir, selected, show_external=True)
+            continue
+
+        # numeric / numeric range selection
+        indices = parse_selection_input(user)
         if indices is None:
             continue
 
-        # recompute directories and files in the current directory
-        all_entries = os.listdir(current_dir)
+        entries = os.listdir(curr_dir)
         dirs = sorted(
-            [e for e in all_entries if os.path.isdir(os.path.join(current_dir, e))],
+            [e for e in entries if os.path.isdir(os.path.join(curr_dir, e))],
             key=str.lower,
         )
         files = sorted(
-            [e for e in all_entries if os.path.isfile(os.path.join(current_dir, e))],
+            [e for e in entries if os.path.isfile(os.path.join(curr_dir, e))],
             key=str.lower,
         )
-        file_start_index = len(dirs) + 1
-        file_end_index = file_start_index + len(files) - 1
+        file_start = len(dirs) + 1
+        file_end = file_start + len(files) - 1
 
         for idx in indices:
-            if idx < file_start_index or idx > file_end_index:
-                print(
-                    colors.red(
-                        f"Index {idx} is not a valid file selection in this directory"
-                    )
-                )
+            if 1 <= idx <= len(dirs):
+                chosen = dirs[idx - 1]
+                dir_path = os.path.join(curr_dir, chosen)
+                dir_files = collect_files(dir_path)
+
+                if not dir_files:
+                    print(colors.yellow(f"No selectable files found in {dir_path}"))
+                    continue
+
+                # toggle: if *all* are selected -> unselect, else select missing
+                if dir_files and all(f in selected for f in dir_files):
+                    for fp in dir_files:
+                        selected.remove(fp)
+                    print(colors.yellow(f"Unselected all in {dir_path}"))
+                else:
+                    for fp in dir_files:
+                        if fp not in selected:
+                            selected.add(fp)
+                    print(colors.green(f"Selected all in {dir_path}"))
                 continue
 
-            # zero-based index for files
-            file_idx = idx - file_start_index
-
-            filename = files[file_idx]
-            full_path = os.path.join(current_dir, filename)
-            extension = os.path.splitext(filename)[1].lower()
-
-            if filename in config.FILES_TO_IGNORE:
-                print(colors.yellow(f"Ignoring file: {full_path}"))
+            if idx < file_start or idx > file_end:
+                print(colors.red(f"Index {idx} is not a file selection."))
                 continue
 
-            if full_path in selected_files:
-                selected_files.remove(full_path)
-                print(colors.yellow(f"Unselected: {full_path}"))
+            fname = files[idx - file_start]
+            full = os.path.join(curr_dir, fname)
+            if fname in config.FILES_TO_IGNORE:
+                print(colors.yellow(f"Ignoring file: {full}"))
+                continue
+            if full in selected:
+                selected.remove(full)
+                print(colors.yellow(f"Unselected: {full}"))
             else:
-                selected_files.add(full_path)
-                print(colors.green(f"Selected: {full_path}"))
+                selected.add(full)
+                print(colors.green(f"Selected: {full}"))
 
-    # end of selection loop—final removal prompt
-    if selected_files:
-        sorted_sel = sorted(selected_files)
+    if selected:
         print(colors.magenta("Selected files:"))
-        for k, path in enumerate(sorted_sel, start=1):
-            print(f"  - {path}")
+        for k, p in enumerate(sorted(selected), 1):
+            print(f"  - {p}")
 
-    return sorted(selected_files), possible_additional_prompt_value
+    return sorted(selected), maybe_prompt
 
 
 def msg_content_load(client):
     try:
         from cha import utils, loading
 
-        file_paths, prompt = traverse_and_select_files()
-
-        if len(file_paths) == 0:
+        paths, prompt = traverse_and_select_files()
+        if not paths:
             return None
-
-        if type(file_paths) != list:
-            raise Exception("Failed to determine filepaths")
 
         if prompt is None:
             prompt = input(colors.yellow("Additional Prompt: "))
 
-        # handle text-editor input
         if prompt.strip() == config.TEXT_EDITOR_INPUT_MODE:
-            editor_content = utils.check_terminal_editors_and_edit()
-            if editor_content is not None and len(editor_content) > 0:
-                prompt = editor_content
+            editor_out = utils.check_terminal_editors_and_edit()
+            if editor_out:
+                prompt = editor_out
                 for line in prompt.rstrip("\n").split("\n"):
                     print(colors.yellow(">"), line)
 
-        run_loading_animation = False
-
-        complex_file_types = (
+        complex_types = (
             config.SUPPORTED_AUDIO_FORMATS
             + config.SUPPORTED_IMG_FORMATS
             + config.SUPPORTED_VIDEO_FORMATS
         )
-        for file_path in file_paths:
-            file_ext = os.path.splitext(file_path)[1].lower()
-            if file_ext in complex_file_types:
-                run_loading_animation = True
-                break
+        needs_spinner = any(
+            os.path.splitext(p)[1].lower() in complex_types for p in paths
+        )
+        if needs_spinner:
+            loading.start_loading("Loading files", "rectangles")
 
-        if run_loading_animation:
-            loading.start_loading(f"Loading files", "rectangles")
-
-        contents = []
+        contents: list[tuple[str, str]] = []
         try:
-            for file_path in file_paths:
-                content = utils.load_most_files(
+            for p in paths:
+                c = utils.load_most_files(
                     client=client,
-                    file_path=file_path,
+                    file_path=p,
                     model_name=config.CHA_DEFAULT_IMAGE_MODEL,
                     prompt=prompt,
                 )
-                contents.append((file_path, content))
-        except Exception as e:
-            raise Exception(f"Failed to load files: {e}")
+                contents.append((p, c))
         finally:
-            if run_loading_animation:
+            if needs_spinner:
                 loading.stop_loading()
 
-        output = "\n".join(
-            f"CONTENT FOR {file_path}:\n``````````\n{content}\n``````````\n"
-            for file_path, content in contents
+        out = "\n".join(
+            f"CONTENT FOR {p}:\n``````````\n{c}\n``````````\n" for p, c in contents
         )
-
-        if len(prompt) > 0:
-            output = f"PROMPT: {prompt}\n\n{output}"
-
-        return output
+        if prompt:
+            out = f"PROMPT: {prompt}\n\n" + out
+        return out
     except (KeyboardInterrupt, EOFError):
         print()
         return None
-    except Exception as e:
-        print(colors.red(f"Error occurred during traverse: {e}"))
+    except Exception as exc:
+        print(colors.red(f"Error during traverse: {exc}"))
         return None
