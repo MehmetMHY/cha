@@ -16,6 +16,17 @@ import os
 from cha import colors, config, answer
 
 
+def contains_date(s):
+    # Month DD, YYYY (case-insensitive)
+    month_date_pattern = r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}\b"
+    # YYYY-MM-DD (ISO)
+    iso_pattern = r"\b\d{4}-\d{1,2}-\d{1,2}\b"
+    # MM-DD-YYYY and DD-MM-YYYY
+    dash_pattern = r"\b\d{1,2}-\d{1,2}-\d{4}\b"
+    patterns = [month_date_pattern, iso_pattern, dash_pattern]
+    return any(re.search(p, s, re.IGNORECASE) for p in patterns)
+
+
 def run_a_shell():
     try:
         current_shell = os.environ.get("SHELL")
