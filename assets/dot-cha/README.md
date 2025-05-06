@@ -1,5 +1,9 @@
 # Cha - External Tool Feature/Platform
 
+## Last Updated
+
+April 23, 2025
+
 ## About
 
 Cha supports user-created external tools that can be dropped into your local Cha config and automatically be discovered by Cha if setup correctly.
