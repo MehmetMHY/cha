@@ -65,7 +65,7 @@ def title_print(selected_model):
 
     if os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR):
         print(
-            colors.magenta(
+            colors.cyan(
                 f"- '{config.LOAD_HISTORY_TRIGGER} search and load previous chats"
             )
         )
