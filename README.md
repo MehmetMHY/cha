@@ -29,7 +29,9 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Export Markdown Fences**: If desired, export any Markdown fence in the latest message from a model to file(s).
 - **Integrated Shell Access**: Execute shell commands directly within Cha's environment, enhancing workflow efficiency by providing immediate terminal access.
 - **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
-  **Browse & Select History via fzf**: Quickly browse, search, and load previous chat histories using `fzf`.
+- **Browse & Select History via fzf**: Quickly browse, search, and load previous chat histories using `fzf`.
+- **Chat History Management**: Save, load, and search through your past conversations.
+- **Local Configuration**: Customize Cha's behavior through local configuration files.
 
 ## Getting Started
 
@@ -204,6 +206,11 @@ You can check the instructions below for more details on what Cha can do and how
     cha -p "groq"
     ```
 
+#### History Search and Management
+
+- `cha -hs` - Search and display previous chat histories
+- `cha` then type `historyload` during interactive mode to load a previous chat
+
 #### Model Autoselection (-sm)
 
 - `cha -sm`
@@ -217,18 +224,18 @@ You can check the instructions below for more details on what Cha can do and how
   cha -t -f README.md
   ```
 
-#### Direct “How to” / “Make me” / “Craft me” Questions
+#### Direct "How to" / "Make me" / "Craft me" Questions
 
-These appear frequently with “cha” followed by a question/request referencing programming, shell commands, or general tasks, for example:
+These appear frequently with "cha" followed by a question/request referencing programming, shell commands, or general tasks, for example:
 
 - `cha how many seconds is in a day`
 - `cha in python how can I save a dict to a json`
 - `cha craft me a unix command to find all Cargo.toml`
 - `cha make me a simple flask API`
 
-In essence, your unique “cha” CLI usage falls into these main patterns:
+In essence, your unique "cha" CLI usage falls into these main patterns:
 
-- Running “cha” with a direct query.
+- Running "cha" with a direct query.
 - Doing code dumps or debug dumps (-code_dump, -c, -d).
 - Performing deep answer searches (-a).
 - Perform a quick web search before answering your question/prompt (-b).
@@ -237,7 +244,7 @@ In essence, your unique “cha” CLI usage falls into these main patterns:
 - Running OCR operations (-ocr).
 - Switching platforms (-p).
 - Checking token counts (-t).
-- Asking a broad variety of how-to / make-me requests directly after “cha …”.
+- Asking a broad variety of how-to / make-me requests directly after "cha ...".
 
 Note that when you run Cha directly, meaning it conducts a single call to the model through the CLI as an argument, you can use the optional `-e` argument. This will export all code/file blocks in the model's last response that are enclosed in markdown fences. This feature makes it easy for Cha to generate files, such as a Python script, and have them accessible on you system (current directory) without needing to manually create a file, select, copy, and paste the content into a file. You can do this by running Cha like this (example):
 
@@ -330,9 +337,15 @@ Cha lets you store local files to tweak how it works, including:
 - Importing or building your own external tools to use inside Cha
 - Saving all your conversations locally so you can do whatever you want with them
 
-Once local history is enabled, features like browsing and searching your past chats are available.
+Once local history is enabled, features like browsing and searching your past chats are available using the `-hs` flag or it's alias during an interactive session.
 
-By default, this is turned off, so there’s no need to create any local files for Cha to run. But if you want to set this up, you can follow these [docs](./assets/dot-cha/README.md) and check out what’s [here](./assets/dot-cha/).
+By default, this is turned off, so there's no need to create any local files for Cha to run. You can set up the local configuration directory by running:
+
+```bash
+cha -i
+```
+
+For more details, check out the documentation in [docs](./assets/dot-cha/README.md) and the example files in [assets/dot-cha/](./assets/dot-cha/).
 
 ## Contributing
 
