@@ -158,66 +158,6 @@ def execute_tool(tool_data, chat_history=None, piped_question=None):
     return output
 
 
-def clean_text(text):
-    # remove URLs
-    text = re.sub(r"https?://\S+|www\.\S+", "", text)
-
-    # remove file/dir paths from the string
-    text = re.sub(
-        r"([A-Za-z]:\\(?:[^\\\s]+\\)*[^\\\s]+|\/(?:[^\/\s]+\/)*[^\/\s]+)", "", text
-    )
-
-    # remove HTML/XML tags
-    text = re.sub(r"<[^>]+>", "", text)
-
-    # remove single-line comments (//, #, --)
-    text = re.sub(r"(?m)^\s*(//|#|--).*$", "", text)
-
-    # remove multi-line comments (/* */ or ''' ''' or """ """)
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
-    text = re.sub(r"\'\'\'.*?\'\'\'", "", text, flags=re.DOTALL)
-    text = re.sub(r"\"\"\".*?\"\"\"", "", text, flags=re.DOTALL)
-
-    # remove code blocks like { ... } or indent-based lines
-    text = re.sub(r"\{[^{}]*\}", "", text)
-    text = re.sub(r"(?m)^(\s{4}|\t).+", "", text)  # lines with indentation
-
-    # remove typical code lines: function/var declarations, imports, etc.
-    text = re.sub(
-        r"(?m)^\s*(import|from|def|class|for|while|if|else|elif|try|catch|finally|function|var|let|const|public|private|static|return|include)[^\n]*",
-        "",
-        text,
-    )
-
-    # remove inline code in backticks or code blocks with ``` ```
-    text = re.sub(r"`[^`]*`", "", text)
-    text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
-
-    # remove symbols often found in code
-    text = re.sub(r"[{}\[\]();<>:=+\-*/%&|^!~]", "", text)
-
-    # remove numbers and variable-like words
-    text = re.sub(r"\b[a-zA-Z_][a-zA-Z0-9_]*\s*=\s*[^,\n]+", "", text)
-
-    # remove leftover excessive whitespace or blank lines
-    text = re.sub(r"\n\s*\n", "\n", text)
-    text = re.sub(r"\s{2,}", " ", text)
-
-    # remove code snippets between backticks
-    text = re.sub(r"`.*?`", "", text)
-
-    # remove all fully uppercase words
-    text = re.sub(r"\b[A-Z]+\b", "", text)
-
-    # replace multiple consecutive commas with a single comma
-    text = re.sub(r",\s*,+", ",", text)
-
-    # replace multiple spaces with a single space
-    text = re.sub(r"\s+", " ", text)
-
-    return text.strip()
-
-
 def read_json(path):
     with open(str(path)) as file:
         content = json.load(file)
@@ -249,7 +189,19 @@ def browse_and_select_history_file():
             if msg.get("user", None) is None and msg.get("bot", None) is not None:
                 clean_content = clean_content + msg.get("bot") + " "
 
-        output[file_path] = clean_text(clean_content)
+        # clean up content to better work with selector
+        clean_content = re.sub(
+            r"https?://\S+|www\.\S+", "", clean_content
+        )  # remove urls from the string
+        clean_content = re.sub(
+            r"([A-Za-z]:\\(?:[^\\\s]+\\)*[^\\\s]+|\/(?:[^\/\s]+\/)*[^\/\s]+)",
+            "",
+            clean_content,
+        )  # remove file/dir paths from string
+        clean_content = re.sub(r"\n", "", clean_content)  # remove new lines
+        clean_content = re.sub(r"\s+", " ", clean_content)  # remove extra whitespaces
+
+        output[file_path] = clean_content.strip()
 
     # all the code below apply the fzf integration
     try:
