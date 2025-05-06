@@ -52,8 +52,16 @@ DEFAULT_SEARCH_RESULT_COUNT = 5
 DEFAULT_GEN_SEARCH_QUERY_COUNT = 5
 
 # other random configs
-OPENAI_MODELS_TO_IGNORE = ["instruct", "realtime", "audio", "tts"]
+OPENAI_MODELS_TO_IGNORE = [
+    "instruct",
+    "realtime",
+    "audio",
+    "tts",
+    "image",
+    "transcribe",
+]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5"]
+OPENAI_IGNORE_DATED_MODEL_NAMES = False
 
 # terminal/console config
 SUPPORTED_TERMINAL_IDES = ["vim", "nvim", "vi", "nano", "hx", "pico", "micro", "emacs"]

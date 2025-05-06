@@ -88,8 +88,16 @@ def list_models():
         return [
             (model.id, model.created)
             for model in response.data
-            if any(substr in model.id for substr in config.OPENAI_MODELS_TO_KEEP)
-            and not any(substr in model.id for substr in config.OPENAI_MODELS_TO_IGNORE)
+            if (
+                any(substr in model.id for substr in config.OPENAI_MODELS_TO_KEEP)
+                and not any(
+                    substr in model.id for substr in config.OPENAI_MODELS_TO_IGNORE
+                )
+                and (
+                    not getattr(config, "OPENAI_IGNORE_DATED_MODEL_NAMES", False)
+                    or not utils.contains_date(model.id)
+                )
+            )
         ]
     except Exception as e:
         print(colors.red(f"Error fetching models: {e}"))
