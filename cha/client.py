@@ -56,7 +56,6 @@ def get_default_openai_client():
     global _default_openai_client_instance
     if _default_openai_client_instance is None:
         openai_mod = _ensure_openai_module_is_loaded()
-        utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
         _default_openai_client_instance = openai_mod.OpenAI(
             api_key=os.environ.get("OPENAI_API_KEY")
         )
