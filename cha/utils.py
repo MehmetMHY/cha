@@ -220,17 +220,6 @@ def get_request(
         return None
 
 
-def check_env_variable(env_var_name, docs_url):
-    if env_var_name not in os.environ:
-        print(
-            f"Environment variable '{env_var_name}' not found!\n\n"
-            f"Please set your API key as an environment variable using:\n\n"
-            f"  export {env_var_name}='your_api_key_here'\n\n"
-            f"Obtain your API key here: {docs_url}"
-        )
-        sys.exit(1)
-
-
 def safe_input(message=""):
     try:
         return input(message)
@@ -463,18 +452,6 @@ def load_most_files(
 
         with open(file_path, "r", encoding=encoding, errors="replace") as file:
             return file.read()
-
-
-def run_answer_search(client, prompt=None, user_input_mode=True):
-    try:
-        from cha import answer
-
-        check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
-        return answer.answer_search(
-            client=client, prompt=prompt, user_input_mode=user_input_mode
-        )
-    except (KeyboardInterrupt, EOFError, SystemExit):
-        return None
 
 
 def act_as_ocr(client, filepath, prompt=None):

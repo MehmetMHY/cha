@@ -410,9 +410,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     if len(answer_prompt_draft) > 10:
                         quick_browse_mode = True
 
-                if quick_browse_mode:
-                    from cha import answer
+                from cha import answer
 
+                if quick_browse_mode:
                     message = message.replace(config.RUN_ANSWER_FEATURE, "").strip()
                     new_message = answer.quick_search(user_input=message)
                     if new_message == None:
@@ -420,18 +420,20 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         continue
                     message = new_message
                 else:
-                    message = utils.run_answer_search(
-                        client=get_default_openai_client(),
-                        prompt=None,
-                        user_input_mode=True,
-                    )
+                    try:
+                        message = answer.answer_search(
+                            client=get_default_openai_client(),
+                            prompt=None,
+                            user_input_mode=True,
+                        )
 
-                    if message is not None:
                         messages.append({"role": "user", "content": message})
 
                         CURRENT_CHAT_HISTORY.append(
                             {"time": time.time(), "user": "", "bot": message}
                         )
+                    except (KeyboardInterrupt, EOFError, SystemExit):
+                        pass
 
                     continue
 
@@ -640,12 +642,21 @@ def cli():
             return
 
         if args.answer_search == True:
-            output = utils.run_answer_search(
-                client=get_default_openai_client(), prompt=None, user_input_mode=True
-            )
+            try:
+                from cha import answer
+
+                output = answer.answer_search(
+                    client=get_default_openai_client(),
+                    prompt=None,
+                    user_input_mode=True,
+                )
+            except (KeyboardInterrupt, EOFError, SystemExit):
+                return None
+
             save_chat_state = False
             if output is None:
                 raise Exception("Answer search existed with None")
+
             return
 
         if args.history_search:

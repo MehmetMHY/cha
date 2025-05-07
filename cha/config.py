@@ -5,9 +5,6 @@ import os
 
 from cha import local
 
-# links
-OPENAI_DOCS_LINK = "https://platform.openai.com/docs/overview"
-
 # system prompt
 INITIAL_PROMPT = """
 You are a helpful assistant powered by Cha who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details.
