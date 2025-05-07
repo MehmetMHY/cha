@@ -9,24 +9,18 @@ try:
     import os
     import re
 
-    from cha import (
-        scraper,
-        colors,
-        utils,
-        config,
-        loading,
-        platforms,
-        codedump,
-        answer,
-        traverse,
-        local,
-    )
+    from cha import colors
+    from cha import utils
+    from cha import config
+    from cha import loading
 
     from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
-utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
+# utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
+
+sys.exit()
 
 openai_client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),
@@ -117,6 +111,11 @@ def cleanly_print_models(openai_models):
         )
     return openai_models
 
+
+def number_of_urls(text):
+    url_pattern = r"https?://(?:www\.)?\S+"
+    urls = re.findall(url_pattern, text)
+    return len(urls)
 
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
     global client
@@ -245,6 +244,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             elif os.path.isdir(
                 config.LOCAL_CHA_CONFIG_HISTORY_DIR
             ) and message.strip().lower().startswith(config.LOAD_HISTORY_TRIGGER):
+                from cha import local
                 hs_output = None
                 try:
                     hs_output = local.browse_and_select_history_file()
@@ -302,9 +302,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if message.strip().startswith(config.ENABLE_OR_DISABLE_AUTO_SD):
                 if (
                     auto_scrape_detection_mode == False
-                    and len(scraper.extract_urls(message)) > 0
+                    and number_of_urls(message) > 0
                 ):
                     loading.start_loading("Scraping URL(s)", "basic")
+                    from cha import scraper
                     try:
                         message = scraper.scraped_prompt(message)
                     finally:
@@ -324,6 +325,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             for tool_data in config.EXTERNAL_TOOLS_EXECUTE:
                 alias = tool_data["alias"]
                 if message.strip().startswith(alias):
+                    from cha import local
                     loading.start_loading("Running External Tool", "dots")
                     tool_call_output = local.execute_tool(
                         tool_data=tool_data,
@@ -377,12 +379,16 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             # prompt user to load a file
             if message == config.LOAD_MESSAGE_CONTENT:
+                from cha import traverse
+
                 message = traverse.msg_content_load(openai_client)
                 if message is None:
                     continue
 
             if message.startswith(config.USE_CODE_DUMP):
                 try:
+                    from cha import codedump
+
                     dir_path = message.replace(config.USE_CODE_DUMP, "").replace(
                         " ", ""
                     )
@@ -397,9 +403,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             # check for URLs -> scraping
             if auto_scrape_detection_mode:
-                detected_urls = len(scraper.extract_urls(message))
-                if detected_urls > 0:
+                if number_of_urls(message) > 0:
                     loading.start_loading("Scraping URLs", "star")
+                    from cha import scraper
                     try:
                         message = scraper.scraped_prompt(message)
                     finally:
@@ -416,6 +422,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         quick_browse_mode = True
 
                 if quick_browse_mode:
+                    from cha import answer
+
                     message = message.replace(config.RUN_ANSWER_FEATURE, "").strip()
                     new_message = answer.quick_search(user_input=message)
                     if new_message == None:
@@ -592,6 +600,7 @@ def cli():
         args = parser.parse_args()
 
         if args.init:
+            from cha import local
             output = local.setup_cha_config_dir()
             if output == False:
                 print(colors.red(f"Failed to create .cha/ local config setup"))
@@ -606,14 +615,17 @@ def cli():
             return
 
         if args.code_dump == True:
+            from cha import codedump
+
             codedump.code_dump(None, True)
             return
 
         if args.ocr != None:
             content = None
 
-            detected_urls = scraper.extract_urls(str(args.ocr))
+            detected_urls = number_of_urls(str(args.ocr))
             if len(detected_urls) > 0:
+                from cha import scraper
                 for i in range(len(detected_urls)):
                     detected_urls[i] = str(detected_urls[i]).replace("\\", "")
                 content = scraper.get_all_htmls(detected_urls)
@@ -650,6 +662,7 @@ def cli():
                 return
 
             try:
+                from cha import local
                 hs_output = local.browse_and_select_history_file()
                 if hs_output:
                     local.print_history_browse_and_select_history_file(
@@ -667,6 +680,8 @@ def cli():
 
         if args.platform or args.platform == True:
             try:
+                from cha import platforms
+
                 API_KEY_NAME = None
                 BASE_URL_VALUE = None
                 if (
