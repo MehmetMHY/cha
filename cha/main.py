@@ -1,6 +1,5 @@
 import sys
 
-# catch below accounts for early keyboard exist
 try:
     import argparse
     import traceback
@@ -8,102 +7,22 @@ try:
     import json
     import os
     import re
-    import threading
-    import importlib
 
     from cha import colors
     from cha import utils
     from cha import config
     from cha import loading
 
-    # from openai import OpenAI # Removed: Will be imported lazily
+    from cha.openai_utils import (
+        get_default_openai_client,
+        get_current_chat_client,
+        set_current_chat_client,
+    )
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
 utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
 
-# sys.exit() # Removed: This was causing an early exit
-
-# --- Start of OpenAI Lazy Loading and Warmup ---
-_openai_module_instance = None
-
-
-def _warm_openai_import_func():
-    global _openai_module_instance
-    try:
-        import importlib
-
-        _openai_module_instance = importlib.import_module("openai")
-    except:
-        # Errors will be handled by _ensure_openai_module_is_loaded if import fails
-        pass
-
-
-warmup_thread_obj = threading.Thread(target=_warm_openai_import_func, daemon=True)
-warmup_thread_obj.start()
-
-
-def _ensure_openai_module_is_loaded():
-    global _openai_module_instance
-    if _openai_module_instance is None:
-        try:
-            import openai as openai_module_local  # Use alias
-
-            _openai_module_instance = openai_module_local
-        except ImportError as e:
-            message_to_print = f"Fatal Error: The 'openai' library is not installed or could not be imported. Please install it: pip install openai. Details: {e}"
-            try:
-                # cha.colors might not be available if there are deeper import issues
-                from cha import colors as loaded_colors
-
-                print(loaded_colors.red(message_to_print), file=sys.stderr)
-            except ImportError:
-                print(message_to_print, file=sys.stderr)
-            sys.exit(1)
-    return _openai_module_instance
-
-
-_default_openai_client_instance = None
-_current_chat_client_instance = None
-
-
-def get_default_openai_client():
-    global _default_openai_client_instance
-    if _default_openai_client_instance is None:
-        openai_mod = _ensure_openai_module_is_loaded()
-        _default_openai_client_instance = openai_mod.OpenAI(
-            api_key=os.environ.get("OPENAI_API_KEY")
-        )
-    return _default_openai_client_instance
-
-
-def get_current_chat_client():
-    global _current_chat_client_instance
-    if _current_chat_client_instance is None:
-        _current_chat_client_instance = (
-            get_default_openai_client()
-        )  # Default to standard OpenAI client
-    return _current_chat_client_instance
-
-
-def set_current_chat_client(api_key, base_url):
-    global _current_chat_client_instance
-    openai_mod = _ensure_openai_module_is_loaded()
-    _current_chat_client_instance = openai_mod.OpenAI(
-        api_key=api_key, base_url=base_url
-    )
-    return _current_chat_client_instance
-
-
-# --- End of OpenAI Lazy Loading and Warmup ---
-
-# openai_client = OpenAI( # Removed
-#     api_key=os.environ.get("OPENAI_API_KEY"), # Removed
-# ) # Removed
-
-# client = OpenAI( # Removed
-#     api_key=os.environ.get("OPENAI_API_KEY"), # Removed
-# ) # Removed
 
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
 
