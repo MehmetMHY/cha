@@ -36,6 +36,7 @@ LOAD_HISTORY_TRIGGER = "!hs"
 CHA_DEFAULT_MODEL = "gpt-4.1"
 CHA_DEFAULT_IMAGE_MODEL = "gpt-4o"
 CHA_DEBUG_MODE = False
+CHA_STREAMING_ERROR_LIMIT = 5
 
 # local config variables
 CHA_DEFAULT_SHOW_PRINT_TITLE = True
@@ -288,10 +289,17 @@ THIRD_PARTY_PLATFORMS = {
         "docs": "https://docs.x.ai/docs/overview",
     },
     "anthropic": {
-        "package_name": "cha.cla",
-        "function": "anthropic",
+        "models": {
+            "url": "https://api.anthropic.com/v1/models",
+            "headers": {
+                "x-api-key": f"{os.environ.get('ANTHROPIC_API_KEY')}",
+                "anthropic-version": "2023-06-01",
+            },
+            "json_name_path": "data.id",
+        },
+        "base_url": "https://api.anthropic.com/v1/",
         "env_name": "ANTHROPIC_API_KEY",
-        "parameters": {"selected_model": None},
+        "docs": "https://docs.anthropic.com/",
     },
 }
 
