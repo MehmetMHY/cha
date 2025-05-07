@@ -18,7 +18,7 @@ try:
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
-# utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
+utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
 
 sys.exit()
 
