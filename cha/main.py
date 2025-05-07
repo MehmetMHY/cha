@@ -8,7 +8,7 @@ try:
     import os
     import re
 
-    from cha import colors, utils, config, loading
+    from cha import colors, utils, config, loading, platforms
     from cha.client import (
         get_default_openai_client,
         get_current_chat_client,
@@ -687,26 +687,37 @@ def cli():
         title_print_value = config.CHA_DEFAULT_SHOW_PRINT_TITLE
         selected_model = args.model
 
-        if args.platform or args.platform == True:
+        if (
+            args.platform
+            or args.platform == True
+            or config.CHA_DEFAULT_PLATFORM_NAME != "openai"
+        ):
             try:
                 from cha import platforms
+
+                platform_args = args.platform
+
+                if config.CHA_DEFAULT_PLATFORM_NAME != "openai":
+                    platform_args = (
+                        f"{config.CHA_DEFAULT_PLATFORM_NAME}|{config.CHA_DEFAULT_MODEL}"
+                    )
 
                 API_KEY_NAME = None
                 BASE_URL_VALUE = None
                 if (
-                    type(args.platform) == str
-                    and "|" in args.platform
-                    and "http" in args.platform
+                    type(platform_args) == str
+                    and "|" in platform_args
+                    and "http" in platform_args
                 ):
-                    platform_values = str(args.platform).split("|")
+                    platform_values = str(platform_args).split("|")
                     API_KEY_NAME = platform_values[1]
                     BASE_URL_VALUE = platform_values[0]
                     platform_values
                 else:
                     platform_name = None
                     platform_model_name = None
-                    if type(args.platform) == str:
-                        psplit = args.platform.split("|")
+                    if type(platform_args) == str:
+                        psplit = platform_args.split("|")
                         platform_name = psplit[0]
                         if len(psplit) == 2:
                             platform_model_name = psplit[1]
