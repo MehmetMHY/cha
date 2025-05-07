@@ -8,11 +8,7 @@ try:
     import os
     import re
 
-    from cha import colors
-    from cha import utils
-    from cha import config
-    from cha import loading
-
+    from cha import colors, utils, config, loading
     from cha.openai_utils import (
         get_default_openai_client,
         get_current_chat_client,
@@ -20,8 +16,6 @@ try:
     )
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
-
-utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
 
 
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
@@ -692,6 +686,7 @@ def cli():
                     platform_values = str(args.platform).split("|")
                     API_KEY_NAME = platform_values[1]
                     BASE_URL_VALUE = platform_values[0]
+                    platform_values
                 else:
                     platform_name = None
                     platform_model_name = None
@@ -707,12 +702,12 @@ def cli():
                         model_name=platform_model_name,
                     )
 
+                    if platform_values.get("type") == "package_call":
+                        return
+
                     API_KEY_NAME = platform_values["env_name"]
                     BASE_URL_VALUE = platform_values["base_url"]
                     selected_model = platform_values["picked_model"]
-
-                if platform_values.get("type") == "package_call":
-                    return
 
                 # NOTE: (2-13-2025) this exists to account for cases like this: https://ollama.com/blog/openai-compatibility
                 API_KEY_VALUE = API_KEY_NAME
