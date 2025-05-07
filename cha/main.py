@@ -117,6 +117,7 @@ def number_of_urls(text):
     urls = re.findall(url_pattern, text)
     return len(urls)
 
+
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
     global client
     global CURRENT_CHAT_HISTORY
@@ -245,6 +246,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 config.LOCAL_CHA_CONFIG_HISTORY_DIR
             ) and message.strip().lower().startswith(config.LOAD_HISTORY_TRIGGER):
                 from cha import local
+
                 hs_output = None
                 try:
                     hs_output = local.browse_and_select_history_file()
@@ -300,12 +302,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 multi_line_input = False
 
             if message.strip().startswith(config.ENABLE_OR_DISABLE_AUTO_SD):
-                if (
-                    auto_scrape_detection_mode == False
-                    and number_of_urls(message) > 0
-                ):
+                if auto_scrape_detection_mode == False and number_of_urls(message) > 0:
                     loading.start_loading("Scraping URL(s)", "basic")
                     from cha import scraper
+
                     try:
                         message = scraper.scraped_prompt(message)
                     finally:
@@ -326,6 +326,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 alias = tool_data["alias"]
                 if message.strip().startswith(alias):
                     from cha import local
+
                     loading.start_loading("Running External Tool", "dots")
                     tool_call_output = local.execute_tool(
                         tool_data=tool_data,
@@ -406,6 +407,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 if number_of_urls(message) > 0:
                     loading.start_loading("Scraping URLs", "star")
                     from cha import scraper
+
                     try:
                         message = scraper.scraped_prompt(message)
                     finally:
@@ -601,6 +603,7 @@ def cli():
 
         if args.init:
             from cha import local
+
             output = local.setup_cha_config_dir()
             if output == False:
                 print(colors.red(f"Failed to create .cha/ local config setup"))
@@ -626,6 +629,7 @@ def cli():
             detected_urls = number_of_urls(str(args.ocr))
             if len(detected_urls) > 0:
                 from cha import scraper
+
                 for i in range(len(detected_urls)):
                     detected_urls[i] = str(detected_urls[i]).replace("\\", "")
                 content = scraper.get_all_htmls(detected_urls)
@@ -663,6 +667,7 @@ def cli():
 
             try:
                 from cha import local
+
                 hs_output = local.browse_and_select_history_file()
                 if hs_output:
                     local.print_history_browse_and_select_history_file(
