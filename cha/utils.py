@@ -239,13 +239,6 @@ def safe_input(message=""):
         sys.exit(0)
 
 
-def generate_short_uuid():
-    uuid_val = uuid.uuid4()
-    uuid_bytes = uuid_val.bytes
-    short_uuid = base64.urlsafe_b64encode(uuid_bytes).rstrip(b"=").decode("utf-8")
-    return str(short_uuid)
-
-
 def write_json(path, data):
     with open(str(path), "w") as file:
         json.dump(data, file, indent=4)
