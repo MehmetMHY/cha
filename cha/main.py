@@ -26,7 +26,7 @@ def title_print(selected_model):
         colors.yellow(
             utils.rls(
                 f"""
-                Chatting With OpenAI's '{selected_model}' Model
+                Chatting With Model: {selected_model}
                 - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
                 - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
                 - '{config.SAVE_CHAT_HISTORY}' to save chat history
