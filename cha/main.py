@@ -469,11 +469,15 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 )
                 full_response = ""
                 try:
+                    error_count = 0
                     for chunk in response:
                         try:
                             chunk_message = chunk.choices[0].delta.content
                         except:
-                            break
+                            error_count += 1
+                            if error_count > config.CHA_STREAMING_ERROR_LIMIT:
+                                break
+                            pass
                         if chunk_message:
                             sys.stdout.write(colors.green(chunk_message))
                             full_response += chunk_message
