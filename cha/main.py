@@ -9,7 +9,7 @@ try:
     import re
 
     from cha import colors, utils, config, loading
-    from cha.oaiclient import (
+    from cha.client import (
         get_default_openai_client,
         get_current_chat_client,
         set_current_chat_client,
