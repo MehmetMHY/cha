@@ -214,7 +214,6 @@ SUPPORTED_VIDEO_FORMATS = [
 ]
 
 # last updated on 3-11-2025
-SCRAPE_MODEL_NAME_FOR_PLATFORMS = "gpt-4o-mini"
 THIRD_PARTY_PLATFORMS = {
     "groq": {
         "models": {
