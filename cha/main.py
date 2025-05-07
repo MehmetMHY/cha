@@ -701,7 +701,6 @@ def cli():
                             platform_model_name = psplit[1]
 
                     platform_values = platforms.auto_select_a_platform(
-                        client=get_default_openai_client(),
                         platform_key=platform_name,
                         model_name=platform_model_name,
                     )
