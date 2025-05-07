@@ -1,4 +1,3 @@
-from contextlib import redirect_stdout, redirect_stderr
 import statistics
 import subprocess
 import datetime
@@ -13,7 +12,7 @@ import sys
 import re
 import os
 
-from cha import colors, config, answer
+from cha import colors, config
 
 
 def contains_date(s):
@@ -475,6 +474,8 @@ def load_most_files(
 
 def run_answer_search(client, prompt=None, user_input_mode=True):
     try:
+        from cha import answer
+
         check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
         return answer.answer_search(
             client=client, prompt=prompt, user_input_mode=user_input_mode
@@ -537,6 +538,8 @@ def extract_audio_from_video(video_path):
 
 
 def extract_text_from_video(video_path):
+    from contextlib import redirect_stdout, redirect_stderr
+
     result = None
     with open(os.devnull, "w") as fnull:
         with redirect_stdout(fnull), redirect_stderr(fnull):

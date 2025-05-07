@@ -1,6 +1,5 @@
 import sys
 
-# catch below accounts for early keyboard exist
 try:
     import argparse
     import traceback
@@ -9,32 +8,15 @@ try:
     import os
     import re
 
-    from cha import (
-        scraper,
-        colors,
-        utils,
-        config,
-        loading,
-        platforms,
-        codedump,
-        answer,
-        traverse,
-        local,
+    from cha import colors, utils, config, loading
+    from cha.openai_utils import (
+        get_default_openai_client,
+        get_current_chat_client,
+        set_current_chat_client,
     )
-
-    from openai import OpenAI
 except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
-utils.check_env_variable("OPENAI_API_KEY", config.OPENAI_DOCS_LINK)
-
-openai_client = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY"),
-)
-
-client = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY"),
-)
 
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
 
@@ -79,7 +61,7 @@ def title_print(selected_model):
 
 def list_models():
     try:
-        response = openai_client.models.list()
+        response = get_default_openai_client().models.list()
         if not response.data:
             raise ValueError("No models available")
 
@@ -118,8 +100,13 @@ def cleanly_print_models(openai_models):
     return openai_models
 
 
+def number_of_urls(text):
+    url_pattern = r"https?://(?:www\.)?\S+"
+    urls = re.findall(url_pattern, text)
+    return len(urls)
+
+
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
-    global client
     global CURRENT_CHAT_HISTORY
 
     reasoning_model = utils.is_slow_model(selected_model)
@@ -155,7 +142,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             try:
                 loading.start_loading("Loading", "rectangles")
                 content = utils.load_most_files(
-                    client=openai_client,
+                    client=get_default_openai_client(),
                     file_path=filepath,
                     model_name=config.CHA_DEFAULT_IMAGE_MODEL,
                 )
@@ -245,6 +232,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             elif os.path.isdir(
                 config.LOCAL_CHA_CONFIG_HISTORY_DIR
             ) and message.strip().lower().startswith(config.LOAD_HISTORY_TRIGGER):
+                from cha import local
+
                 hs_output = None
                 try:
                     hs_output = local.browse_and_select_history_file()
@@ -300,11 +289,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 multi_line_input = False
 
             if message.strip().startswith(config.ENABLE_OR_DISABLE_AUTO_SD):
-                if (
-                    auto_scrape_detection_mode == False
-                    and len(scraper.extract_urls(message)) > 0
-                ):
+                if auto_scrape_detection_mode == False and number_of_urls(message) > 0:
                     loading.start_loading("Scraping URL(s)", "basic")
+                    from cha import scraper
+
                     try:
                         message = scraper.scraped_prompt(message)
                     finally:
@@ -324,6 +312,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             for tool_data in config.EXTERNAL_TOOLS_EXECUTE:
                 alias = tool_data["alias"]
                 if message.strip().startswith(alias):
+                    from cha import local
+
                     loading.start_loading("Running External Tool", "dots")
                     tool_call_output = local.execute_tool(
                         tool_data=tool_data,
@@ -377,12 +367,16 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             # prompt user to load a file
             if message == config.LOAD_MESSAGE_CONTENT:
-                message = traverse.msg_content_load(openai_client)
+                from cha import traverse
+
+                message = traverse.msg_content_load(get_default_openai_client())
                 if message is None:
                     continue
 
             if message.startswith(config.USE_CODE_DUMP):
                 try:
+                    from cha import codedump
+
                     dir_path = message.replace(config.USE_CODE_DUMP, "").replace(
                         " ", ""
                     )
@@ -397,9 +391,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             # check for URLs -> scraping
             if auto_scrape_detection_mode:
-                detected_urls = len(scraper.extract_urls(message))
-                if detected_urls > 0:
+                if number_of_urls(message) > 0:
                     loading.start_loading("Scraping URLs", "star")
+                    from cha import scraper
+
                     try:
                         message = scraper.scraped_prompt(message)
                     finally:
@@ -416,6 +411,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         quick_browse_mode = True
 
                 if quick_browse_mode:
+                    from cha import answer
+
                     message = message.replace(config.RUN_ANSWER_FEATURE, "").strip()
                     new_message = answer.quick_search(user_input=message)
                     if new_message == None:
@@ -424,7 +421,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     message = new_message
                 else:
                     message = utils.run_answer_search(
-                        client=openai_client,
+                        client=get_default_openai_client(),
                         prompt=None,
                         user_input_mode=True,
                     )
@@ -458,7 +455,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
         try:
             if reasoning_model:
                 loading.start_loading("Thinking", "braille")
-                response = client.chat.completions.create(
+                response = get_current_chat_client().chat.completions.create(
                     model=selected_model, messages=messages
                 )
                 loading.stop_loading()
@@ -467,7 +464,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 obj_chat_history["bot"] = full_response
 
             else:
-                response = client.chat.completions.create(
+                response = get_current_chat_client().chat.completions.create(
                     model=selected_model, messages=messages, stream=True
                 )
                 full_response = ""
@@ -503,7 +500,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
 
 def cli():
-    global client
+    global CURRENT_CHAT_HISTORY
 
     save_chat_state = True
     args = None
@@ -592,6 +589,8 @@ def cli():
         args = parser.parse_args()
 
         if args.init:
+            from cha import local
+
             output = local.setup_cha_config_dir()
             if output == False:
                 print(colors.red(f"Failed to create .cha/ local config setup"))
@@ -606,20 +605,26 @@ def cli():
             return
 
         if args.code_dump == True:
+            from cha import codedump
+
             codedump.code_dump(None, True)
             return
 
         if args.ocr != None:
             content = None
 
-            detected_urls = scraper.extract_urls(str(args.ocr))
+            detected_urls = number_of_urls(str(args.ocr))
             if len(detected_urls) > 0:
+                from cha import scraper
+
                 for i in range(len(detected_urls)):
                     detected_urls[i] = str(detected_urls[i]).replace("\\", "")
                 content = scraper.get_all_htmls(detected_urls)
             else:
                 content = utils.act_as_ocr(
-                    client=openai_client, filepath=str(args.ocr), prompt=None
+                    client=get_default_openai_client(),
+                    filepath=str(args.ocr),
+                    prompt=None,
                 )
 
             if content == None:
@@ -632,7 +637,7 @@ def cli():
 
         if args.answer_search == True:
             output = utils.run_answer_search(
-                client=openai_client, prompt=None, user_input_mode=True
+                client=get_default_openai_client(), prompt=None, user_input_mode=True
             )
             save_chat_state = False
             if output is None:
@@ -650,6 +655,8 @@ def cli():
                 return
 
             try:
+                from cha import local
+
                 hs_output = local.browse_and_select_history_file()
                 if hs_output:
                     local.print_history_browse_and_select_history_file(
@@ -667,6 +674,8 @@ def cli():
 
         if args.platform or args.platform == True:
             try:
+                from cha import platforms
+
                 API_KEY_NAME = None
                 BASE_URL_VALUE = None
                 if (
@@ -677,6 +686,7 @@ def cli():
                     platform_values = str(args.platform).split("|")
                     API_KEY_NAME = platform_values[1]
                     BASE_URL_VALUE = platform_values[0]
+                    platform_values
                 else:
                     platform_name = None
                     platform_model_name = None
@@ -687,27 +697,24 @@ def cli():
                             platform_model_name = psplit[1]
 
                     platform_values = platforms.auto_select_a_platform(
-                        client=openai_client,
+                        client=get_default_openai_client(),
                         platform_key=platform_name,
                         model_name=platform_model_name,
                     )
 
+                    if platform_values.get("type") == "package_call":
+                        return
+
                     API_KEY_NAME = platform_values["env_name"]
                     BASE_URL_VALUE = platform_values["base_url"]
                     selected_model = platform_values["picked_model"]
-
-                if platform_values.get("type") == "package_call":
-                    return
 
                 # NOTE: (2-13-2025) this exists to account for cases like this: https://ollama.com/blog/openai-compatibility
                 API_KEY_VALUE = API_KEY_NAME
                 if API_KEY_VALUE in os.environ:
                     API_KEY_VALUE = os.environ.get(API_KEY_NAME)
 
-                client = OpenAI(
-                    api_key=API_KEY_VALUE,
-                    base_url=BASE_URL_VALUE,
-                )
+                set_current_chat_client(API_KEY_VALUE, BASE_URL_VALUE)
 
                 print(colors.magenta(f"Platform switched to {BASE_URL_VALUE}"))
             except Exception as e:
@@ -721,7 +728,7 @@ def cli():
 
             if args.file:
                 content_mode = "FILE"
-                text = utils.load_most_files(args.file, openai_client)
+                text = utils.load_most_files(args.file, get_default_openai_client())
             elif args.string:
                 content_mode = "STRING"
                 text = " ".join(args.string)
