@@ -26,7 +26,7 @@ def title_print(selected_model):
         colors.yellow(
             utils.rls(
                 f"""
-                Chatting With Model: {selected_model}
+                Chatting With {config.CHA_CURRENT_PLATFORM_NAME.upper()} Model: {selected_model}
                 - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
                 - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
                 - '{config.SAVE_CHAT_HISTORY}' to save chat history
@@ -84,7 +84,6 @@ def list_models():
         for model in models:
             provided_models.append(model[0])
     else:
-        print(config.CHA_CURRENT_PLATFORM_NAME)
         platform_config = config.THIRD_PARTY_PLATFORMS[config.CHA_CURRENT_PLATFORM_NAME]
         provided_models = platforms.get_platform_model_list(
             url=platform_config["models"]["url"],
@@ -748,7 +747,8 @@ def cli():
 
                 config.CHA_CURRENT_PLATFORM_NAME = platform_name
 
-                print(colors.magenta(f"Platform switched to {BASE_URL_VALUE}"))
+                if config.CHA_DEFAULT_SHOW_PRINT_TITLE:
+                    print(colors.magenta(f"Platform switched to {BASE_URL_VALUE}"))
             except Exception as e:
                 save_chat_state = False
                 raise Exception(f"Failed to switch platform due to {e}")
