@@ -1,8 +1,8 @@
 from datetime import datetime
 import subprocess
+import shutil
 import time
 import os
-import shutil
 
 from cha import colors, utils, config
 import pathspec
