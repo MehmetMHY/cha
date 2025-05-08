@@ -29,11 +29,13 @@ The `config.py` file allows you to set and/or override the default global variab
 
 ## Setting Up Your Tool Example
 
-In this directory (where this README is located), there is an example `config.py` and `tools/` setup. The `config.py` loads the one example tool in `tools/`, disables the initial help print for every Cha interaction, and enables Cha with recording/saving all of your conversation with Cha in the `history/` directory.
+- **NOTE:** _If you want to use Cha entirely with open-source software and avoid closed-source dependencies (mainly OpenAI), you can do so by replacing your config. After setting up, simply overwrite your `config.py` file with the contents of `open_source_config.py`. While this open-source setup isn’t perfect, most Cha features will continue to work._
 
-For this example, move the `config.py` file and `tools/` directly to your `$HOME/.cha/` directory. Replace the content in that directory if needed, unless you don't want to do that.
+In this directory (where this README is located), you’ll find an example `config.py` and a `tools/` folder. The `config.py` file loads an example tool from `tools/`, disables the initial help message for every Cha interaction, and sets up Cha to record and save all your conversations in the `history/` directory.
 
-In this example, the provided tool allows you to get your current weather data in your location and provide it as context to Cha. To call it, you can just run `!weather` in Cha and hit ENTER. You can refer to this tool's code to understand how tools are set up for Cha. This example tool provides all the possible variables you can set for tools in Cha, so please review the code.
+To set up this example, move both the `config.py` file and the `tools/` directory into your `$HOME/.cha/` directory. Replace existing content if necessary, unless you want to preserve your current setup.
+
+This example tool retrieves your current weather data and makes it available as context to Cha. To use it, run `!weather` in Cha and press ENTER. You can review the tool’s code to learn how tools are implemented in Cha. This example demonstrates all possible variables you can set for tools in Cha, so refer to its code for details.
 
 ## Deeper Look
 
