@@ -15,7 +15,7 @@ def collect_files(directory: str) -> list[str]:
         # prevent os.walk from descending into ignored directories
         dirnames[:] = [d for d in dirnames if d not in ignored_dir_names]
 
-        # safeguard: skip files if root itself is in an ignored directory path
+        # safeguard - skip files if root itself is in an ignored directory path
         current_path_segments = set(os.path.normpath(root).split(os.sep))
         if not ignored_dir_names.isdisjoint(current_path_segments):
             continue  # skip files in this root
@@ -42,7 +42,7 @@ Commands:
   cd .. / cd            : up / back to root
   ls                    : list directory & selections
   <n> or 1,3-5          : toggle file(s) by index
-  <dir‑index>           : toggle ALL files in that directory
+  <dir-index>           : toggle ALL files in that directory
   help / exit           : this help / quit
 """
             )
@@ -143,7 +143,7 @@ def traverse_and_select_files():
             print_commands()
             continue
 
-        # free‑form prompt, if we already have selections
+        # free-form prompt, if we already have selections
         if (
             not (
                 user.startswith("cd")
@@ -266,8 +266,8 @@ def traverse_and_select_files():
                 print(colors.green(f"Selected: {full}"))
 
     if selected:
-        while True:  # loop for multiple deselection rounds
-            if not selected:  # if all files were deselected in a previous iteration
+        while True:
+            if not selected:
                 print(colors.yellow("All files have been deselected."))
                 break
 
@@ -280,58 +280,29 @@ def traverse_and_select_files():
                 deselection_prompt_text = colors.magenta(
                     "Enter numbers to deselect or EXIT to continue: "
                 )
+
                 user_deselection_input = input(deselection_prompt_text).strip()
 
                 if (
                     not user_deselection_input
                     or user_deselection_input.lower() == "exit"
                 ):
-                    break  # exit deselection loop
+                    break
 
                 indices_to_deselect = parse_selection_input(user_deselection_input)
 
                 if indices_to_deselect:
-                    deselected_in_this_round = False
                     unique_indices = sorted(list(set(indices_to_deselect)))
-
                     for idx in unique_indices:
                         if 1 <= idx <= len(selected_list_current_round):
                             file_to_deselect = selected_list_current_round[idx - 1]
                             if file_to_deselect in selected:
                                 selected.remove(file_to_deselect)
                                 print(colors.red(f"Deselected: {file_to_deselect}"))
-                                deselected_in_this_round = True
-                        else:
-                            print(
-                                colors.red(
-                                    f"Index {idx} for deselection is out of range."
-                                )
-                            )
-
-                    if not deselected_in_this_round and not any(
-                        str(i) in user_deselection_input
-                        for i in range(1, len(selected_list_current_round) + 1)
-                    ):
-                        # this case handles if user input text that was not "exit" or numbers.
-                        # parse_selection_input would return None or an empty list.
-                        # if it's not 'exit' and not valid numbers, we can inform them or just re-prompt.
-                        # for now, just re-prompting by continuing the loop.
-                        print(
-                            colors.red(
-                                f"Invalid input: '{user_deselection_input}'. Please enter numbers, 'exit', or press Enter."
-                            )
-                        )
-
-                else:  # parse_selection_input returned None or empty list for non-numeric, non-'exit' input
-                    print(
-                        colors.red(
-                            f"Invalid input: '{user_deselection_input}'. Please enter numbers, 'exit', or press Enter."
-                        )
-                    )
 
             except (KeyboardInterrupt, EOFError):
-                print()  # newline for clarity
-                break  # exit deselection loop
+                print()
+                break
 
     return sorted(list(selected)), maybe_prompt
 
@@ -345,7 +316,7 @@ def msg_content_load(client):
             return None
 
         if prompt is None:
-            prompt = input(colors.magenta("Additional Prompt: "))
+            prompt = input(colors.yellow("Additional Prompt: "))
 
         if prompt.strip() == config.TEXT_EDITOR_INPUT_MODE:
             editor_out = utils.check_terminal_editors_and_edit()
