@@ -3,9 +3,9 @@ import importlib
 import sys
 import os
 
-from cha import config, utils, colors
+from cha import colors
 
-# NOTE: this module is used  to lazy load the openai module and warm it up
+# NOTE: this module is used to lazy load the openai module and warm it up
 _openai_module_instance = None
 
 
