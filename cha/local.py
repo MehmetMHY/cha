@@ -269,23 +269,6 @@ def browse_and_select_history_file():
             selected_path = line_to_path_map[selected_line]
         except KeyboardInterrupt:
             pass
-    except FileNotFoundError:
-        print(colors.red("fzf command not found, switching to basic selector method"))
-
-        print(colors.yellow("Histories:"))
-        for i, (epoch_val, display_line, path) in enumerate(entries, 1):
-            s = int(terminal_width * 0.90)
-            print(colors.yellow(f"   {i}) {display_line[:s]}..."))
-
-        print(colors.blue("Select History: "), end="")
-        try:
-            choice = input().strip()
-            index = int(choice) - 1
-            if 0 <= index < len(entries):
-                selected_path = entries[index][2]
-        except KeyboardInterrupt:
-            print()
-            pass
     except Exception as e:
         pass
 
