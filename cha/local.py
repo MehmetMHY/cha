@@ -252,6 +252,7 @@ def browse_and_select_history_file():
                 [
                     "fzf",
                     "--exact",
+                    "-e",
                     "--delimiter",
                     "\\t",
                     "--with-nth",
