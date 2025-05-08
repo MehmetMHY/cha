@@ -233,12 +233,6 @@ def write_json(path, data):
         json.dump(data, file, indent=4)
 
 
-def simple_date(epoch_time):
-    date_time = datetime.datetime.fromtimestamp(epoch_time)
-    formatted_date = date_time.strftime("%B %d, %Y")
-    return formatted_date
-
-
 def check_terminal_editors_and_edit():
     terminals = copy.deepcopy(config.SUPPORTED_TERMINAL_IDES)
     if config.PREFERRED_TERMINAL_IDE != None:
