@@ -60,14 +60,13 @@ def title_print(selected_model):
 
 
 def list_models():
-    try:
+    if config.CHA_CURRENT_PLATFORM_NAME == "openai":
         response = get_default_openai_client().models.list()
         if not response.data:
             raise ValueError("No models available")
 
-        return [
-            (model.id, model.created)
-            for model in response.data
+        models = []
+        for model in response.data:
             if (
                 any(substr in model.id for substr in config.OPENAI_MODELS_TO_KEEP)
                 and not any(
@@ -77,27 +76,30 @@ def list_models():
                     not getattr(config, "OPENAI_IGNORE_DATED_MODEL_NAMES", False)
                     or not utils.contains_date(model.id)
                 )
-            )
-        ]
-    except Exception as e:
-        print(colors.red(f"Error fetching models: {e}"))
-        sys.exit(1)
+            ):
+                models.append([model.id, model.created])
 
-
-def cleanly_print_models(openai_models):
-    print(colors.yellow("Available OpenAI Models:"))
-    openai_models = sorted(openai_models, key=lambda x: x[1])
-    max_index_length = len(str(len(openai_models)))
-    max_model_id_length = max(len(model_id) for model_id, _ in openai_models)
-    for index, (model_id, created) in enumerate(openai_models, start=1):
-        padded_index = str(index).rjust(max_index_length)
-        padded_model_id = model_id.ljust(max_model_id_length)
-        print(
-            colors.yellow(
-                f"   {padded_index}) {padded_model_id}   {utils.simple_date(created)}"
-            )
+        models = sorted(models, key=lambda x: x[1])
+        provided_models = []
+        for model in models:
+            provided_models.append(model[0])
+    else:
+        print(config.CHA_CURRENT_PLATFORM_NAME)
+        platform_config = config.THIRD_PARTY_PLATFORMS[config.CHA_CURRENT_PLATFORM_NAME]
+        provided_models = platforms.get_platform_model_list(
+            url=platform_config["models"]["url"],
+            headers=platform_config["models"]["headers"],
+            models_info=platform_config["models"],
         )
-    return openai_models
+
+    print(
+        colors.yellow(f"Available {config.CHA_CURRENT_PLATFORM_NAME.upper()} Models:")
+    )
+    for i in range(len(provided_models)):
+        model = provided_models[i]
+        print(colors.yellow(f"   {i+1}) {model}"))
+
+    return provided_models
 
 
 def number_of_urls(text):
@@ -194,17 +196,16 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if message.startswith(config.SWITCH_MODEL_TEXT):
                 parts = message.strip().split(maxsplit=1)
-
                 if len(parts) == 1:
-                    openai_models = cleanly_print_models(openai_models=list_models())
+                    provided_models = list_models()
 
                     selection = utils.safe_input(
-                        colors.blue(f"Select a model (1-{len(openai_models)}): ")
+                        colors.blue(f"Select a model (1-{len(provided_models)}): ")
                     )
                     if selection.isdigit():
                         idx = int(selection) - 1
-                        if 0 <= idx < len(openai_models):
-                            selected_model = openai_models[idx][0]
+                        if 0 <= idx < len(provided_models):
+                            selected_model = provided_models[idx]
                             print(
                                 colors.magenta(f"Switched to model: {selected_model}")
                             )
@@ -690,16 +691,16 @@ def cli():
         if (
             args.platform
             or args.platform == True
-            or config.CHA_DEFAULT_PLATFORM_NAME != "openai"
+            or config.CHA_CURRENT_PLATFORM_NAME != "openai"
         ):
             try:
                 from cha import platforms
 
                 platform_args = args.platform
 
-                if config.CHA_DEFAULT_PLATFORM_NAME != "openai":
+                if config.CHA_CURRENT_PLATFORM_NAME != "openai":
                     platform_args = (
-                        f"{config.CHA_DEFAULT_PLATFORM_NAME}|{config.CHA_DEFAULT_MODEL}"
+                        f"{config.CHA_CURRENT_PLATFORM_NAME}|{config.CHA_DEFAULT_MODEL}"
                     )
 
                 API_KEY_NAME = None
@@ -712,7 +713,6 @@ def cli():
                     platform_values = str(platform_args).split("|")
                     API_KEY_NAME = platform_values[1]
                     BASE_URL_VALUE = platform_values[0]
-                    platform_values
                 else:
                     platform_name = None
                     platform_model_name = None
@@ -737,6 +737,16 @@ def cli():
                     API_KEY_VALUE = os.environ.get(API_KEY_NAME)
 
                 set_current_chat_client(API_KEY_VALUE, BASE_URL_VALUE)
+
+                if platform_name == None and type(platform_values) == dict:
+                    platform_name = platform_values["platform_name"]
+                elif platform_name == None:
+                    for platform in config.THIRD_PARTY_PLATFORMS:
+                        if platform.lower() in BASE_URL_VALUE.lower().replace(".", ""):
+                            platform_name = platform
+                            break
+
+                config.CHA_CURRENT_PLATFORM_NAME = platform_name
 
                 print(colors.magenta(f"Platform switched to {BASE_URL_VALUE}"))
             except Exception as e:
@@ -779,15 +789,15 @@ def cli():
                 raise Exception(f"Error counting tokens: {e}")
 
         if args.select_model:
-            openai_models = cleanly_print_models(openai_models=list_models())
+            provided_models = list_models()
 
             selection = utils.safe_input(
-                colors.blue(f"Select a model (1-{len(openai_models)}): ")
+                colors.blue(f"Select a model (1-{len(provided_models)}): ")
             )
             if selection.isdigit():
                 selection = int(selection) - 1
-                if 0 <= selection < len(openai_models):
-                    selected_model = openai_models[selection][0]
+                if 0 <= selection < len(provided_models):
+                    selected_model = provided_models[selection]
                 else:
                     print(colors.red("Invalid number selected. Exiting."))
                     return

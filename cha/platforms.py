@@ -108,5 +108,6 @@ def auto_select_a_platform(platform_key=None, model_name=None):
     output = copy.deepcopy(config.THIRD_PARTY_PLATFORMS[platform_key])
     output["models"] = models_list
     output["picked_model"] = final_model
+    output["platform_name"] = platform_key
 
     return output
