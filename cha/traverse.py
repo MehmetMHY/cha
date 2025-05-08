@@ -265,7 +265,7 @@ def traverse_and_select_files():
                 selected.add(full)
                 print(colors.green(f"Selected: {full}"))
 
-    if selected:
+    if selected and maybe_prompt == None:
         while True:
             if not selected:
                 print(colors.yellow("All files have been deselected."))
