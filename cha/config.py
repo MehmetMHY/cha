@@ -115,6 +115,55 @@ FILES_TO_IGNORE = [
     ".env.production",
     ".env.test",
 ]
+
+DIRS_TO_IGNORE = [
+    # version control
+    ".git/",
+    ".hg/",
+    ".svn/",
+    "CVS/",
+    # python
+    "__pycache__/",
+    ".venv/",
+    "venv/",
+    "env/",
+    ".env/",
+    "*.egg-info/",
+    ".pytest_cache/",
+    ".mypy_cache/",
+    ".ruff_cache/",
+    "htmlcov/",
+    # nodejs
+    "node_modules/",
+    ".npm/",
+    ".yarn/",
+    # java/jvm, rust
+    "target/",
+    ".gradle/",
+    # php, go, ruby
+    "vendor/",
+    # .net
+    "obj/",
+    ".vs/",
+    # ide(s)
+    ".idea/",
+    ".vscode/",
+    ".cursor/",
+    # general build/output/temporary
+    "build/",
+    "dist/",
+    "out/",
+    "output/",
+    "bin/",
+    "logs/",
+    "log/",
+    "tmp/",
+    "temp/",
+    "coverage/",
+    ".coverage/",
+    ".cache/",
+]
+
 BINARY_EXTENSIONS = {
     ".jpg",
     ".jpeg",

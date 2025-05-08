@@ -5,12 +5,28 @@ from cha import colors, config
 def collect_files(directory: str) -> list[str]:
     # recursively collect selectable files from a directory
     gathered: list[str] = []
-    for root, _, files in os.walk(directory):
+
+    # normalize DIRS_TO_IGNORE and remove trailing slashes
+    ignored_dir_names = {
+        d.strip(os.sep) for d in config.DIRS_TO_IGNORE if d.strip(os.sep)
+    }
+
+    for root, dirnames, files in os.walk(directory, topdown=True):
+        # prevent os.walk from descending into ignored directories
+        dirnames[:] = [d for d in dirnames if d not in ignored_dir_names]
+
+        # safeguard: skip files if root itself is in an ignored directory path
+        current_path_segments = set(os.path.normpath(root).split(os.sep))
+        if not ignored_dir_names.isdisjoint(current_path_segments):
+            continue  # skip files in this root
+
         for name in files:
             ext = os.path.splitext(name)[1].lower()
+            # check against binary extensions and specific files to ignore
             if ext in config.BINARY_EXTENSIONS or name in config.FILES_TO_IGNORE:
                 continue
             gathered.append(os.path.join(root, name))
+
     return gathered
 
 
@@ -55,7 +71,13 @@ def print_listing(
 
     entries = os.listdir(current_dir)
     dirs = sorted(
-        [e for e in entries if os.path.isdir(os.path.join(current_dir, e))],
+        [
+            e
+            for e in entries
+            if os.path.isdir(os.path.join(current_dir, e))
+            and e + "/" not in config.DIRS_TO_IGNORE
+            and e not in config.DIRS_TO_IGNORE
+        ],
         key=str.lower,
     )
     files = sorted(
@@ -150,7 +172,13 @@ def traverse_and_select_files():
 
             entries = os.listdir(curr_dir)
             dirs = sorted(
-                [e for e in entries if os.path.isdir(os.path.join(curr_dir, e))],
+                [
+                    e
+                    for e in entries
+                    if os.path.isdir(os.path.join(curr_dir, e))
+                    and e + "/" not in config.DIRS_TO_IGNORE
+                    and e not in config.DIRS_TO_IGNORE
+                ],
                 key=str.lower,
             )
 
@@ -183,7 +211,13 @@ def traverse_and_select_files():
 
         entries = os.listdir(curr_dir)
         dirs = sorted(
-            [e for e in entries if os.path.isdir(os.path.join(curr_dir, e))],
+            [
+                e
+                for e in entries
+                if os.path.isdir(os.path.join(curr_dir, e))
+                and e + "/" not in config.DIRS_TO_IGNORE
+                and e not in config.DIRS_TO_IGNORE
+            ],
             key=str.lower,
         )
         files = sorted(
@@ -234,7 +268,7 @@ def traverse_and_select_files():
     if selected:
         print(colors.magenta("Selected files:"))
         for k, p in enumerate(sorted(selected), 1):
-            print(f"  - {p}")
+            print(f"   - {p}")
 
     return sorted(selected), maybe_prompt
 
