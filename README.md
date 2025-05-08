@@ -81,8 +81,11 @@ uv pip install "git+https://github.com/MehmetMHY/cha.git"
 3. **Install other dependencies**:
 
    ```bash
-   # checkout docs for install details different systems: https://ffmpeg.org/
+   # checkout docs for installing here: https://ffmpeg.org/
    brew install ffmpeg
+
+   # checkout docs for installing here: https://github.com/junegunn/fzf
+   brew install fzf
    ```
 
 ### Configuration
