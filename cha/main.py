@@ -794,13 +794,15 @@ def cli():
             selection = utils.safe_input(
                 colors.blue(f"Select a model (1-{len(provided_models)}): ")
             )
+            selected_a_model = False
             if selection.isdigit():
                 selection = int(selection) - 1
                 if 0 <= selection < len(provided_models):
                     selected_model = provided_models[selection]
-                else:
-                    print(colors.red("Invalid number selected. Exiting."))
-                    return
+                    selected_a_model = True
+            if selected_a_model == False:
+                print(colors.red("Invalid number selected!"))
+                return
 
         input_mode = "interactive"
         processed_input_for_chatbot = (
