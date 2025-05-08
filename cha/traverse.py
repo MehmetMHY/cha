@@ -5,12 +5,28 @@ from cha import colors, config
 def collect_files(directory: str) -> list[str]:
     # recursively collect selectable files from a directory
     gathered: list[str] = []
-    for root, _, files in os.walk(directory):
+
+    # normalize DIRS_TO_IGNORE and remove trailing slashes
+    ignored_dir_names = {
+        d.strip(os.sep) for d in config.DIRS_TO_IGNORE if d.strip(os.sep)
+    }
+
+    for root, dirnames, files in os.walk(directory, topdown=True):
+        # prevent os.walk from descending into ignored directories
+        dirnames[:] = [d for d in dirnames if d not in ignored_dir_names]
+
+        # safeguard - skip files if root itself is in an ignored directory path
+        current_path_segments = set(os.path.normpath(root).split(os.sep))
+        if not ignored_dir_names.isdisjoint(current_path_segments):
+            continue  # skip files in this root
+
         for name in files:
             ext = os.path.splitext(name)[1].lower()
+            # check against binary extensions and specific files to ignore
             if ext in config.BINARY_EXTENSIONS or name in config.FILES_TO_IGNORE:
                 continue
             gathered.append(os.path.join(root, name))
+
     return gathered
 
 
@@ -26,7 +42,7 @@ Commands:
   cd .. / cd            : up / back to root
   ls                    : list directory & selections
   <n> or 1,3-5          : toggle file(s) by index
-  <dir‑index>           : toggle ALL files in that directory
+  <dir-index>           : toggle ALL files in that directory
   help / exit           : this help / quit
 """
             )
@@ -55,7 +71,13 @@ def print_listing(
 
     entries = os.listdir(current_dir)
     dirs = sorted(
-        [e for e in entries if os.path.isdir(os.path.join(current_dir, e))],
+        [
+            e
+            for e in entries
+            if os.path.isdir(os.path.join(current_dir, e))
+            and e + "/" not in config.DIRS_TO_IGNORE
+            and e not in config.DIRS_TO_IGNORE
+        ],
         key=str.lower,
     )
     files = sorted(
@@ -121,7 +143,7 @@ def traverse_and_select_files():
             print_commands()
             continue
 
-        # free‑form prompt, if we already have selections
+        # free-form prompt, if we already have selections
         if (
             not (
                 user.startswith("cd")
@@ -150,7 +172,13 @@ def traverse_and_select_files():
 
             entries = os.listdir(curr_dir)
             dirs = sorted(
-                [e for e in entries if os.path.isdir(os.path.join(curr_dir, e))],
+                [
+                    e
+                    for e in entries
+                    if os.path.isdir(os.path.join(curr_dir, e))
+                    and e + "/" not in config.DIRS_TO_IGNORE
+                    and e not in config.DIRS_TO_IGNORE
+                ],
                 key=str.lower,
             )
 
@@ -183,7 +211,13 @@ def traverse_and_select_files():
 
         entries = os.listdir(curr_dir)
         dirs = sorted(
-            [e for e in entries if os.path.isdir(os.path.join(curr_dir, e))],
+            [
+                e
+                for e in entries
+                if os.path.isdir(os.path.join(curr_dir, e))
+                and e + "/" not in config.DIRS_TO_IGNORE
+                and e not in config.DIRS_TO_IGNORE
+            ],
             key=str.lower,
         )
         files = sorted(
@@ -232,11 +266,45 @@ def traverse_and_select_files():
                 print(colors.green(f"Selected: {full}"))
 
     if selected:
-        print(colors.magenta("Selected files:"))
-        for k, p in enumerate(sorted(selected), 1):
-            print(f"  - {p}")
+        while True:
+            if not selected:
+                print(colors.yellow("All files have been deselected."))
+                break
 
-    return sorted(selected), maybe_prompt
+            selected_list_current_round = sorted(list(selected))
+            print(colors.magenta("Currently selected files:"))
+            for k, p in enumerate(selected_list_current_round, 1):
+                print(f"   {k}) {p}")
+
+            try:
+                deselection_prompt_text = colors.magenta(
+                    "Enter numbers to deselect or EXIT to continue: "
+                )
+
+                user_deselection_input = input(deselection_prompt_text).strip()
+
+                if (
+                    not user_deselection_input
+                    or user_deselection_input.lower() == "exit"
+                ):
+                    break
+
+                indices_to_deselect = parse_selection_input(user_deselection_input)
+
+                if indices_to_deselect:
+                    unique_indices = sorted(list(set(indices_to_deselect)))
+                    for idx in unique_indices:
+                        if 1 <= idx <= len(selected_list_current_round):
+                            file_to_deselect = selected_list_current_round[idx - 1]
+                            if file_to_deselect in selected:
+                                selected.remove(file_to_deselect)
+                                print(colors.red(f"Deselected: {file_to_deselect}"))
+
+            except (KeyboardInterrupt, EOFError):
+                print()
+                break
+
+    return sorted(list(selected)), maybe_prompt
 
 
 def msg_content_load(client):
