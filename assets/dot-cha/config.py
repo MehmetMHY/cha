@@ -18,20 +18,6 @@ CHA_DEFAULT_SHOW_PRINT_TITLE = False
 
 CHA_LOCAL_SAVE_ALL_CHA_CHATS = True
 
-"""
-NOTE - PLEASE READ
-
-For the local models to work, you will have to do the following:
-
-1. Install Ollama: https://ollama.com/
-
-2. Install Gemma model:
-
-    ```
-    ollama run gemma3:1b
-    ```
-"""
-
 # NOTE: to use Cha fully local and open source, set `CHA_LOCAL_MODE` to `true` or just move all the variables below out of the if statement
 # NOTE: before doing this, make sure to install Ollama (https://ollama.com/)
 # NOTE: after installing Ollama, install the open-source LLM model -> ollama run gemma3:1b
