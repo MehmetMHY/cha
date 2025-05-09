@@ -48,24 +48,16 @@ def _ensure_openai_module_is_loaded():
     return _openai_module_instance
 
 
-_default_openai_client_instance = None
 _current_chat_client_instance = None
-
-
-def get_default_openai_client():
-    global _default_openai_client_instance
-    if _default_openai_client_instance is None:
-        openai_mod = _ensure_openai_module_is_loaded()
-        _default_openai_client_instance = openai_mod.OpenAI(
-            api_key=os.environ.get("OPENAI_API_KEY")
-        )
-    return _default_openai_client_instance
 
 
 def get_current_chat_client():
     global _current_chat_client_instance
     if _current_chat_client_instance is None:
-        _current_chat_client_instance = get_default_openai_client()
+        openai_mod = _ensure_openai_module_is_loaded()
+        _current_chat_client_instance = openai_mod.OpenAI(
+            api_key=os.environ.get("OPENAI_API_KEY")
+        )
     return _current_chat_client_instance
 
 
