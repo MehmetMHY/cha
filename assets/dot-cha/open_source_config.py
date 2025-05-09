@@ -31,7 +31,11 @@ For the local models to work, you will have to do the following:
     ollama run gemma3:1b
     ```
 """
-
 CHA_CURRENT_PLATFORM_NAME = "ollama"
-
 CHA_DEFAULT_MODEL = "gemma3:1b"
+CHA_DEFAULT_IMAGE_MODEL = "gemma3:1b"
+DEFAULT_SEARCH_BIG_MODEL = "gemma3:1b"
+DEFAULT_SEARCH_SMALL_MODEL = "gemma3:1b"
+DEFAULT_SEARCH_MAX_TOKEN_LIMIT = 8192
+DEFAULT_SEARCH_RESULT_COUNT = 2
+DEFAULT_GEN_SEARCH_QUERY_COUNT = 2
