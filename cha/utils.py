@@ -14,6 +14,21 @@ import os
 from cha import colors, config
 
 
+def get_json_serializable_globals(mod):
+    def is_json_serializable(v):
+        try:
+            json.dumps(v)
+            return True
+        except (TypeError, OverflowError):
+            return False
+
+    return {
+        k: v
+        for k, v in vars(mod).items()
+        if not (k.startswith("__") and k.endswith("__")) and is_json_serializable(v)
+    }
+
+
 def contains_date(s):
     # Month DD, YYYY (case-insensitive)
     month_date_pattern = r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}\b"

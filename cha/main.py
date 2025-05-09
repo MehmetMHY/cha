@@ -903,6 +903,7 @@ def cli():
                     "utc": utc_time_stamp,
                 },
                 "args": {},
+                "config": utils.get_json_serializable_globals(config),
                 "chat": CURRENT_CHAT_HISTORY,
             }
 
