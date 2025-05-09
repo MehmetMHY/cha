@@ -215,57 +215,57 @@ def traverse_and_select_files():
                 print(colors.yellow("No files selected to edit/deselect."))
                 continue
 
-            while True:
-                selected_list_current_round = sorted(list(selected))
-                if not selected_list_current_round:
-                    print(colors.yellow("All files have been deselected."))
-                    break
+            selected_list_current_round = sorted(list(selected))
+            if not selected_list_current_round:
+                print(colors.yellow("All files have been deselected."))
+                continue
 
-                print(colors.magenta("Currently selected files (for deselection):"))
-                for k, p in enumerate(selected_list_current_round, 1):
-                    print(f"   {k}) {p}")
+            print(colors.magenta("Currently selected files (for deselection):"))
+            for k, p in enumerate(selected_list_current_round, 1):
+                print(f"   {k}) {p}")
 
-                try:
-                    deselection_prompt_text = colors.magenta(
-                        "Enter numbers to deselect, or EXIT/DONE to finish deselection: "
-                    )
-                    user_deselection_input = input(deselection_prompt_text).strip()
+            try:
+                deselection_prompt_text = colors.magenta(
+                    "Enter numbers to deselect, or EXIT/DONE to finish deselection: "
+                )
+                user_deselection_input = input(deselection_prompt_text).strip()
 
-                    if (
-                        not user_deselection_input
-                        or user_deselection_input.lower() == "exit"
-                        or user_deselection_input.lower() == "done"
-                    ):
-                        break
+                if (
+                    not user_deselection_input
+                    or user_deselection_input.lower() == "exit"
+                    or user_deselection_input.lower() == "done"
+                ):
+                    continue
 
-                    indices_to_deselect = parse_selection_input(user_deselection_input)
+                indices_to_deselect = parse_selection_input(user_deselection_input)
 
-                    if indices_to_deselect:
-                        unique_indices = sorted(list(set(indices_to_deselect)))
-                        for idx_deselect in unique_indices:
-                            if 1 <= idx_deselect <= len(selected_list_current_round):
-                                file_to_deselect = selected_list_current_round[
-                                    idx_deselect - 1
-                                ]
-                                if file_to_deselect in selected:
-                                    selected.remove(file_to_deselect)
-                                    print(colors.red(f"Deselected: {file_to_deselect}"))
-                            else:
-                                print(
-                                    colors.red(
-                                        f"Index {idx_deselect} is out of range for current selection."
-                                    )
+                if indices_to_deselect:
+                    unique_indices = sorted(list(set(indices_to_deselect)))
+                    for idx_deselect in unique_indices:
+                        if 1 <= idx_deselect <= len(selected_list_current_round):
+                            file_to_deselect = selected_list_current_round[
+                                idx_deselect - 1
+                            ]
+                            if file_to_deselect in selected:
+                                selected.remove(file_to_deselect)
+                                print(colors.red(f"Deselected: {file_to_deselect}"))
+                        else:
+                            print(
+                                colors.red(
+                                    f"Index {idx_deselect} is out of range for current selection."
                                 )
-                    else:
-                        print(
-                            colors.red(
-                                "Invalid input for deselection. Please enter numbers, ranges, or EXIT/DONE."
                             )
+                else:
+                    print(
+                        colors.red(
+                            "Invalid input for deselection. Please enter numbers, ranges, or EXIT/DONE."
                         )
+                    )
 
-                except (KeyboardInterrupt, EOFError):
-                    print()
-                    break
+            except (KeyboardInterrupt, EOFError):
+                print()
+                continue
+
             print_listing(curr_dir, selected)  # show updated listing
             continue
 
