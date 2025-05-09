@@ -1,9 +1,12 @@
 from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime, timezone
 from pydantic import BaseModel
+import random
 import time
 import json
+import ast
 import os
+import re
 
 from cha import scraper, colors, utils, config, loading
 
@@ -61,22 +64,62 @@ def generate_search_queries(
         """
     )
 
-    # NOTE: this insures the output is always an array of strings as it should be
-    class SearchQueries(BaseModel):
-        queries: list[str]
+    if config.CHA_CURRENT_PLATFORM_NAME == "openai":
+        # NOTE: this insures the output is always an array of strings as it should be
+        class SearchQueries(BaseModel):
+            queries: list[str]
 
-    completion = client.beta.chat.completions.parse(
-        model=model_name,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            },
-        ],
-        response_format=SearchQueries,
-    )
+        completion = client.beta.chat.completions.parse(
+            model=model_name,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            response_format=SearchQueries,
+        )
 
-    return completion.choices[0].message.parsed.queries
+        return completion.choices[0].message.parsed.queries
+    else:
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "user", "content": prompt},
+            ],
+        )
+
+        response = response.choices[0].message.content
+
+        # NOTE: regex to match content inside square brackets (simple, may need refinement for nested/complex cases)
+        list_candidates = re.findall(r"\[[^\]]*\]", response)
+
+        extracted_lists = []
+        for candidate in list_candidates:
+            try:
+                parsed_value = ast.literal_eval(candidate.strip())
+                if isinstance(parsed_value, list):
+                    extracted_lists.append(parsed_value)
+            except (SyntaxError, ValueError):
+                continue
+
+        output = []
+        for entry in extracted_lists:
+            for query in entry:
+                if query not in output:
+                    output.append(query)
+
+        random.shuffle(output)
+
+        if len(output) == 0:
+            print(
+                colors.red(
+                    "Failed to generate search queries just using user's original prompt"
+                )
+            )
+            return [user_prompt]
+
+        return output[:min_results]
 
 
 def duckduckgo_search(
