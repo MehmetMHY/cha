@@ -10,7 +10,6 @@ try:
 
     from cha import colors, utils, config, loading, platforms
     from cha.client import (
-        get_default_openai_client,
         get_current_chat_client,
         set_current_chat_client,
     )
@@ -61,7 +60,7 @@ def title_print(selected_model):
 
 def list_models():
     if config.CHA_CURRENT_PLATFORM_NAME == "openai":
-        response = get_default_openai_client().models.list()
+        response = get_current_chat_client().models.list()
         if not response.data:
             raise ValueError("No models available")
 
@@ -143,7 +142,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             try:
                 loading.start_loading("Loading", "rectangles")
                 content = utils.load_most_files(
-                    client=get_default_openai_client(),
+                    client=get_current_chat_client(),
                     file_path=filepath,
                     model_name=config.CHA_DEFAULT_IMAGE_MODEL,
                 )
@@ -369,7 +368,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if message == config.LOAD_MESSAGE_CONTENT:
                 from cha import traverse
 
-                message = traverse.msg_content_load(get_default_openai_client())
+                message = traverse.msg_content_load(get_current_chat_client())
                 if message is None:
                     continue
 
@@ -422,7 +421,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 else:
                     try:
                         message = answer.answer_search(
-                            client=get_default_openai_client(),
+                            client=get_current_chat_client(),
                             prompt=None,
                             user_input_mode=True,
                         )
@@ -628,7 +627,7 @@ def cli():
                 content = scraper.get_all_htmls(detected_urls)
             else:
                 content = utils.act_as_ocr(
-                    client=get_default_openai_client(),
+                    client=get_current_chat_client(),
                     filepath=str(args.ocr),
                     prompt=None,
                 )
@@ -646,7 +645,7 @@ def cli():
                 from cha import answer
 
                 output = answer.answer_search(
-                    client=get_default_openai_client(),
+                    client=get_current_chat_client(),
                     prompt=None,
                     user_input_mode=True,
                 )
@@ -760,7 +759,7 @@ def cli():
 
             if args.file:
                 content_mode = "FILE"
-                text = utils.load_most_files(args.file, get_default_openai_client())
+                text = utils.load_most_files(args.file, get_current_chat_client())
             elif args.string:
                 content_mode = "STRING"
                 text = " ".join(args.string)

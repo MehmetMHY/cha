@@ -29,7 +29,7 @@ The `config.py` file allows you to set and/or override the default global variab
 
 ## Setting Up Your Tool Example
 
-- **NOTE:** _If you want to use Cha entirely with open-source software and avoid closed-source dependencies (mainly OpenAI), you can do so by replacing your config. After setting up, simply overwrite your `config.py` file with the contents of `open_source_config.py`. While this open-source setup isn’t perfect, most Cha features will continue to work._
+- **NOTE:** _If you want to use Cha entirely with open-source software and avoid closed-source dependencies (mainly OpenAI), really review the `config.py`. There are variables you can set to do this. By default Cha uses OpenAI but that is not permanent. Right now, the example config in `config.py` is set such that is you set an environment variable named `CHA_LOCAL_MODE` to `true`. But if you want to make this more permanent, just move all those variables in that if statement that checks the `CHA_LOCAL_MODE` environment variable outside of that if statement and remove that if statement. By doing this, you make Cha fully local and open-source without depending on any closed-source dependencies and/or providers like OpenAI._
 
 In this directory (where this README is located), you’ll find an example `config.py` and a `tools/` folder. The `config.py` file loads an example tool from `tools/`, disables the initial help message for every Cha interaction, and sets up Cha to record and save all your conversations in the `history/` directory.
 
