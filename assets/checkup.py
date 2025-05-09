@@ -151,19 +151,26 @@ def checkup():
     try:
         from cha import config
 
+        any_key_defined = False
+
         for platform in config.THIRD_PARTY_PLATFORMS:
             env_name = str(config.THIRD_PARTY_PLATFORMS[platform].get("env_name"))
             if env_name.lower().strip() == "ollama":
                 continue
             if env_name in os.environ:
                 passed(f"{env_name} is set")
-                continue
-            warning(f"{env_name} variable is missing")
+                any_key_defined = True
+            else:
+                warning(f"{env_name} variable is missing")
 
         if "OPENAI_API_KEY" in os.environ:
             passed("OPENAI_API_KEY is set")
-        else:
-            failed("OPENAI_API_KEY variable is missing")
+            any_key_defined = True
+
+        if not any_key_defined:
+            failed(
+                "No service/platform/API-key is defined. At least one platform API key or OPENAI_API_KEY must be set!"
+            )
     except:
         pass
 
