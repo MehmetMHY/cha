@@ -312,27 +312,32 @@ def load_most_files(
         with open(file_path, "rb") as image_file:
             base64_image = base64.b64encode(image_file.read()).decode("utf-8")
 
-        chat_history = [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image_url",
-                        "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
-                    }
-                ],
-            }
-        ]
+        try:
+            chat_history = [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}"
+                            },
+                        }
+                    ],
+                }
+            ]
 
-        if type(prompt) == str:
-            chat_history.append({"role": "user", "content": prompt})
+            if type(prompt) == str:
+                chat_history.append({"role": "user", "content": prompt})
 
-        # NOTE: client in this case is an OpenAI client from OpenAI's Python SDK
-        response = client.chat.completions.create(
-            model=model_name, messages=chat_history
-        )
+            # NOTE: client in this case is an OpenAI client from OpenAI's Python SDK
+            response = client.chat.completions.create(
+                model=model_name, messages=chat_history
+            )
 
-        llm_method = response.choices[0].message.content
+            llm_method = response.choices[0].message.content
+        except:
+            llm_method = None
 
         return rls(
             f"""
