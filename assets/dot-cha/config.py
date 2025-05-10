@@ -18,15 +18,30 @@ CHA_DEFAULT_SHOW_PRINT_TITLE = False
 
 CHA_LOCAL_SAVE_ALL_CHA_CHATS = True
 
-# NOTE: to use Cha fully local and open source, set `CHA_LOCAL_MODE` to `true` or just move all the variables below out of the if statement
-# NOTE: before doing this, make sure to install Ollama (https://ollama.com/)
-# NOTE: after installing Ollama, install the open-source LLM model -> ollama run gemma3:1b
+"""
+To run Cha fully local/open-source:
+
+1. Install Ollama: https://ollama.com/
+
+2. Install the following model:
+    ```bash
+    ollama run qwen3:0.6b
+    ```
+    
+3. Copy the content from this file to $HOME/.cha/config.py
+
+4. Enable open-source mode by EITHER:
+    - Setting: export CHA_LOCAL_MODE="true"
+    - OR moving all config variables outside any if-statement.
+
+Cha will then use local, open-source models/software only!
+"""
 if str(os.getenv("CHA_LOCAL_MODE")).lower() == "true":
     CHA_CURRENT_PLATFORM_NAME = "ollama"
-    CHA_DEFAULT_MODEL = "gemma3:1b"
-    CHA_DEFAULT_IMAGE_MODEL = "gemma3:1b"
-    DEFAULT_SEARCH_BIG_MODEL = "gemma3:1b"
-    DEFAULT_SEARCH_SMALL_MODEL = "gemma3:1b"
+    CHA_DEFAULT_MODEL = "qwen3:0.6b"
+    CHA_DEFAULT_IMAGE_MODEL = "qwen3:0.6b"
+    DEFAULT_SEARCH_BIG_MODEL = "qwen3:0.6b"
+    DEFAULT_SEARCH_SMALL_MODEL = "qwen3:0.6b"
     DEFAULT_SEARCH_MAX_TOKEN_LIMIT = 8192
     DEFAULT_SEARCH_RESULT_COUNT = 2
     DEFAULT_GEN_SEARCH_QUERY_COUNT = 2
