@@ -1,6 +1,7 @@
 from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime, timezone
 from pydantic import BaseModel
+import requests
 import random
 import time
 import json
@@ -122,41 +123,62 @@ def generate_search_queries(
         return output[:min_results]
 
 
-def duckduckgo_search(
+def search_engine(
     search_input, count=5, region="wt-wt", safesearch="off", timelimit=None
 ):
     try:
-        from duckduckgo_search import DDGS
+        if config.CHA_USE_SEAR_XNG == False:
+            from duckduckgo_search import DDGS
 
-        with DDGS() as ddgs:
-            search_results = list(
-                ddgs.text(
-                    keywords=search_input,
-                    max_results=count,
-                    region=region,
-                    safesearch=safesearch,
-                    timelimit=timelimit,
+            with DDGS() as ddgs:
+                search_results = list(
+                    ddgs.text(
+                        keywords=search_input,
+                        max_results=count,
+                        region=region,
+                        safesearch=safesearch,
+                        timelimit=timelimit,
+                    )
                 )
-            )
 
+                content = []
+                for result in search_results:
+                    content.append(
+                        {
+                            "title": result.get("title"),
+                            "url": result.get("href"),
+                            "description": result.get("body"),
+                        }
+                    )
+
+                return content
+        else:
+            base_url = str(config.CHA_SEAR_XNG_BASE_URL)
+            response = requests.get(
+                base_url.rstrip("/") + "/search",
+                params={"q": search_input, "format": "json"},
+                headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"},
+                timeout=30,
+            )
+            response.raise_for_status()
+            response = response.json()
             content = []
-            for result in search_results:
+            for result in response["results"]:
                 content.append(
                     {
                         "title": result.get("title"),
-                        "url": result.get("href"),
-                        "description": result.get("body"),
+                        "url": result.get("url"),
+                        "description": result.get("content"),
                     }
                 )
-
-            return content
+            return content[:count]
     except Exception as e:
         return {"error": str(e)}
 
 
 def quick_search(user_input, min_search_result=3):
     try:
-        results = duckduckgo_search(
+        results = search_engine(
             search_input=user_input,
             count=min_search_result,
             region="wt-wt",
@@ -254,7 +276,7 @@ def answer_search(
     search_results = []
     urls = []
     for query in search_queries:
-        results = duckduckgo_search(query, result_count)
+        results = search_engine(query, result_count)
 
         # TODO: this is here to prevent us from surpassing the search engine's query limit
         time.sleep(time_delay_seconds)
