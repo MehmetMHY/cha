@@ -350,6 +350,24 @@ cha -i
 
 For more details, check out the documentation in [docs](./assets/dot-cha/README.md) and the example files in [assets/dot-cha/](./assets/dot-cha/).
 
+### SearXNG Search Engine Integration (Optional)
+
+Cha can use [SearXNG](https://searxng.github.io/), an open-source meta-search engine you can self-host, for all web and answer search features. This is completely optional but recommended for heavy users or those who want full control. To enable SearXNG in Cha:
+
+1. Follow the setup instructions in [`assets/sxng/README.md`](assets/sxng/README.md) (includes a one-command Docker setup and a Python usage example).
+2. Set the following in your `$HOME/.cha/config.py`:
+
+   ```bash
+   CHA_USE_SEAR_XNG=True
+
+   # change if your SearXNG runs elsewhere
+   CHA_SEAR_XNG_BASE_URL="http://localhost:8080"
+   ```
+
+3. Now start using `cha` and you will see that the SearXNG engine will be used instead of DuckDuckGo.
+
+If not enabled, Cha continues to use DuckDuckGo by default.
+
 ## Contributing
 
 Any contribution is welcomed! Please feel free to submit issues or pull requests for any bugs or features.
