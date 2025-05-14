@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.18.13",
+    version="0.18.14",
     packages=find_packages(),
     license="MIT",
     description="A simple cli tool that simplifies interactions with AI models, offering features like chat, web scraping, and answer search. It supports multiple platforms and file types, enhancing productivity for all.",
@@ -21,6 +21,7 @@ setup(
         "openpyxl==3.1.5",
         "chardet==5.2.0",
         "pathspec==0.12.1",
+        "numpy==1.26.4",
         "faster-whisper==1.1.1",
         "moviepy==2.1.2",
         "pillow==10.4.0",
