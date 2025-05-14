@@ -3,13 +3,15 @@ DEFAULT_PORT=8080
 DEFAULT_NAME="my-instance"
 DEFAULT_URL="http://localhost"
 
-# prompt for user input
+# set instance's port number
 read -p "Enter port (default $DEFAULT_PORT): " PORT
 PORT=${PORT:-$DEFAULT_PORT}
 
+# set instance's name
 read -p "Enter instance name (default $DEFAULT_NAME): " NAME
 NAME=${NAME:-$DEFAULT_NAME}
 
+# set instance's base URL
 read -p "Enter base URL (default $DEFAULT_URL): " BASE_URL
 BASE_URL=${BASE_URL:-$DEFAULT_URL}
 
@@ -25,7 +27,7 @@ if docker ps -q -f "publish=$PORT" | grep -q .; then
 fi
 
 # ask about updating the image
-read -p "Do you want to update the searxng/searxng image? (y/n): " UPDATE
+read -p "Do you want to update the searxng image? (y/n): " UPDATE
 if [[ $UPDATE == "y" ]]; then
 	docker pull searxng/searxng
 fi
@@ -39,4 +41,5 @@ docker run --rm \
 	--name $NAME \
 	searxng/searxng
 
-echo "SearXNG instance '$NAME' is now running on ${BASE_URL}:${PORT}"
+# print details
+echo "SearXNG instance '$NAME' is running on ${BASE_URL}:${PORT}"

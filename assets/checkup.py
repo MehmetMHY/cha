@@ -254,16 +254,33 @@ def checkup():
     else:
         failed("fzf not installed or not on PATH")
 
+    # check if any shells are installed
     valid_shell_count = num_of_valid_shells()
     if valid_shell_count > 0:
         passed("One valid shell was found for Cha's shell mode")
     else:
         failed("Zero valid shells found for Cha's shell mode")
 
+    # check if the user setup their local .cha/ config directory
     if os.path.isdir(os.path.join(str(Path.home()), ".cha/")):
         passed("$HOME/.cha/ directly exists!")
     else:
         failed("$HOME/.cha/ directly does NOT exist!")
+
+    # check if searxng is running locally in user's Docker
+    try:
+        cmd = "docker ps | grep 'searxng' | wc -l"
+        output = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        count = int(output.stdout.strip())
+        if count == 1:
+            passed(f"SearXNG is running locally!")
+        elif count == 0:
+            warning(f"SearXNG is NOT running locally!")
+        else:
+            warning(f"Multiple instances of SearXNG are running locally!")
+    except Exception as e:
+        print(e)
+        failed(f"Failed to check for SearXNG, Docker might not be installed!")
 
 
 if __name__ == "__main__":
