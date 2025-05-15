@@ -128,53 +128,43 @@ def search_engine(
     search_input, count=5, region="wt-wt", safesearch="off", timelimit=None
 ):
     try:
-        searxng_base_url = str(config.CHA_SEAR_XNG_BASE_URL)
-        searxng_running = True
+        searxng_base_url_str = str(config.CHA_SEAR_XNG_BASE_URL)
 
-        if config.CHA_USE_SEAR_XNG == True and "http" in searxng_base_url:
+        if config.CHA_USE_SEAR_XNG and "http" in searxng_base_url_str:
             try:
-                response = requests.get(
-                    searxng_base_url,
-                    timeout=max(math.ceil(config.CHA_SEAR_XNG_TIMEOUT / 10), 1),
-                )
+                ping_timeout = max(math.ceil(config.CHA_SEAR_XNG_TIMEOUT / 10), 1)
+                response = requests.get(searxng_base_url_str, timeout=ping_timeout)
                 if response.status_code != 200:
-                    searxng_running = False
-            except requests.ConnectionError:
-                searxng_running = False
-            except requests.Timeout:
-                searxng_running = False
+                    raise Exception("SearXNG is not running")
 
-        if (
-            config.CHA_USE_SEAR_XNG == True
-            and searxng_running == True
-            and "http" in searxng_base_url
-        ):
-            response = requests.get(
-                searxng_base_url.rstrip("/") + "/search",
-                params={"q": search_input, "format": "json"},
-                headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"},
-                timeout=config.CHA_SEAR_XNG_TIMEOUT,
-            )
-
-            response.raise_for_status()
-            response = response.json()
-
-            content = []
-            for result in response["results"]:
-                content.append(
-                    {
-                        "title": result.get("title"),
-                        "url": result.get("url"),
-                        "description": result.get("content"),
-                    }
+                response = requests.get(
+                    str(searxng_base_url_str.rstrip("/") + "/search"),
+                    params={"q": search_input, "format": "json"},
+                    headers=config.REQUEST_DEFAULT_HEADERS,
+                    timeout=config.CHA_SEAR_XNG_TIMEOUT,
                 )
 
-            return content[:count]
+                response.raise_for_status()
+                data = response.json()
+
+                content = []
+                for result in data.get("results", []):
+                    content.append(
+                        {
+                            "title": result.get("title"),
+                            "url": result.get("url"),
+                            "description": result.get("content"),
+                        }
+                    )
+                return content[:count]
+            except Exception as e:
+                print(colors.red(f"SearXNG failed, switching to DuckDuckGo"))
+                pass
 
         from duckduckgo_search import DDGS
 
         with DDGS() as ddgs:
-            search_results = list(
+            search_results_ddg = list(
                 ddgs.text(
                     keywords=search_input,
                     max_results=count,
@@ -183,20 +173,18 @@ def search_engine(
                     timelimit=timelimit,
                 )
             )
-
-            content = []
-            for result in search_results:
-                content.append(
+            content_ddg = []
+            for result in search_results_ddg:
+                content_ddg.append(
                     {
                         "title": result.get("title"),
                         "url": result.get("href"),
                         "description": result.get("body"),
                     }
                 )
+            return content_ddg
 
-            return content
     except Exception as e:
-        print(e)
         return {"error": str(e)}
 
 
