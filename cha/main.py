@@ -618,9 +618,10 @@ def cli():
         if args.ocr != None:
             content = None
 
-            detected_urls = number_of_urls(str(args.ocr))
-            if len(detected_urls) > 0:
+            if number_of_urls(str(args.ocr)) > 0:
                 from cha import scraper
+
+                detected_urls = scraper.extract_urls(str(args.ocr))
 
                 for i in range(len(detected_urls)):
                     detected_urls[i] = str(detected_urls[i]).replace("\\", "")

@@ -129,11 +129,11 @@ def video_transcript(url, always_use_yt_dlp=False):
             for line in content:
                 output = output + line["text"] + " "
         else:
-            raise Exception("Forcing use of yt-dlp-based scraper")
+            raise Exception("Forcing use of yt-dlp based scraper")
     except Exception as e:
         if not always_use_yt_dlp:
             loading.print_message(
-                colors.yellow("Switching from API scraper to yt-dlp-based scraper")
+                colors.yellow("Switching from API scraper to yt-dlp based scraper")
             )
         output = yt_dlp_transcript_extractor(url, "en")
 
