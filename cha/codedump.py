@@ -1,6 +1,5 @@
 from datetime import datetime
 import subprocess
-import shutil
 import time
 import os
 
@@ -122,42 +121,65 @@ def interactive_exclusion(root_path, files_dict):
                 break
             d = parent
 
-    directories = sorted(
-        d for d in all_dirs if os.path.abspath(d) != os.path.abspath(root_path)
-    )
-    rel_dirs = [os.path.relpath(d, root_path) + "/" for d in directories]
+    directories = sorted(all_dirs)
+    directories = [
+        d for d in directories if os.path.abspath(d) != os.path.abspath(root_path)
+    ]
 
-    selected_dir_paths = _fzf_select(
-        rel_dirs, header="Select directories to exclude [TAB to mark, ENTER to accept]"
-    )
-
-    if not selected_dir_paths:
-        return None
-
-    for d_path in selected_dir_paths:
-        # ensure d_path is just the relative directory, not with a trailing slash for os.path.join
-        abs_d = os.path.join(root_path, d_path.rstrip("/"))
-        for f in list(files_dict.keys()):
-            if f.startswith(abs_d):
-                excluded.add(f)
-
-    remaining_files_abs = [f for f in files_dict.keys() if f not in excluded]
-
-    # sort before displaying and for stable indexing if falling back to manual selection
-    remaining_files_abs.sort()
-    rel_files_display = [os.path.relpath(f, root_path) for f in remaining_files_abs]
-
-    if rel_files_display:
-        selected_file_paths = _fzf_select(
-            rel_files_display,
-            header="Select individual files to exclude [TAB to mark, ENTER]",
+    if directories:
+        print(
+            colors.yellow(
+                "Select dirs to exclude ('1', '1,2,3', '1-3') or press ENTER to skip:"
+            )
         )
+        for i, d in enumerate(directories):
+            display_dir = os.path.relpath(d, root_path)
+            print(colors.yellow(f"   {i+1}) {display_dir}/"))
+        while True:
+            selection = input(colors.blue(">>> ")).strip()
+            if not selection:
+                break
+            try:
+                indices = parse_selection_input(selection)
+                if any(i < 0 or i >= len(directories) for i in indices):
+                    print(colors.red("Invalid selection. Try again!"))
+                    continue
+                selected_dirs = {directories[i] for i in indices}
+                for f in list(files_dict.keys()):
+                    if any(f.startswith(d) for d in selected_dirs):
+                        excluded.add(f)
+                break
+            except ValueError:
+                print(
+                    colors.red("Please enter valid comma-separated numbers or ranges!")
+                )
 
-        if not selected_file_paths:
-            return None
-        else:  # fzf selection was made
-            for rf_path in selected_file_paths:
-                excluded.add(os.path.join(root_path, rf_path))
+    remaining_files = [f for f in files_dict.keys() if f not in excluded]
+    if remaining_files:
+        print(
+            colors.yellow(
+                "Select files to exclude ('1', '1,2,3', '1-3') or press ENTER to skip:"
+            )
+        )
+        for i, rf in enumerate(sorted(remaining_files)):
+            display_file = os.path.relpath(rf, root_path)
+            print(colors.yellow(f"   {i+1}) {display_file}"))
+        while True:
+            selection = input(colors.blue("> ")).strip()
+            if not selection:
+                break
+            try:
+                indices = parse_selection_input(selection)
+                if any(i < 0 or i >= len(remaining_files) for i in indices):
+                    print(colors.red("Invalid selection. Try again!"))
+                    continue
+                for i in indices:
+                    excluded.add(remaining_files[i])
+                break
+            except ValueError:
+                print(
+                    colors.red("Please enter valid comma-separated numbers or ranges!")
+                )
 
     return excluded
 
@@ -231,10 +253,14 @@ def extract_code(dir_path):
         return None
 
     excluded_files = interactive_exclusion(root_path, files_dict)
-    if excluded_files is None:
-        return None
+    output_text = generate_text_output(root_path, files_dict, excluded_files)
+    token_count = utils.count_tokens(
+        output_text, config.DEFAULT_SEARCH_BIG_MODEL, False
+    )
 
-    return generate_text_output(root_path, files_dict, excluded_files)
+    print(colors.magenta(f"Token Count:"), colors.red(f"{token_count}"))
+
+    return output_text
 
 
 def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=None):
@@ -246,17 +272,9 @@ def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=N
                 return None
             dir_path = dir_full_path
 
+        print(colors.magenta(f"Using directory: {dir_path}"))
+
         content = extract_code(dir_path)
-
-        if content == None:
-            return None
-
-        token_count = utils.count_tokens(
-            content, config.DEFAULT_SEARCH_BIG_MODEL, False
-        )
-
-        print(colors.yellow(f"Using directory:"), dir_path)
-        print(colors.yellow(f"Token Count:"), token_count)
 
         if content == None:
             return None
@@ -270,7 +288,7 @@ def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=N
 
         user_question = original_msg
         if user_question == None:
-            user_question = input(colors.yellow("Question: "))
+            user_question = input(colors.blue("Question: "))
 
         return utils.rls(
             f"""
@@ -291,32 +309,3 @@ def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=N
     except Exception as e:
         print(colors.red(f"Codedump failed due to: {e}"))
         return None
-
-
-def _fzf_select(lines, header=None, multi=True):
-    """
-    lines  : list[str] - candidates shown in fzf
-    header : str       - optional header line in the fzf window
-    multi  : bool      - allow multi-select (fzf --multi)
-    """
-    if shutil.which("fzf") is None:
-        return []  # fzf not installed → fall back
-    cmd = ["fzf", "--ansi"]
-    if multi:
-        cmd.append("--multi")
-    if header:
-        cmd.extend(["--header", header])
-
-    try:
-        proc = subprocess.run(
-            cmd,
-            input="\n".join(lines),
-            text=True,
-            capture_output=True,
-            check=False,  # non-zero RC means "user cancelled"
-        )
-        if proc.returncode != 0:
-            return []  # user pressed Esc or ctrl-c
-        return [l for l in proc.stdout.splitlines() if l.strip()]
-    except FileNotFoundError:
-        return []  # should not happen (we checked), but be safe
