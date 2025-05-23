@@ -24,7 +24,7 @@ setup(
         "numpy==1.26.4",
         "faster-whisper==1.1.1",
         "moviepy==2.2.1",
-        "pillow==10.4.0",
+        "pillow==11.2.1",
         "pytesseract==0.3.13",
         "mutagen==1.47.0",
     ],

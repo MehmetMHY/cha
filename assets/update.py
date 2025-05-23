@@ -106,13 +106,13 @@ def update_setup():
     # (optional) reinstall Cha
     user_input = safe_input(f"Do you like to reinstall Cha (Y/n)? ")
     if user_input.lower() in ["y", "yes"]:
-        user_input = safe_input('Install without "-e" option (Y/n)? ')
+        user_input = safe_input('Install with "-e" option (Y/n)? ')
         if user_input.lower() in ["y", "yes"]:
-            print('> Installing Cha WITHOUT "-e" Option!')
-            os.system("pip3 install .")
-        else:
             print('> Installing Cha WITH "-e" Option!')
             os.system("pip3 install -e .")
+        else:
+            print('> Installing Cha WITHOUT "-e" Option!')
+            os.system("pip3 install .")
 
 
 if __name__ == "__main__":
