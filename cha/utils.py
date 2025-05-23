@@ -289,6 +289,7 @@ def check_terminal_editors_and_edit():
 
 def transcribe_file(file_path):
     try:
+        os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
         # NOTE: the import is made here to reduce initial loading time for the rest of the application
         from faster_whisper import WhisperModel
 
