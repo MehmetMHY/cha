@@ -1,13 +1,12 @@
+import traceback
+import argparse
+import time
+import json
 import sys
+import os
+import re
 
 try:
-    import argparse
-    import traceback
-    import time
-    import json
-    import os
-    import re
-
     from cha import colors, utils, config, loading, platforms
     from cha.client import (
         get_current_chat_client,
@@ -730,7 +729,7 @@ def cli():
                     BASE_URL_VALUE = platform_values["base_url"]
                     selected_model = platform_values["picked_model"]
 
-                # NOTE: (2-13-2025) this exists to account for cases like this: https://ollama.com/blog/openai-compatibility
+                # NOTE: (2-13-2025) this exists to account for cases like this https://ollama.com/blog/openai-compatibility
                 API_KEY_VALUE = API_KEY_NAME
                 if API_KEY_VALUE in os.environ:
                     API_KEY_VALUE = os.environ.get(API_KEY_NAME)
