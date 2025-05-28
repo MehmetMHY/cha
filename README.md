@@ -17,7 +17,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **CLI Chat Interface**: Communicate with OpenAI's models via commands `cha`.
 - **Interactive & Non-interactive Modes**: Interact with models via chat interface, command-line arguments, or file input.
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI.
-- **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done though an arugment or in interactive mode.
+- **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done though an argument or in interactive mode.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
 - **Answer Search (Deep Search)**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
@@ -260,7 +260,7 @@ When you run the example command above, it will answer your question in one shot
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 
 ```txt
-usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [-hs] [string ...]
+usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [-hs] [-x] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -288,6 +288,7 @@ options:
   -i, --init            (Optional) Initialize local directory and files in your home directory for configuring Cha
   -hs, --history_search
                         Search and display a previous chat history without starting a new session
+  -x, --private         Enable private mode, no chat history will be saved locally.
 ```
 
 ## Development
@@ -349,6 +350,16 @@ cha -i
 ```
 
 For more details, check out the documentation in [docs](./assets/dot-cha/README.md) and the example files in [assets/dot-cha/](./assets/dot-cha/).
+
+If you have enabled the **save chat history locally** feature after configuring the local setup, but want to start a chat session that is not saved, you can use one of the following arguments:
+
+```bash
+cha -x
+# or
+cha --private
+```
+
+Using either of these options will ensure your chat session is NOT saved locally. Think of it like Google Chrome's Incognito Mode but for Cha!
 
 ### SearXNG Search Engine Integration (Optional)
 
