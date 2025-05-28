@@ -589,6 +589,12 @@ def cli():
             help="Search and display a previous chat history without starting a new session",
             action="store_true",
         )
+        parser.add_argument(
+            "-x",
+            "--private",
+            help="Enable private mode, no chat history will be saved locally",
+            action="store_true",
+        )
 
         args = parser.parse_args()
 
@@ -607,6 +613,9 @@ def cli():
                     )
                 )
             return
+
+        if args.private:
+            save_chat_state = False
 
         if args.code_dump == True:
             from cha import codedump
