@@ -44,18 +44,6 @@ def update_setup():
     with open(PYTHON_SETUP_FILE_PATH, "r") as f:
         content = f.read()
 
-    # get and update version
-    version_match = re.search(r'version="([^"]*)"', content)
-    if version_match:
-        current_version = version_match.group(1)
-        print(f"Current version: {current_version}")
-        new_version = safe_input("Enter new version: ").strip()
-        if len(new_version) == 0 or "." not in new_version:
-            new_version = current_version
-        content = content.replace(
-            f'version="{current_version}"', f'version="{new_version}"'
-        )
-
     # find all dependencies
     deps = re.findall(r'"([^"]+)==([^"]+)"', content)
 
@@ -95,6 +83,19 @@ def update_setup():
         except subprocess.CalledProcessError:
             print(f"Failed to get version for {package}, skipping...")
             continue
+
+    # update version if changes were made
+    if changed_count > 0:
+        version_match = re.search(r'version="([^"]*)"', content)
+        if version_match:
+            current_version = version_match.group(1)
+            print(f"Current version: {current_version}")
+            new_version = safe_input("Enter new version: ").strip()
+            if len(new_version) == 0 or "." not in new_version:
+                new_version = current_version
+            content = content.replace(
+                f'version="{current_version}"', f'version="{new_version}"'
+            )
 
     # write updated content
     with open(PYTHON_SETUP_FILE_PATH, "w") as f:
