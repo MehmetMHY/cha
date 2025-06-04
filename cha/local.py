@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import subprocess
 import signal
 import json
@@ -214,20 +215,21 @@ def browse_and_select_history_file():
     line_to_path_map = {}
     for path, content in output.items():
         basename = os.path.basename(path)
-        epoch_str = "<Unknown Epoch>"
+        timestamp_str = "<Unknown Time>"
         epoch_val = float("inf")
         try:
-            # NOTE: expecting format like cha_hs_1716999815.json
             parts = basename.split("_")
             if len(parts) > 1 and parts[-1].endswith(".json"):
-                epoch_part = parts[-1][:-5]  # remove .json
+                epoch_part = parts[-1][:-5]
                 if epoch_part.isdigit():
-                    epoch_str = epoch_part
                     epoch_val = int(epoch_part)
+                    timestamp_str = datetime.fromtimestamp(
+                        epoch_val, tz=timezone.utc
+                    ).strftime("%Y-%m-%d %H:%M:%S UTC")
         except Exception:
             pass
 
-        prefix = f"[{epoch_str}] "
+        prefix = f"[{timestamp_str}] "
 
         # new display format - using full content
         display_line = f"{prefix}{content}"
@@ -239,8 +241,8 @@ def browse_and_select_history_file():
     if len(entries) == 0:
         return None
 
-    # attempt to sort entries by epoch (smallest to largest)
-    entries.sort(key=lambda x: x[0])
+    # attempt to sort entries by epoch (newest to oldest)
+    entries.sort(key=lambda x: x[0], reverse=True)
     fzf_input_lines = [entry[1] for entry in entries]
     line_to_path_map = {entry[1]: entry[2] for entry in entries}
     fzf_input_string = "\n".join(fzf_input_lines)
