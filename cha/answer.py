@@ -158,7 +158,7 @@ def search_engine(
                     )
                 return content[:count]
             except Exception as e:
-                print(colors.red(f"SearXNG failed, switching to DuckDuckGo"))
+                # print(colors.yellow(f"SearXNG failed, switching to DuckDuckGo"))
                 pass
 
         from duckduckgo_search import DDGS
