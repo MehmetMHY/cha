@@ -286,33 +286,17 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 message = "\n".join(message_lines)
                 multi_line_input = False
 
-            if message.strip().startswith(config.ENABLE_OR_DISABLE_AUTO_SD):
-                if auto_scrape_detection_mode == False and number_of_urls(message) > 0:
-                    loading.start_loading("Scraping URL(s)", "basic")
-                    from cha import scraper
-
-                    try:
-                        message = scraper.scraped_prompt(message)
-                    finally:
-                        loading.stop_loading()
-                else:
-                    auto_scrape_detection_mode = not auto_scrape_detection_mode
-                    if auto_scrape_detection_mode:
-                        print(
-                            colors.yellow(
-                                f"Entered auto url detection & scraping. Type '{config.ENABLE_OR_DISABLE_AUTO_SD}' to exist"
-                            )
-                        )
-                    continue
-
             # NOTE: handle logic for external tool calling and processing
             exist_early_due_to_tool_calling_config = False
             for tool_data in config.EXTERNAL_TOOLS_EXECUTE:
                 alias = tool_data["alias"]
+                show_loading_animation = tool_data.get("show_loading_animation", True)
                 if message.strip().startswith(alias):
                     from cha import local
 
-                    loading.start_loading("Running External Tool", "dots")
+                    if show_loading_animation:
+                        loading.start_loading("Running External Tool", "dots")
+
                     tool_call_output = local.execute_tool(
                         tool_data=tool_data,
                         chat_history=messages,
@@ -342,10 +326,32 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         exist_early_due_to_tool_calling_config = not tool_call_output[
                             "continue"
                         ]
-                    loading.stop_loading()
+
+                    if show_loading_animation:
+                        loading.stop_loading()
                     break
+
             if exist_early_due_to_tool_calling_config:
                 continue
+
+            if message.strip().startswith(config.ENABLE_OR_DISABLE_AUTO_SD):
+                if auto_scrape_detection_mode == False and number_of_urls(message) > 0:
+                    loading.start_loading("Scraping URL(s)", "basic")
+                    from cha import scraper
+
+                    try:
+                        message = scraper.scraped_prompt(message)
+                    finally:
+                        loading.stop_loading()
+                else:
+                    auto_scrape_detection_mode = not auto_scrape_detection_mode
+                    if auto_scrape_detection_mode:
+                        print(
+                            colors.yellow(
+                                f"Entered auto url detection & scraping. Type '{config.ENABLE_OR_DISABLE_AUTO_SD}' to exist"
+                            )
+                        )
+                    continue
 
             # save chat history to a JSON file
             if message == config.SAVE_CHAT_HISTORY:
