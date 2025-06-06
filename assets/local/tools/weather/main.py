@@ -27,6 +27,9 @@ class UsersCurrentWeatherStats:
         # NOTE: weather or not to just exist the current chat input in Cha after the tool is called or feed the context into the current chat as context
         self.pipe_output = True
 
+        # NOTE: weather or not to show loading animation or not
+        self.show_loading_animation = True
+
     def execute(self, **kwargs):
         """
         Accepts arbitrary keyword arguments so input structure
@@ -54,7 +57,7 @@ class UsersCurrentWeatherStats:
                 f"""
                 Today's Date is {utc_time_stamp}
 
-                The user's weather stats, using wttr.in, is the following:
+                The user's weather based off of their current location, using wttr.in, is the following:
                 
                 ```
                 {str(local_weather_data)}
@@ -70,6 +73,8 @@ class UsersCurrentWeatherStats:
                 ```
                 {chat_history}
                 ```
+
+                If there are not that many previous messages or your confused, just tell the user the their current weather stats.
                 """
             )
         except Exception as e:

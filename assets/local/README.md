@@ -98,12 +98,13 @@ Each tool must implement a single class that defines its behavior.
 
 #### Optional in `__init__`
 
-| Attribute              | Type | Default | Description                                     |
-| ---------------------- | ---- | ------- | ----------------------------------------------- |
-| `self.include_history` | bool | False   | If the chat history is passed into the tool     |
-| `self.timeout_sec`     | int  | 15      | Timeout in seconds before Cha cancels your tool |
-| `self.pipe_input`      | bool | False   | Whether to pass the user's raw input            |
-| `self.pipe_output`     | bool | True    | Whether the output is fed back into the chat    |
+| Attribute                     | Type | Default | Description                                     |
+| ----------------------------- | ---- | ------- | ----------------------------------------------- |
+| `self.include_history`        | bool | False   | If the chat history is passed into the tool     |
+| `self.timeout_sec`            | int  | 15      | Timeout in seconds before Cha cancels your tool |
+| `self.pipe_input`             | bool | False   | Whether to pass the user's raw input            |
+| `self.pipe_output`            | bool | True    | Whether the output is fed back into the chat    |
+| `self.show_loading_animation` | bool | True    | Weather or not to show loading animation        |
 
 ## Required Method: `execute(self, **kwargs)`
 
