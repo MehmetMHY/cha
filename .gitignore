@@ -213,3 +213,4 @@ export_*
 cha_hs_*.json
 cha_hs_*.txt
 history/
+searxng/

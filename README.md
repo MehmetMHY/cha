@@ -349,7 +349,7 @@ By default, this is turned off, so there's no need to create any local files for
 cha -i
 ```
 
-For more details, check out the documentation in [docs](./assets/dot-cha/README.md) and the example files in [assets/dot-cha/](./assets/dot-cha/).
+For more details, check out the documentation in [docs](./assets/local/README.md) and the example files in [assets/local/](./assets/local/).
 
 If you have enabled the **save chat history locally** feature after configuring the local setup, but want to start a chat session that is not saved, you can use one of the following arguments:
 
