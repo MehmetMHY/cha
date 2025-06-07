@@ -38,6 +38,7 @@ def title_print(selected_model):
                 - `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files from latest response
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
+                - `{config.USE_FZF_SEARCH}` to use fzf for selection when using `{config.USE_CODE_DUMP}` or `{config.LOAD_MESSAGE_CONTENT}`
                 """
             )
         )

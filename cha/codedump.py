@@ -129,7 +129,7 @@ def interactive_exclusion(root_path, files_dict):
     if directories:
         print(
             colors.yellow(
-                "Select dirs to exclude ('1', '1,2,3', '1-3') or press ENTER to skip:"
+                f"Select dirs to exclude ('1', '1,2,3', '1-3'), '{config.USE_FZF_SEARCH}' for fzf, or press ENTER to skip:"
             )
         )
         for i, d in enumerate(directories):
@@ -139,6 +139,39 @@ def interactive_exclusion(root_path, files_dict):
             selection = input(colors.blue(">>> ")).strip()
             if not selection:
                 break
+
+            if selection == config.USE_FZF_SEARCH:
+                dir_display_list = [
+                    os.path.relpath(d, root_path) + "/" for d in directories
+                ]
+                dir_map = {os.path.relpath(d, root_path) + "/": d for d in directories}
+                fzf_input = "\n".join(dir_display_list)
+                try:
+                    fzf_process = subprocess.run(
+                        [
+                            "fzf",
+                            "-m",
+                            "--header",
+                            "Use TAB to select multiple directories, ENTER to confirm.",
+                        ],
+                        input=fzf_input,
+                        capture_output=True,
+                        text=True,
+                        check=True,
+                        encoding="utf-8",
+                    )
+                    selected_display_dirs = fzf_process.stdout.strip().split("\n")
+                    if selected_display_dirs and selected_display_dirs[0]:
+                        selected_dirs = {
+                            dir_map[d] for d in selected_display_dirs if d in dir_map
+                        }
+                        for f in list(files_dict.keys()):
+                            if any(f.startswith(d) for d in selected_dirs):
+                                excluded.add(f)
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    print(colors.red(" or fzf not found."))
+                break
+
             try:
                 indices = parse_selection_input(selection)
                 if any(i < 0 or i >= len(directories) for i in indices):
@@ -156,25 +189,59 @@ def interactive_exclusion(root_path, files_dict):
 
     remaining_files = [f for f in files_dict.keys() if f not in excluded]
     if remaining_files:
+        remaining_files_sorted = sorted(remaining_files)
         print(
             colors.yellow(
-                "Select files to exclude ('1', '1,2,3', '1-3') or press ENTER to skip:"
+                f"Select files to exclude ('1', '1,2,3', '1-3'), '{config.USE_FZF_SEARCH}' for fzf, or press ENTER to skip:"
             )
         )
-        for i, rf in enumerate(sorted(remaining_files)):
+        for i, rf in enumerate(remaining_files_sorted):
             display_file = os.path.relpath(rf, root_path)
             print(colors.yellow(f"   {i+1}) {display_file}"))
         while True:
             selection = input(colors.blue("> ")).strip()
             if not selection:
                 break
+
+            if selection == config.USE_FZF_SEARCH:
+                file_display_list = [
+                    os.path.relpath(rf, root_path) for rf in remaining_files_sorted
+                ]
+                path_map = {
+                    os.path.relpath(rf, root_path): rf for rf in remaining_files_sorted
+                }
+                fzf_input = "\n".join(file_display_list)
+                try:
+                    fzf_process = subprocess.run(
+                        [
+                            "fzf",
+                            "-m",
+                            "--header",
+                            "Use TAB to select multiple files, ENTER to confirm.",
+                        ],
+                        input=fzf_input,
+                        capture_output=True,
+                        text=True,
+                        check=True,
+                        encoding="utf-8",
+                    )
+                    selected_display_files = fzf_process.stdout.strip().split("\n")
+                    if selected_display_files and selected_display_files[0]:
+                        for display_path in selected_display_files:
+                            full_path = path_map.get(display_path)
+                            if full_path:
+                                excluded.add(full_path)
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    print(colors.red(" or fzf not found."))
+                break
+
             try:
                 indices = parse_selection_input(selection)
                 if any(i < 0 or i >= len(remaining_files) for i in indices):
                     print(colors.red("Invalid selection. Try again!"))
                     continue
                 for i in indices:
-                    excluded.add(remaining_files[i])
+                    excluded.add(remaining_files_sorted[i])
                 break
             except ValueError:
                 print(

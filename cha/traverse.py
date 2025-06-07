@@ -1,3 +1,4 @@
+import subprocess
 import os
 
 from cha import colors, config
@@ -143,6 +144,51 @@ def traverse_and_select_files():
             print_commands()
             continue
 
+        if user == config.USE_FZF_SEARCH:
+            all_files_in_root = collect_files(root_dir)
+            if not all_files_in_root:
+                print(colors.red("No selectable files found in the project."))
+                continue
+
+            file_display_list = [
+                os.path.relpath(f, root_dir) for f in all_files_in_root
+            ]
+            path_map = {os.path.relpath(f, root_dir): f for f in all_files_in_root}
+
+            fzf_input = "\n".join(file_display_list)
+            try:
+                fzf_process = subprocess.run(
+                    [
+                        "fzf",
+                        "-m",
+                        f"--prompt=Selected {len(selected)} files> ",
+                        "--header",
+                        "Use TAB to select/deselect files, ENTER to confirm.",
+                    ],
+                    input=fzf_input,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    encoding="utf-8",
+                )
+                selected_display_files = fzf_process.stdout.strip().split("\n")
+                if selected_display_files and selected_display_files[0]:
+                    for rel_path in selected_display_files:
+                        full_path = path_map.get(rel_path)
+                        if full_path:
+                            if full_path in selected:
+                                selected.remove(full_path)
+                            else:
+                                selected.add(full_path)
+
+                print(
+                    colors.green(f"Selection updated. Total selected: {len(selected)}")
+                )
+                print_listing(curr_dir, selected, show_external=True)
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                print(colors.red(" or fzf not found."))
+            continue
+
         # free-form prompt, if we already have selections
         if (
             not (
@@ -183,7 +229,7 @@ def traverse_and_select_files():
                 key=str.lower,
             )
 
-            # cd by *index*
+            # cd by index
             if arg.isdigit():
                 idx = int(arg)
                 if 1 <= idx <= len(dirs):
@@ -193,7 +239,7 @@ def traverse_and_select_files():
                     print(colors.red("Directory index out of range."))
                 continue
 
-            # cd by *name*
+            # cd by name
             if arg in dirs:
                 curr_dir = os.path.join(curr_dir, arg)
                 print_listing(curr_dir, selected)
@@ -226,9 +272,37 @@ def traverse_and_select_files():
 
             try:
                 deselection_prompt_text = colors.magenta(
-                    "Enter numbers to deselect, or EXIT/DONE to finish deselection: "
+                    f"Enter numbers to deselect, '{config.USE_FZF_SEARCH}' for fzf, or EXIT/DONE to finish deselection: "
                 )
                 user_deselection_input = input(deselection_prompt_text).strip()
+
+                if user_deselection_input == config.USE_FZF_SEARCH:
+                    fzf_input = "\n".join(selected_list_current_round)
+                    try:
+                        fzf_process = subprocess.run(
+                            [
+                                "fzf",
+                                "-m",
+                                "--header",
+                                "Use TAB to select files to DESELECT, ENTER to confirm.",
+                            ],
+                            input=fzf_input,
+                            capture_output=True,
+                            text=True,
+                            check=True,
+                            encoding="utf-8",
+                        )
+                        files_to_deselect_fzf = fzf_process.stdout.strip().split("\n")
+                        if files_to_deselect_fzf and files_to_deselect_fzf[0]:
+                            for file_path in files_to_deselect_fzf:
+                                if file_path in selected:
+                                    selected.remove(file_path)
+                                    print(colors.red(f"Deselected: {file_path}"))
+                    except (subprocess.CalledProcessError, FileNotFoundError):
+                        print(colors.red(" or fzf not found."))
+
+                    print_listing(curr_dir, selected, show_external=True)
+                    continue
 
                 if (
                     not user_deselection_input
@@ -266,7 +340,7 @@ def traverse_and_select_files():
                 print()
                 continue
 
-            print_listing(curr_dir, selected)  # show updated listing
+            print_listing(curr_dir, selected)
             continue
 
         # numeric / numeric range selection
@@ -302,7 +376,7 @@ def traverse_and_select_files():
                     print(colors.yellow(f"No selectable files found in {dir_path}"))
                     continue
 
-                # toggle: if *all* are selected -> unselect, else select missing
+                # toggle: if ALL are selected -> unselect, else select missing
                 if dir_files and all(f in selected for f in dir_files):
                     for fp in dir_files:
                         selected.remove(fp)
@@ -331,7 +405,7 @@ def traverse_and_select_files():
                 print(colors.green(f"Selected: {full}"))
 
     if selected and maybe_prompt == None:
-        pass  # effectively removing the old deselection loop
+        pass
 
     return sorted(list(selected)), maybe_prompt
 
