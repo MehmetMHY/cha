@@ -180,6 +180,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             message = utils.safe_input(user_input_string).rstrip("\n")
 
+            if message.startswith((config.USE_FZF_SEARCH)):
+                print(
+                    colors.red(
+                        f"Fzf search can only be used in `{config.USE_CODE_DUMP}` or `{config.LOAD_MESSAGE_CONTENT}`"
+                    )
+                )
+                continue
+
             # handle text-editor input
             if message == config.TEXT_EDITOR_INPUT_MODE:
                 editor_content = utils.check_terminal_editors_and_edit()
