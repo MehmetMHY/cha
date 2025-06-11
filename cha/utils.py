@@ -161,7 +161,10 @@ def extract_code_blocks(text, file_start_str=""):
 
 
 def is_slow_model(model_name):
-    return re.match(r"^o\d+", model_name) is not None
+    if config.BY_PASS_SLOW_MODEL_DETECTION == True:
+        return False
+    else:
+        return re.match(r"^o\d+", model_name) is not None
 
 
 def count_tokens(text, model_name, fast_mode=False, language=None, rounding=1.25):

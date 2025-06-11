@@ -64,6 +64,7 @@ OPENAI_MODELS_TO_IGNORE = [
 ]
 OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5"]
 OPENAI_IGNORE_DATED_MODEL_NAMES = False
+BY_PASS_SLOW_MODEL_DETECTION = False
 
 # terminal/console config
 SUPPORTED_TERMINAL_IDES = ["vim", "nvim", "vi", "nano", "hx", "pico", "micro", "emacs"]
