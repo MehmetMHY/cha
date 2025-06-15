@@ -55,7 +55,7 @@ class LoadingAnimation:
     def print_message(self, message):
         with self.message_lock:
             self._clear_current_line()
-            print(message)
+            sys.stdout.write(colors.white(str(message)) + "\n")
             sys.stdout.flush()
 
     def start(self, text="Thinking", animation_type=None):

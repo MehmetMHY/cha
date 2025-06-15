@@ -16,6 +16,8 @@ def run(code):
         ln for ln in code.splitlines() if not ln.lstrip().startswith("```")
     ).strip()
 
+    was_streamed = False
+
     # create temporary file
     with tempfile.NamedTemporaryFile(
         mode="w", suffix=".py", dir="/tmp", delete=False
@@ -26,6 +28,7 @@ def run(code):
     # run the code
     try:
         if "input(" in code:
+            was_streamed = True
             # interactive mode with real-time output
             proc = subprocess.Popen(
                 [sys.executable, str(script)],
@@ -38,18 +41,18 @@ def run(code):
 
             out_lines, err_lines = [], []
 
-            def read_pipe(pipe, lines_list):
+            def read_pipe(pipe, lines_list, color_func):
                 for char in iter(lambda: pipe.read(1), ""):
-                    print(char, end="", flush=True)
+                    print(color_func(char), end="", flush=True)
                     lines_list.append(char)
                 pipe.close()
 
             out_thread = threading.Thread(
-                target=read_pipe, args=(proc.stdout, out_lines)
+                target=read_pipe, args=(proc.stdout, out_lines, colors.white)
             )
 
             err_thread = threading.Thread(
-                target=read_pipe, args=(proc.stderr, err_lines)
+                target=read_pipe, args=(proc.stderr, err_lines, colors.red)
             )
 
             out_thread.start()
@@ -71,7 +74,7 @@ def run(code):
     finally:
         script.unlink()
 
-    return out, err, code
+    return out, err, code, was_streamed
 
 
 def coder(
@@ -126,7 +129,7 @@ def coder(
         history.append({"role": "assistant", "content": raw})
 
         # ask for confirmation to run
-        action = input(colors.blue("Run [Y/n] or modify? ")).strip()
+        action = input(colors.blue("Run this code? [Y/n] or modify? ")).strip()
         action_lower = action.lower()
 
         # check for yes/no responses
@@ -148,11 +151,12 @@ def coder(
             continue
 
         # run the code
-        stdout, stderr, code = run(raw)
-        if stdout:
-            print(colors.green(stdout), end="")
-        if stderr:
-            print(colors.red(stderr), end="")
+        stdout, stderr, code, was_streamed = run(raw)
+        if not was_streamed:
+            if stdout:
+                loading.print_message(stdout)
+            if stderr:
+                print(colors.red(stderr), end="")
 
         success = bool(stdout) and not stderr
 
@@ -175,6 +179,7 @@ def coder(
                 ):
                     if buf == "":
                         loading.stop_loading()
+                        print(colors.blue("Response:"))
                     part = ch.choices[0].delta.content or ""
                     buf += part
                     print(colors.green(part), end="", flush=True)
