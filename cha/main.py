@@ -39,6 +39,7 @@ def title_print(selected_model):
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
                 - `{config.USE_FZF_SEARCH}` to use fzf for selection when using `{config.USE_CODE_DUMP}` or `{config.LOAD_MESSAGE_CONTENT}`
+                - `{config.RUN_CODER_ALIAS}` to run the coder tool to reduce hallucination
                 """
             )
         )
@@ -186,6 +187,21 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         f"Fzf search can only be used in `{config.USE_CODE_DUMP}` or `{config.LOAD_MESSAGE_CONTENT}`"
                     )
                 )
+                continue
+
+            if message.strip().startswith(config.RUN_CODER_ALIAS):
+                coder_message = None
+                if len(message.split(" ")) > 1:
+                    coder_message = message.replace(config.RUN_CODER_ALIAS, "").strip()
+                from cha import coder
+
+                code_messages = coder.call_coder(
+                    client=get_current_chat_client(),
+                    initial_prompt=coder_message,
+                    model_name=selected_model,
+                    max_retries=3,
+                )
+                messages.extend(code_messages)
                 continue
 
             # handle text-editor input
@@ -581,6 +597,13 @@ def cli():
             action="store_true",
         )
         parser.add_argument(
+            "-c",
+            "--coder",
+            nargs="?",
+            const=True,
+            help="Run the coder tool to reduce hallucination",
+        )
+        parser.add_argument(
             "-e",
             "--export_parsed_text",
             help="Extract code blocks from the final output and save them as files",
@@ -682,31 +705,6 @@ def cli():
 
             return
 
-        if args.history_search:
-            save_chat_state = False
-            if not os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR):
-                print(
-                    colors.red(
-                        f"History directory not found: {config.LOCAL_CHA_CONFIG_HISTORY_DIR}"
-                    )
-                )
-                return
-
-            try:
-                from cha import local
-
-                hs_output = local.browse_and_select_history_file()
-                if hs_output:
-                    local.print_history_browse_and_select_history_file(
-                        chat=hs_output["chat"], include_timestamp=False
-                    )
-            except (KeyboardInterrupt, EOFError):
-                print()
-            except Exception as e:
-                pass
-            finally:
-                return
-
         title_print_value = config.CHA_DEFAULT_SHOW_PRINT_TITLE
         selected_model = args.model
 
@@ -776,6 +774,45 @@ def cli():
                 save_chat_state = False
                 raise Exception(f"Failed to switch platform due to {e}")
 
+        if args.select_model:
+            provided_models = list_models()
+
+            selection = utils.safe_input(
+                colors.blue(f"Select a model (1-{len(provided_models)}): ")
+            )
+            selected_a_model = False
+            if selection.isdigit():
+                selection = int(selection) - 1
+                if 0 <= selection < len(provided_models):
+                    selected_model = provided_models[selection]
+                    selected_a_model = True
+            if selected_a_model == False:
+                print(colors.red("Invalid number selected!"))
+                return
+
+        if args.coder:
+            try:
+                from cha import coder
+
+                initial_prompt = args.coder if isinstance(args.coder, str) else None
+                conversation_history = coder.call_coder(
+                    client=get_current_chat_client(),
+                    initial_prompt=initial_prompt,
+                    model_name=selected_model,
+                    max_retries=3,
+                )
+            except (KeyboardInterrupt, EOFError, SystemExit):
+                return None
+            except Exception as e:
+                save_chat_state = False
+                raise Exception(f"Coder feature failed: {e}")
+
+            save_chat_state = False
+            if conversation_history is None:
+                raise Exception("Coder feature exited with None")
+
+            return
+
         if args.token_count:
             save_chat_state = False
 
@@ -810,22 +847,6 @@ def cli():
                 return
             except Exception as e:
                 raise Exception(f"Error counting tokens: {e}")
-
-        if args.select_model:
-            provided_models = list_models()
-
-            selection = utils.safe_input(
-                colors.blue(f"Select a model (1-{len(provided_models)}): ")
-            )
-            selected_a_model = False
-            if selection.isdigit():
-                selection = int(selection) - 1
-                if 0 <= selection < len(provided_models):
-                    selected_model = provided_models[selection]
-                    selected_a_model = True
-            if selected_a_model == False:
-                print(colors.red("Invalid number selected!"))
-                return
 
         input_mode = "interactive"
         processed_input_for_chatbot = (
