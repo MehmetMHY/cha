@@ -35,7 +35,7 @@ def title_print(selected_model):
                 - '{config.MULTI_LINE_MODE_TEXT}' for multi-line switching (type '{config.MULTI_LINE_SEND}' to send)
                 - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
                 - '{config.USE_CODE_DUMP}' to codedump a directory as context
-                - `{config.EXPORT_FILES_IN_OUTPUT_KEY}` export all files from latest response
+                - `{config.EXPORT_FILES_IN_OUTPUT_KEY} [all] [single]` export files from response(s)
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
                 - `{config.USE_FZF_SEARCH}` to use fzf for selection when using `{config.USE_CODE_DUMP}` or `{config.LOAD_MESSAGE_CONTENT}`
@@ -385,8 +385,34 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 print(colors.red(f"Saved current chat history to {cha_filepath}"))
                 continue
 
-            if message.strip() == config.EXPORT_FILES_IN_OUTPUT_KEY:
-                utils.export_file_logic(CURRENT_CHAT_HISTORY[-1]["bot"])
+            if message.strip().startswith(config.EXPORT_FILES_IN_OUTPUT_KEY):
+                args = message.strip().lower().split()
+
+                export_all = "all" in args
+                force_single = "single" in args
+
+                print(colors.green(f"Created following file(s):"))
+
+                if export_all:
+                    if len(CURRENT_CHAT_HISTORY) > 1:
+                        for history_item in CURRENT_CHAT_HISTORY[1:]:
+                            if history_item.get("bot"):
+                                utils.export_file_logic(
+                                    history_item["bot"], force_single
+                                )
+                    else:
+                        print(colors.yellow("No history to export."))
+                else:
+                    if len(CURRENT_CHAT_HISTORY) > 1:
+                        last_bot_message = CURRENT_CHAT_HISTORY[-1].get("bot")
+                        if last_bot_message:
+                            utils.export_file_logic(last_bot_message, force_single)
+                        else:
+                            print(
+                                colors.yellow("Last message has no content to export.")
+                            )
+                    else:
+                        print(colors.yellow("No message to export."))
                 continue
 
             # print help

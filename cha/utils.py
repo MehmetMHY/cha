@@ -85,9 +85,13 @@ def run_a_shell():
     return
 
 
-def export_file_logic(text_content):
+def export_file_logic(text_content, force_single_file=False):
     try:
-        extracted = extract_code_blocks(text=text_content, file_start_str="export_")
+        extracted = extract_code_blocks(
+            text=text_content,
+            file_start_str="export_",
+            force_single_file=force_single_file,
+        )
 
         if extracted["total"] == 0:
             print(colors.yellow("No blocks found for exporting"))
@@ -107,7 +111,6 @@ def export_file_logic(text_content):
             )
 
         if len(extracted["created"]) > 0:
-            print(colors.green(f"Created following file(s):"))
             for f in extracted["created"]:
                 print(colors.green(f"- {f}"))
 
@@ -117,16 +120,20 @@ def export_file_logic(text_content):
     return
 
 
-def extract_code_blocks(text, file_start_str=""):
+def extract_code_blocks(text, file_start_str="", force_single_file=False):
     output = {"created": [], "errors": [], "total": 0, "brute_method": False}
 
     pattern = r"```([a-zA-Z0-9+\-#]*)\n(.*?)```"
-    matches = re.findall(pattern, text, re.DOTALL)
+    matches = []
+    if not force_single_file:
+        matches = re.findall(pattern, text, re.DOTALL)
 
     # if no code blocks were found, save the entire text as a .txt file
     if not matches:
         output["total"] += 1
-        output["brute_method"] = True
+        output["brute_method"] = False
+        if force_single_file == False:
+            output["brute_method"] = True
         filename = str(file_start_str) + str(uuid.uuid4()).replace("-", "")[:8] + ".txt"
         filename = os.path.join(os.getcwd(), filename)
         try:
