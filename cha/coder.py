@@ -3,8 +3,9 @@ import subprocess
 import threading
 import tempfile
 import pathlib
-import json
+import uuid
 import sys
+import os
 
 from cha import utils, colors, loading
 from openai import OpenAI
@@ -154,7 +155,10 @@ def coder(
         stdout, stderr, code, was_streamed = run(raw)
         if not was_streamed:
             if stdout:
-                loading.print_message(stdout)
+                formatted_output = "\n".join(
+                    f'{colors.blue("> ")}{line}' for line in stdout.splitlines()
+                )
+                loading.print_message(formatted_output)
             if stderr:
                 print(colors.red(stderr), end="")
 
@@ -179,7 +183,6 @@ def coder(
                 ):
                     if buf == "":
                         loading.stop_loading()
-                        print(colors.blue("Response:"))
                     part = ch.choices[0].delta.content or ""
                     buf += part
                     print(colors.green(part), end="", flush=True)
@@ -247,5 +250,46 @@ def call_coder(client, initial_prompt, model_name, max_retries):
         prompt_code=system_prompt_code,
         prompt_answer=answer_prompt,
     )
+
+    try:
+        save_response = (
+            utils.safe_input(colors.blue("Save the code (Y/n)? ")).lower().strip()
+        )
+
+        if save_response in ["y", "yes"]:
+            filename_response = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": "Based on the code above, suggest a simple and descriptive filename (just the filename, no explanation). Include appropriate file extension which most of the time is python; <filename>.py",
+                    },
+                    conversation_history[-3],
+                ],
+                max_tokens=10,
+            )
+
+            suggested_filename = (
+                filename_response.choices[0]
+                .message.content.strip()
+                .lower()
+                .replace(" ", "_")
+            )
+
+            if not suggested_filename.endswith(".py"):
+                suggested_filename = suggested_filename.split(".")[0] + ".py"
+
+            suggested_filename = "export_" + suggested_filename
+
+            final_filename = suggested_filename
+            if os.path.exists(final_filename):
+                final_filename = f"{os.path.splitext(suggested_filename)[0]}_{str(uuid.uuid4())[:8]}{os.path.splitext(suggested_filename)[1]}"
+
+            with open(os.path.join(os.getcwd(), final_filename), "w") as f:
+                f.write(conversation_history[-3]["content"])
+
+            print(colors.green(f"Saved code to {final_filename}"))
+    except:
+        pass
 
     return conversation_history
