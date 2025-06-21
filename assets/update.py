@@ -49,9 +49,45 @@ def update_setup():
     if version_match:
         current_version = version_match.group(1)
         print(f"Current version: {current_version}")
-        new_version = safe_input("Enter new version: ").strip()
-        if len(new_version) == 0 or "." not in new_version:
-            new_version = current_version
+
+        try:
+            major, minor, patch = map(int, current_version.split("."))
+
+            patch_bump = f"{major}.{minor}.{patch + 1}"
+            minor_bump = f"{major}.{minor + 1}.0"
+            major_bump = f"{major + 1}.0.0"
+
+            print("Select the new version:")
+            print(f"  1. Patch -> {patch_bump}")
+            print(f"  2. Minor -> {minor_bump}")
+            print(f"  3. Major -> {major_bump}")
+            print(f"  4. Keep current version ({current_version})")
+            while True:
+                choice = safe_input("Enter your choice (1-4): ").strip()
+                if choice == "1":
+                    new_version = patch_bump
+                    break
+                elif choice == "2":
+                    new_version = minor_bump
+                    break
+                elif choice == "3":
+                    new_version = major_bump
+                    break
+                elif choice == "4":
+                    new_version = current_version
+                    break
+                else:
+                    print("Invalid choice, please try again!")
+
+        except ValueError:
+            print("Could not parse current version. Please update manually.")
+            new_version = safe_input("Enter new version: ").strip()
+            if len(new_version) == 0 or "." not in new_version:
+                new_version = current_version
+
+        if new_version != current_version:
+            print(f"Updated version to: {new_version}")
+
         content = content.replace(
             f'version="{current_version}"', f'version="{new_version}"'
         )

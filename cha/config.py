@@ -44,7 +44,7 @@ CHA_LOCAL_SAVE_ALL_CHA_CHATS = False
 
 # answer feature config
 DEFAULT_SEARCH_BIG_MODEL = "gpt-4.1"
-DEFAULT_SEARCH_SMALL_MODEL = "gpt-4.1-nano"
+DEFAULT_SEARCH_SMALL_MODEL = "gpt-4.1-mini"
 DEFAULT_SEARCH_FRESHNESS_STATE = "none"
 DEFAULT_SEARCH_MAX_TOKEN_LIMIT = 1_000_000
 DEFAULT_SEARCH_TIME_DELAY_SECONDS = 1
@@ -63,7 +63,7 @@ OPENAI_MODELS_TO_IGNORE = [
     "image",
     "transcribe",
 ]
-OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5"]
+OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5", "o6", "o7"]
 OPENAI_IGNORE_DATED_MODEL_NAMES = False
 BY_PASS_SLOW_MODEL_DETECTION = False
 
