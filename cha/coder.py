@@ -86,132 +86,138 @@ def coder(
     prompt_answer: str,
     initial_prompt: str = None,
 ):
-    if initial_prompt is None:
-        q = input(colors.blue("Prompt: ")).strip()
-        if not q:
-            return []
-    else:
-        q = initial_prompt
-
-    # initialize conversation history
-    history = [
-        {"role": "system", "content": prompt_code},
-        {"role": "user", "content": q},
-    ]
-
-    retries = 0
-    prev_code = prev_issue = ""
-
-    while retries < max_retries + 1:
-        loading.start_loading("Generating code")
-        if prev_err := prev_issue:
-            user_msg = f"Here was the previous script that failed or produced no output:\n{prev_code}\nError or issue:\n{prev_err}\nPlease return a FIXED version."
-            history.append({"role": "user", "content": user_msg})
-
-        buf = ""
-        try:
-            for ch in client.chat.completions.create(
-                model=model, messages=history, stream=True
-            ):
-                # stop loading before first character is printed
-                if buf == "":
-                    loading.stop_loading()
-                part = ch.choices[0].delta.content or ""
-                buf += part
-                print(colors.green(part), end="", flush=True)
-            # add newline after code
-            print()
-        except Exception as e:
-            # ensure loading is stopped even if streaming fails
-            loading.stop_loading()
-            raise e
-
-        raw = buf.strip()
-        history.append({"role": "assistant", "content": raw})
-
-        # ask for confirmation to run
-        action = input(colors.blue("Run this code? [Y/n] or modify? ")).strip()
-        action_lower = action.lower()
-
-        # check for yes/no responses
-        if not action or action_lower.startswith("y"):
-            pass
-        elif len(action) > 5:
-            # treat as modification prompt
-            history.append({"role": "user", "content": action})
-            prev_issue = ""
-            continue
-        elif action_lower.startswith("n"):
-            return history
+    try:
+        if initial_prompt is None:
+            q = input(colors.blue("Prompt: ")).strip()
+            if not q:
+                return []
         else:
-            print(
-                colors.red(
-                    "Invalid input. Please enter 'y', 'n', or a modification prompt (>5 characters)."
-                )
-            )
-            continue
+            q = initial_prompt
 
-        # run the code
-        stdout, stderr, code, was_streamed = run(raw)
-        if not was_streamed:
-            if stdout:
-                formatted_output = "\n".join(
-                    f'{colors.blue("> ")}{line}' for line in stdout.splitlines()
-                )
-                loading.print_message(formatted_output)
-            if stderr:
-                print(colors.red(stderr), end="")
+        # initialize conversation history
+        history = [
+            {"role": "system", "content": prompt_code},
+            {"role": "user", "content": q},
+        ]
 
-        success = bool(stdout) and not stderr
+        retries = 0
+        prev_code = prev_issue = ""
 
-        if success:
-            # add execution result to history
-            history.append({"role": "user", "content": f"Execution output:\n{stdout}"})
-
-            # stream the final answer using full history but with answer prompt
-            loading.start_loading("Generating answer")
-            answer_history = [{"role": "system", "content": prompt_answer}] + history[
-                -1:
-            ]
+        while retries < max_retries + 1:
+            loading.start_loading("Generating code")
+            if prev_err := prev_issue:
+                user_msg = f"Here was the previous script that failed or produced no output:\n{prev_code}\nError or issue:\n{prev_err}\nPlease return a FIXED version."
+                history.append({"role": "user", "content": user_msg})
 
             buf = ""
             try:
                 for ch in client.chat.completions.create(
-                    model=model,
-                    messages=answer_history,
-                    stream=True,
+                    model=model, messages=history, stream=True
                 ):
+                    # stop loading before first character is printed
                     if buf == "":
                         loading.stop_loading()
                     part = ch.choices[0].delta.content or ""
                     buf += part
                     print(colors.green(part), end="", flush=True)
+                # add newline after code
+                print()
             except Exception as e:
+                # ensure loading is stopped even if streaming fails
                 loading.stop_loading()
                 raise e
 
-            # add final answer to history
-            history.append({"role": "assistant", "content": buf.strip()})
-            if not buf.strip().endswith("\n"):
-                print()
-            return history
+            raw = buf.strip()
+            history.append({"role": "assistant", "content": raw})
 
-        # handle failure
-        issue = stderr or "[no output produced]"
-        print(colors.red("Issue detected:"))
-        print(colors.red(issue))
-        retries += 1
-        if retries > max_retries:
-            print(colors.red("Reached maximum retries - exiting."))
-            return history
-        prev_code, prev_issue = code, issue
-        if (
-            not input(colors.blue("Attempt to auto-fix and rerun? [y/N]: "))
-            .strip()
-            .lower()
-            .startswith("y")
-        ):
-            return history
+            # ask for confirmation to run
+            action = input(colors.blue("Run (Y/n) or modify? ")).strip()
+            action_lower = action.lower()
+
+            # check for yes/no responses
+            if not action or action_lower.startswith("y"):
+                pass
+            elif len(action) > 5:
+                # treat as modification prompt
+                history.append({"role": "user", "content": action})
+                prev_issue = ""
+                continue
+            elif action_lower.startswith("n"):
+                return history
+            else:
+                print(
+                    colors.red(
+                        "Invalid input. Please enter 'y', 'n', or a modification prompt (>5 characters)."
+                    )
+                )
+                continue
+
+            # run the code
+            stdout, stderr, code, was_streamed = run(raw)
+            if not was_streamed:
+                if stdout:
+                    formatted_output = "\n".join(
+                        f'{colors.blue("> ")}{line}' for line in stdout.splitlines()
+                    )
+                    loading.print_message(formatted_output)
+                if stderr:
+                    print(colors.red(stderr), end="")
+
+            success = bool(stdout) and not stderr
+
+            if success:
+                # add execution result to history
+                history.append(
+                    {"role": "user", "content": f"Execution output:\n{stdout}"}
+                )
+
+                # stream the final answer using full history but with answer prompt
+                loading.start_loading("Generating answer")
+                answer_history = [
+                    {"role": "system", "content": prompt_answer}
+                ] + history[-1:]
+
+                buf = ""
+                try:
+                    for ch in client.chat.completions.create(
+                        model=model,
+                        messages=answer_history,
+                        stream=True,
+                    ):
+                        if buf == "":
+                            loading.stop_loading()
+                        part = ch.choices[0].delta.content or ""
+                        buf += part
+                        print(colors.green(part), end="", flush=True)
+                except Exception as e:
+                    loading.stop_loading()
+                    raise e
+
+                # add final answer to history
+                history.append({"role": "assistant", "content": buf.strip()})
+                if not buf.strip().endswith("\n"):
+                    print()
+                return history
+
+            # handle failure
+            issue = stderr or "[no output produced]"
+            print(colors.red("Issue detected:"))
+            print(colors.red(issue))
+            retries += 1
+            if retries > max_retries:
+                print(colors.red("Reached maximum retries - exiting."))
+                return history
+            prev_code, prev_issue = code, issue
+            if (
+                not input(colors.blue("Attempt to auto-fix and rerun? [y/N]: "))
+                .strip()
+                .lower()
+                .startswith("y")
+            ):
+                return history
+    except (KeyboardInterrupt, EOFError):
+        loading.stop_loading()
+        raise
 
 
 def call_coder(client, initial_prompt, model_name, max_retries):
@@ -252,9 +258,7 @@ def call_coder(client, initial_prompt, model_name, max_retries):
     )
 
     try:
-        save_response = (
-            utils.safe_input(colors.blue("Save the code (Y/n)? ")).lower().strip()
-        )
+        save_response = input(colors.blue("Save the code (Y/n)? ")).lower().strip()
 
         if save_response in ["y", "yes"]:
             filename_response = client.chat.completions.create(
@@ -289,7 +293,7 @@ def call_coder(client, initial_prompt, model_name, max_retries):
                 f.write(conversation_history[-3]["content"])
 
             print(colors.green(f"Saved code to {final_filename}"))
-    except:
+    except (KeyboardInterrupt, EOFError):
         pass
 
     return conversation_history

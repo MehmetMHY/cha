@@ -193,15 +193,21 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 coder_message = None
                 if len(message.split(" ")) > 1:
                     coder_message = message.replace(config.RUN_CODER_ALIAS, "").strip()
-                from cha import coder
 
-                code_messages = coder.call_coder(
-                    client=get_current_chat_client(),
-                    initial_prompt=coder_message,
-                    model_name=selected_model,
-                    max_retries=3,
-                )
-                messages.extend(code_messages)
+                try:
+                    from cha import coder
+
+                    code_messages = coder.call_coder(
+                        client=get_current_chat_client(),
+                        initial_prompt=coder_message,
+                        model_name=selected_model,
+                        max_retries=3,
+                    )
+
+                    messages.extend(code_messages)
+                except (KeyboardInterrupt, EOFError):
+                    continue
+
                 continue
 
             # handle text-editor input
