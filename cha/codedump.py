@@ -82,32 +82,6 @@ def get_all_files_with_ignore(dir_path):
     return all_paths
 
 
-def parse_selection_input(selection_string):
-    indices = []
-    for part in selection_string.split(","):
-        part = part.strip()
-        if "-" in part:
-            bounds = part.split("-", 1)
-            if len(bounds) == 2:
-                start_str, end_str = bounds
-                try:
-                    start = int(start_str) - 1
-                    end = int(end_str) - 1
-                    if start <= end:
-                        indices.extend(range(start, end + 1))
-                    else:
-                        indices.extend(range(end, start + 1))
-                except ValueError:
-                    continue
-        else:
-            try:
-                i = int(part) - 1
-                indices.append(i)
-            except ValueError:
-                continue
-    return indices
-
-
 def interactive_exclusion(root_path, files_dict):
     excluded = set()
 
@@ -126,127 +100,67 @@ def interactive_exclusion(root_path, files_dict):
         d for d in directories if os.path.abspath(d) != os.path.abspath(root_path)
     ]
 
+    # Handle directory selection with fzf
     if directories:
-        print(
-            colors.yellow(
-                f"Select dirs to exclude ('1', '1,2,3', '1-3'), '{config.USE_FZF_SEARCH}' for fzf, or press ENTER to skip:"
+        dir_display_list = [os.path.relpath(d, root_path) + "/" for d in directories]
+        dir_map = {os.path.relpath(d, root_path) + "/": d for d in directories}
+        fzf_input = "\n".join(dir_display_list)
+        try:
+            fzf_process = subprocess.run(
+                [
+                    "fzf",
+                    "-m",
+                    "--header",
+                    "Use TAB to select multiple directories, ENTER to confirm.",
+                ],
+                input=fzf_input,
+                capture_output=True,
+                text=True,
+                check=True,
+                encoding="utf-8",
             )
-        )
-        for i, d in enumerate(directories):
-            display_dir = os.path.relpath(d, root_path)
-            print(colors.yellow(f"   {i+1}) {display_dir}/"))
-        while True:
-            selection = input(colors.blue(">>> ")).strip()
-            if not selection:
-                break
-
-            if selection == config.USE_FZF_SEARCH:
-                dir_display_list = [
-                    os.path.relpath(d, root_path) + "/" for d in directories
-                ]
-                dir_map = {os.path.relpath(d, root_path) + "/": d for d in directories}
-                fzf_input = "\n".join(dir_display_list)
-                try:
-                    fzf_process = subprocess.run(
-                        [
-                            "fzf",
-                            "-m",
-                            "--header",
-                            "Use TAB to select multiple directories, ENTER to confirm.",
-                        ],
-                        input=fzf_input,
-                        capture_output=True,
-                        text=True,
-                        check=True,
-                        encoding="utf-8",
-                    )
-                    selected_display_dirs = fzf_process.stdout.strip().split("\n")
-                    if selected_display_dirs and selected_display_dirs[0]:
-                        selected_dirs = {
-                            dir_map[d] for d in selected_display_dirs if d in dir_map
-                        }
-                        for f in list(files_dict.keys()):
-                            if any(f.startswith(d) for d in selected_dirs):
-                                excluded.add(f)
-                except (subprocess.CalledProcessError, FileNotFoundError):
-                    print(colors.red(" or fzf not found."))
-                break
-
-            try:
-                indices = parse_selection_input(selection)
-                if any(i < 0 or i >= len(directories) for i in indices):
-                    print(colors.red("Invalid selection. Try again!"))
-                    continue
-                selected_dirs = {directories[i] for i in indices}
+            selected_display_dirs = fzf_process.stdout.strip().split("\n")
+            if selected_display_dirs and selected_display_dirs[0]:
+                selected_dirs = {
+                    dir_map[d] for d in selected_display_dirs if d in dir_map
+                }
                 for f in list(files_dict.keys()):
                     if any(f.startswith(d) for d in selected_dirs):
                         excluded.add(f)
-                break
-            except ValueError:
-                print(
-                    colors.red("Please enter valid comma-separated numbers or ranges!")
-                )
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return None
 
+    # Handle file selection with fzf
     remaining_files = [f for f in files_dict.keys() if f not in excluded]
     if remaining_files:
         remaining_files_sorted = sorted(remaining_files)
-        print(
-            colors.yellow(
-                f"Select files to exclude ('1', '1,2,3', '1-3'), '{config.USE_FZF_SEARCH}' for fzf, or press ENTER to skip:"
+        file_display_list = [
+            os.path.relpath(rf, root_path) for rf in remaining_files_sorted
+        ]
+        path_map = {os.path.relpath(rf, root_path): rf for rf in remaining_files_sorted}
+        fzf_input = "\n".join(file_display_list)
+        try:
+            fzf_process = subprocess.run(
+                [
+                    "fzf",
+                    "-m",
+                    "--header",
+                    "Use TAB to select multiple files, ENTER to confirm.",
+                ],
+                input=fzf_input,
+                capture_output=True,
+                text=True,
+                check=True,
+                encoding="utf-8",
             )
-        )
-        for i, rf in enumerate(remaining_files_sorted):
-            display_file = os.path.relpath(rf, root_path)
-            print(colors.yellow(f"   {i+1}) {display_file}"))
-        while True:
-            selection = input(colors.blue("> ")).strip()
-            if not selection:
-                break
-
-            if selection == config.USE_FZF_SEARCH:
-                file_display_list = [
-                    os.path.relpath(rf, root_path) for rf in remaining_files_sorted
-                ]
-                path_map = {
-                    os.path.relpath(rf, root_path): rf for rf in remaining_files_sorted
-                }
-                fzf_input = "\n".join(file_display_list)
-                try:
-                    fzf_process = subprocess.run(
-                        [
-                            "fzf",
-                            "-m",
-                            "--header",
-                            "Use TAB to select multiple files, ENTER to confirm.",
-                        ],
-                        input=fzf_input,
-                        capture_output=True,
-                        text=True,
-                        check=True,
-                        encoding="utf-8",
-                    )
-                    selected_display_files = fzf_process.stdout.strip().split("\n")
-                    if selected_display_files and selected_display_files[0]:
-                        for display_path in selected_display_files:
-                            full_path = path_map.get(display_path)
-                            if full_path:
-                                excluded.add(full_path)
-                except (subprocess.CalledProcessError, FileNotFoundError):
-                    print(colors.red(" or fzf not found."))
-                break
-
-            try:
-                indices = parse_selection_input(selection)
-                if any(i < 0 or i >= len(remaining_files) for i in indices):
-                    print(colors.red("Invalid selection. Try again!"))
-                    continue
-                for i in indices:
-                    excluded.add(remaining_files_sorted[i])
-                break
-            except ValueError:
-                print(
-                    colors.red("Please enter valid comma-separated numbers or ranges!")
-                )
+            selected_display_files = fzf_process.stdout.strip().split("\n")
+            if selected_display_files and selected_display_files[0]:
+                for display_path in selected_display_files:
+                    full_path = path_map.get(display_path)
+                    if full_path:
+                        excluded.add(full_path)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return None
 
     return excluded
 
@@ -320,12 +234,16 @@ def extract_code(dir_path):
         return None
 
     excluded_files = interactive_exclusion(root_path, files_dict)
+    if excluded_files is None:
+        return None
+
     output_text = generate_text_output(root_path, files_dict, excluded_files)
     token_count = utils.count_tokens(
         output_text, config.DEFAULT_SEARCH_BIG_MODEL, False
     )
 
-    print(colors.magenta(f"Token Count:"), colors.red(f"{token_count}"))
+    print(colors.yellow(f"{dir_path}"))
+    print(colors.magenta(f"{token_count} Total Tokens"))
 
     return output_text
 
@@ -338,8 +256,6 @@ def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=N
                 print(colors.red(f"'{dir_full_path}' is not a directory!"))
                 return None
             dir_path = dir_full_path
-
-        print(colors.magenta(f"Using directory: {dir_path}"))
 
         content = extract_code(dir_path)
 
@@ -364,13 +280,15 @@ def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=N
             {user_question}
             ```
 
-            Knowing this, here is my entire code dump:
+            And here is the entire code dump:
 
             =====[CODE DUMP STARTS]=====
             {content}
             ======[CODE DUMP ENDS]======
 
             Knowing this, can you answer the original message to the best of your ability given this context (codedump)?
+
+            NOTE: Make sure not to mention the original message in your response just the answer to the user's question/message!
             """
         )
     except Exception as e:

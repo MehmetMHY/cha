@@ -33,24 +33,27 @@ def collect_files(directory):
 
 
 def print_commands():
-    from cha import utils
+    commands = [
+        ("cd <index|dir_name>", "change directory"),
+        ("cd .. / cd", "up / back to root"),
+        ("ls", "list directory & selections"),
+        ("<n> or 1,3-5", "toggle file(s) by index"),
+        ("<dir-index>", "toggle ALL files in that directory"),
+        ("help / exit", "this help / quit"),
+        ("edit", "deselect files from current selection"),
+        ("clear", "clear terminal screen"),
+        (config.USE_FZF_SEARCH, "use fzf for selection (great for large directories)"),
+    ]
 
-    print(
-        colors.red(
-            utils.rls(
-                """
-                cd <index|dir_name>   : change directory
-                cd .. / cd            : up / back to root
-                ls                    : list directory & selections
-                <n> or 1,3-5          : toggle file(s) by index
-                <dir-index>           : toggle ALL files in that directory
-                help / exit           : this help / quit
-                edit                  : deselect files from current selection
-                clear                 : clear terminal screen
-                """
-            )
-        )
-    )
+    max_len = max(len(cmd[0]) for cmd in commands)
+
+    # Format each line with consistent spacing
+    formatted_lines = []
+    for cmd, desc in commands:
+        padding = " " * (max_len - len(cmd))
+        formatted_lines.append(f"{cmd}{padding} : {desc}")
+
+    print(colors.red("\n".join(formatted_lines)))
 
 
 def _dir_selected_mark(dir_path, selected):
@@ -140,7 +143,7 @@ def traverse_and_select_files():
 
         if user == "" or user.lower() in {"exit", "quit"}:
             break
-        if user.lower() in {"help", "--help", "-h"}:
+        if user.lower() in {"help", "--help", "-h", "!help", "!h"}:
             print_commands()
             continue
 
