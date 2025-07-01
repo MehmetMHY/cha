@@ -683,6 +683,22 @@ def cli():
                 )
             return
 
+        if args.history_search:
+            try:
+                from cha import local
+
+                hs_output = local.browse_and_select_history_file()
+                if hs_output:
+                    selected_path = hs_output["path"]
+                    chat_msgs = hs_output["chat"]
+                    print(colors.magenta(selected_path))
+                    local.print_history_browse_and_select_history_file(chat_msgs)
+            except (KeyboardInterrupt, EOFError):
+                print()
+            except Exception as e:
+                print(colors.red(f"Failed to search history: {e}"))
+            return
+
         if args.private:
             save_chat_state = False
 
