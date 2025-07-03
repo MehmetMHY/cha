@@ -127,7 +127,6 @@ def parse_selection_input(text):
 
 
 def traverse_and_select_files():
-    maybe_prompt = None
     root_dir = os.getcwd()
     curr_dir = root_dir
     selected = set()
@@ -191,19 +190,6 @@ def traverse_and_select_files():
             except (subprocess.CalledProcessError, FileNotFoundError):
                 print(colors.red(" or fzf not found."))
             continue
-
-        # free-form prompt, if we already have selections
-        if (
-            not (
-                user.startswith("cd")
-                or user.startswith("ls")
-                or user.startswith("edit")
-                or user.replace(" ", "").replace(",", "").replace("-", "").isdigit()
-            )
-            and selected
-        ):
-            maybe_prompt = user
-            break
 
         tokens = user.split()
         cmd = tokens[0].lower()
@@ -407,29 +393,16 @@ def traverse_and_select_files():
                 selected.add(full)
                 print(colors.green(f"Selected: {full}"))
 
-    if selected and maybe_prompt == None:
-        pass
-
-    return sorted(list(selected)), maybe_prompt
+    return sorted(list(selected))
 
 
 def msg_content_load(client):
     try:
         from cha import utils, loading
 
-        paths, prompt = traverse_and_select_files()
+        paths = traverse_and_select_files()
         if not paths:
             return None
-
-        if prompt is None:
-            prompt = input(colors.yellow("Additional Prompt: "))
-
-        if prompt.strip() == config.TEXT_EDITOR_INPUT_MODE:
-            editor_out = utils.check_terminal_editors_and_edit()
-            if editor_out:
-                prompt = editor_out
-                for line in prompt.rstrip("\n").split("\n"):
-                    print(colors.yellow(">"), line)
 
         complex_types = (
             config.SUPPORTED_AUDIO_FORMATS
@@ -449,19 +422,16 @@ def msg_content_load(client):
                     client=client,
                     file_path=p,
                     model_name=config.CHA_DEFAULT_IMAGE_MODEL,
-                    prompt=prompt,
+                    prompt=None,
                 )
                 contents.append((p, c))
         finally:
             if needs_spinner:
                 loading.stop_loading()
 
-        out = "\n".join(
+        return "\n".join(
             f"CONTENT FOR {p}:\n``````````\n{c}\n``````````\n" for p, c in contents
         )
-        if prompt:
-            out = f"PROMPT: {prompt}\n\n" + out
-        return out
     except (KeyboardInterrupt, EOFError):
         print()
         return None

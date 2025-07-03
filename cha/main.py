@@ -430,8 +430,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 from cha import traverse
 
                 message = traverse.msg_content_load(get_current_chat_client())
-                if message is None:
-                    continue
+                if message != None:
+                    messages.append({"role": "user", "content": message})
+                continue
 
             if message.startswith(config.USE_CODE_DUMP):
                 try:
