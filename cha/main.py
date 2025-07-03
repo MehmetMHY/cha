@@ -35,7 +35,7 @@ def title_print(selected_model):
                 - '{config.MULTI_LINE_MODE_TEXT}' for multi-line switching (type '{config.MULTI_LINE_SEND}' to send)
                 - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
                 - '{config.USE_CODE_DUMP}' to codedump a directory as context
-                - `{config.EXPORT_FILES_IN_OUTPUT_KEY} [all] [single]` export files from response(s)
+                - `{config.EXPORT_FILES_IN_OUTPUT_KEY} [all/single]` export files from response(s)
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
                 - `{config.RUN_CODER_ALIAS}` to run the coder tool to reduce hallucination
@@ -373,16 +373,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         message = scraper.scraped_prompt(message)
                     except:
                         message = None
-                        print(colors.red(f"Failed to scrape URL(s)"))
                     finally:
                         loading.stop_loading()
 
                     if message != None:
-                        print(
-                            colors.yellow(
-                                f"Scraped content added to current chat history"
-                            )
-                        )
+                        print(colors.green(f"Scraped content added to chat history"))
                         messages.append({"role": "user", "content": message})
                     continue
                 else:
@@ -471,8 +466,15 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
                     try:
                         message = scraper.scraped_prompt(message)
+                    except:
+                        message = None
                     finally:
                         loading.stop_loading()
+
+                    if message != None:
+                        print(colors.green(f"Scraped content added to chat history"))
+                        messages.append({"role": "user", "content": message})
+                    continue
 
             # check for an answer-search command
             if message.startswith(config.RUN_ANSWER_FEATURE):
