@@ -248,7 +248,7 @@ def extract_code(dir_path):
     return output_text
 
 
-def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=None):
+def code_dump(save_file_to_current_dir=False, dir_full_path=None):
     try:
         dir_path = os.getcwd()
         if dir_full_path != None:
@@ -269,26 +269,19 @@ def code_dump(original_msg=None, save_file_to_current_dir=False, dir_full_path=N
             print(colors.green(f"Saved codedump to: {file_name}"))
             return
 
-        user_question = original_msg
-        if user_question == None:
-            user_question = input(colors.blue("Question: "))
+        add_or_not = (
+            utils.safe_input(colors.red("Add To Current History [Y/n]? "))
+            .strip()
+            .lower()
+        )
+        if add_or_not not in ["y", "yes"]:
+            return None
 
         return utils.rls(
             f"""
-            Here is original message:
-            ```
-            {user_question}
-            ```
-
-            And here is the entire code dump:
-
             =====[CODE DUMP STARTS]=====
             {content}
             ======[CODE DUMP ENDS]======
-
-            Knowing this, can you answer the original message to the best of your ability given this context (codedump)?
-
-            NOTE: Make sure not to mention the original message in your response just the answer to the user's question/message!
             """
         )
     except Exception as e:

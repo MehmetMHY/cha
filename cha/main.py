@@ -183,7 +183,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if message.startswith((config.USE_FZF_SEARCH)):
                 print(
                     colors.red(
-                        f"Fzf search can only be used in `{config.USE_CODE_DUMP}` or `{config.LOAD_MESSAGE_CONTENT}`"
+                        f"Fzf search can only be used in `{config.LOAD_MESSAGE_CONTENT}`"
                     )
                 )
                 continue
@@ -442,9 +442,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     )
                     if "/" not in str(dir_path):
                         dir_path = None
-                    message = codedump.code_dump(dir_full_path=dir_path)
-                    if message == None:
-                        continue
+                    report = codedump.code_dump(dir_full_path=dir_path)
+                    if report != None:
+                        messages.append({"role": "user", "content": report})
+                    continue
                 except (KeyboardInterrupt, EOFError):
                     print()
                     continue
@@ -705,7 +706,7 @@ def cli():
         if args.code_dump == True:
             from cha import codedump
 
-            codedump.code_dump(None, True)
+            codedump.code_dump(save_file_to_current_dir=True)
             return
 
         if args.ocr != None:
