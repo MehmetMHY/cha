@@ -14,6 +14,12 @@ import os
 from cha import colors, config
 
 
+def number_of_urls(text):
+    url_pattern = r"https?://(?:www\.)?\S+"
+    urls = re.findall(url_pattern, text)
+    return len(urls)
+
+
 def get_json_serializable_globals(mod):
     def is_json_serializable(v):
         try:

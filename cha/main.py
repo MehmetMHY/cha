@@ -100,12 +100,6 @@ def list_models():
     return provided_models
 
 
-def number_of_urls(text):
-    url_pattern = r"https?://(?:www\.)?\S+"
-    urls = re.findall(url_pattern, text)
-    return len(urls)
-
-
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
     global CURRENT_CHAT_HISTORY
 
@@ -365,7 +359,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 continue
 
             if message.strip().startswith(config.ENABLE_OR_DISABLE_AUTO_SD):
-                if auto_scrape_detection_mode == False and number_of_urls(message) > 0:
+                if (
+                    auto_scrape_detection_mode == False
+                    and utils.number_of_urls(message) > 0
+                ):
                     loading.start_loading("Scraping URL(s)", "basic")
                     from cha import scraper
 
@@ -460,7 +457,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             # check for URLs -> scraping
             if auto_scrape_detection_mode:
-                if number_of_urls(message) > 0:
+                if utils.number_of_urls(message) > 0:
                     loading.start_loading("Scraping URLs", "star")
                     from cha import scraper
 
@@ -727,7 +724,7 @@ def cli():
         if args.ocr != None:
             content = None
 
-            if number_of_urls(str(args.ocr)) > 0:
+            if utils.number_of_urls(str(args.ocr)) > 0:
                 from cha import scraper
 
                 detected_urls = scraper.extract_urls(str(args.ocr))
