@@ -371,8 +371,20 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
                     try:
                         message = scraper.scraped_prompt(message)
+                    except:
+                        message = None
+                        print(colors.red(f"Failed to scrape URL(s)"))
                     finally:
                         loading.stop_loading()
+
+                    if message != None:
+                        print(
+                            colors.yellow(
+                                f"Scraped content added to current chat history"
+                            )
+                        )
+                        messages.append({"role": "user", "content": message})
+                    continue
                 else:
                     auto_scrape_detection_mode = not auto_scrape_detection_mode
                     if auto_scrape_detection_mode:

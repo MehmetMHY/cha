@@ -131,11 +131,6 @@ def video_transcript(url, always_use_yt_dlp=False):
         else:
             raise Exception("Forcing use of yt-dlp based scraper")
     except Exception as e:
-        # # NOTE: (5-23-2025) Removed this print for a cleaner experience as it does not really effect anything that much
-        # if not always_use_yt_dlp:
-        #     loading.print_message(
-        #         colors.yellow("Switching from API scraper to yt-dlp based scraper")
-        #     )
         output = yt_dlp_transcript_extractor(url, "en")
 
     final_output = {"youtube_video": url, "transcript": output, "comments": []}
