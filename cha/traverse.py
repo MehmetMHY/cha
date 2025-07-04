@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-from cha import colors, config
+from cha import colors, config, utils
 
 
 def collect_files(directory):
@@ -32,368 +32,222 @@ def collect_files(directory):
     return gathered
 
 
-def print_commands():
-    commands = [
-        ("cd <index|dir_name>", "change directory"),
-        ("cd .. / cd", "up / back to root"),
-        ("ls", "list directory & selections"),
-        ("<n> or 1,3-5", "toggle file(s) by index"),
-        ("<dir-index>", "toggle ALL files in that directory"),
-        ("help / exit", "this help / quit"),
-        ("edit", "deselect files from current selection"),
-        ("clear", "clear terminal screen"),
-        (config.USE_FZF_SEARCH, "use fzf for selection (great for large directories)"),
-    ]
-
-    max_len = max(len(cmd[0]) for cmd in commands)
-
-    # Format each line with consistent spacing
-    formatted_lines = []
-    for cmd, desc in commands:
-        padding = " " * (max_len - len(cmd))
-        formatted_lines.append(f"{cmd}{padding} : {desc}")
-
-    print(colors.red("\n".join(formatted_lines)))
-
-
-def _dir_selected_mark(dir_path, selected):
-    # return [x] if any file inside *dir_path* is selected, else [ ]
-    for f in selected:
-        if f.startswith(dir_path + os.sep):
-            return "[x]"
-    return "[ ]"
-
-
-def print_listing(current_dir, selected, *, show_external=False):
-    # pretty list of current dir with selection markers
-    if show_external and selected:
-        print(colors.yellow("Selected files:"))
-        for k, path in enumerate(sorted(selected), 1):
-            print(f"   {k}) {path}")
-
-    print(colors.magenta(f"{current_dir}/"))
-
-    entries = os.listdir(current_dir)
-    dirs = sorted(
-        [
-            e
-            for e in entries
-            if os.path.isdir(os.path.join(current_dir, e))
-            and e + "/" not in config.DIRS_TO_IGNORE
-            and e not in config.DIRS_TO_IGNORE
-        ],
-        key=str.lower,
-    )
-    files = sorted(
-        [e for e in entries if os.path.isfile(os.path.join(current_dir, e))],
-        key=str.lower,
+def print_help():
+    return utils.rls(
+        """
+        cd       : Navigate directories using fzf (includes ".." to go back)
+        select   : Select multiple files/dirs in current directory (use TAB to multi-select)
+        unselect : Remove files from current selection (use TAB to multi-select)
+        help     : Show this help message
+        exit     : Exit the file selection interface
+        """
     )
 
-    idx = 1
-    for d in dirs:
-        dir_path = os.path.join(current_dir, d)
-        print(
-            f"   {idx}) {_dir_selected_mark(dir_path, selected)} {colors.blue(d + '/')}"
+
+def run_fzf(items, prompt="", multi_select=False, header=""):
+    """Run fzf with the given items and return selected items."""
+    if not items:
+        return []
+
+    fzf_input = "\n".join(items)
+    fzf_args = ["fzf"]
+
+    if multi_select:
+        fzf_args.append("-m")
+
+    if prompt:
+        fzf_args.extend(["--prompt", prompt])
+
+    if header:
+        fzf_args.extend(["--header", header])
+
+    try:
+        fzf_process = subprocess.run(
+            fzf_args,
+            input=fzf_input,
+            capture_output=True,
+            text=True,
+            check=True,
+            encoding="utf-8",
         )
-        idx += 1
-    for f in files:
-        file_path = os.path.join(current_dir, f)
-        mark = "[x]" if file_path in selected else "[ ]"
-        print(f"   {idx}) {mark} {f}")
-        idx += 1
+        result = fzf_process.stdout.strip()
+        if result:
+            return result.split("\n")
+        return []
+    except FileNotFoundError:
+        print(colors.red("fzf not found. Please install fzf to use this feature."))
+        return []
+    except subprocess.CalledProcessError:
+        # User cancelled fzf (pressed Escape or Ctrl+C)
+        print(colors.yellow("Selection cancelled."))
+        return []
 
 
-def parse_selection_input(text):
-    # return the list of numeric indices contained in *text* (e.g. "1,3-5")
-    text = text.replace(" ", "")
-    if not text:
-        return None
+def cd_command(current_dir, root_dir):
+    """Navigate directories using fzf."""
+    try:
+        entries = os.listdir(current_dir)
+        dirs = [
+            d
+            for d in entries
+            if os.path.isdir(os.path.join(current_dir, d))
+            and d + "/" not in config.DIRS_TO_IGNORE
+            and d not in config.DIRS_TO_IGNORE
+        ]
 
-    out: list[int] = []
-    for part in text.split(","):
-        if "-" in part:
-            try:
-                a, b = map(int, part.split("-", 1))
-            except ValueError:
-                return None
-            if a > b:
-                a, b = b, a
-            out.extend(range(a, b + 1))
-        elif part.isdigit():
-            out.append(int(part))
-        else:
-            return None
-    return out
+        # Always add ".." unless we're at filesystem root
+        options = []
+        parent_dir = os.path.dirname(current_dir)
+        if parent_dir != current_dir:  # Not at filesystem root
+            options.append("..")
+        options.extend(sorted(dirs, key=str.lower))
+
+        if not options:
+            print(colors.yellow("No directories to navigate to."))
+            return current_dir
+
+        selected = run_fzf(
+            options,
+            prompt="Navigate to> ",
+            header="Select directory to navigate to (.. = go back)",
+        )
+
+        if selected:
+            choice = selected[0]
+            if choice == "..":
+                return parent_dir
+            else:
+                new_dir = os.path.join(current_dir, choice)
+                if os.path.isdir(new_dir):
+                    return new_dir
+                else:
+                    print(colors.red(f"Directory '{choice}' not found."))
+
+        return current_dir
+
+    except Exception as e:
+        print(colors.red(f"Error navigating: {e}"))
+        return current_dir
+
+
+def select_command(current_dir, selected_files):
+    """Select files/dirs in current directory using fzf."""
+    try:
+        entries = os.listdir(current_dir)
+        dirs = [
+            d + "/"
+            for d in entries
+            if os.path.isdir(os.path.join(current_dir, d))
+            and d + "/" not in config.DIRS_TO_IGNORE
+            and d not in config.DIRS_TO_IGNORE
+        ]
+        files = [
+            f
+            for f in entries
+            if os.path.isfile(os.path.join(current_dir, f))
+            and f not in config.FILES_TO_IGNORE
+        ]
+
+        options = sorted(dirs + files, key=str.lower)
+
+        if not options:
+            print(colors.yellow("No files or directories to select."))
+            return selected_files
+
+        selected = run_fzf(
+            options,
+            prompt="Select files/dirs> ",
+            multi_select=True,
+            header="Use TAB to select/deselect multiple items, ENTER to confirm",
+        )
+
+        if selected:
+            for item in selected:
+                if item.endswith("/"):
+                    # Directory - select all files in it
+                    dir_name = item[:-1]
+                    dir_path = os.path.join(current_dir, dir_name)
+                    dir_files = collect_files(dir_path)
+                    for file_path in dir_files:
+                        selected_files.add(file_path)
+                else:
+                    # File
+                    file_path = os.path.join(current_dir, item)
+                    selected_files.add(file_path)
+
+        return selected_files
+
+    except Exception as e:
+        print(colors.red(f"Error selecting files: {e}"))
+        return selected_files
+
+
+def unselect_command(selected_files):
+    """Remove files from current selection using fzf."""
+    if not selected_files:
+        print(colors.yellow("No files currently selected."))
+        return selected_files
+
+    try:
+        options = sorted(list(selected_files))
+
+        selected = run_fzf(
+            options,
+            prompt="Unselect files> ",
+            multi_select=True,
+            header="Use TAB to select files to REMOVE from selection, ENTER to confirm",
+        )
+
+        if selected:
+            for item in selected:
+                if item in selected_files:
+                    selected_files.remove(item)
+
+        return selected_files
+
+    except Exception as e:
+        print(colors.red(f"Error unselecting files: {e}"))
+        return selected_files
 
 
 def traverse_and_select_files():
+    """Main interface for file selection."""
     root_dir = os.getcwd()
-    curr_dir = root_dir
-    selected = set()
+    current_dir = root_dir
+    selected_files = set()
 
-    print_listing(curr_dir, selected)
+    print(colors.magenta(print_help()))
 
     while True:
         try:
-            user = input(colors.yellow(colors.bold(">>> "))).strip()
+            header_line = (
+                colors.red(f"[{len(selected_files)}]") + " " + colors.green(current_dir)
+            )
+            print(header_line)
+            user_input = input(colors.yellow(colors.bold(">>> "))).strip().lower()
+
+            if not user_input or user_input in {"exit", "quit"}:
+                break
+            elif user_input in {"help", "--help", "-h"}:
+                print(colors.magenta(print_help()))
+                continue
+            elif user_input == "cd":
+                current_dir = cd_command(current_dir, root_dir)
+            elif user_input == "select":
+                selected_files = select_command(current_dir, selected_files)
+            elif user_input == "unselect":
+                selected_files = unselect_command(selected_files)
+            else:
+                print(colors.red(f"Unknown command: {user_input}"))
+                print(colors.red("Type 'help' to see available commands."))
+
         except (KeyboardInterrupt, EOFError):
             print()
             break
+        except Exception as e:
+            print(colors.red(f"Error: {e}"))
 
-        if user == "" or user.lower() in {"exit", "quit"}:
-            break
-        if user.lower() in {"help", "--help", "-h", "!help", "!h"}:
-            print_commands()
-            continue
-
-        if user == config.USE_FZF_SEARCH:
-            all_files_in_root = collect_files(root_dir)
-            if not all_files_in_root:
-                print(colors.red("No selectable files found in the project."))
-                continue
-
-            file_display_list = [
-                os.path.relpath(f, root_dir) for f in all_files_in_root
-            ]
-            path_map = {os.path.relpath(f, root_dir): f for f in all_files_in_root}
-
-            fzf_input = "\n".join(file_display_list)
-            try:
-                fzf_process = subprocess.run(
-                    [
-                        "fzf",
-                        "-m",
-                        f"--prompt=Selected {len(selected)} files> ",
-                        "--header",
-                        "Use TAB to select/deselect files, ENTER to confirm.",
-                    ],
-                    input=fzf_input,
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                    encoding="utf-8",
-                )
-                selected_display_files = fzf_process.stdout.strip().split("\n")
-                if selected_display_files and selected_display_files[0]:
-                    for rel_path in selected_display_files:
-                        full_path = path_map.get(rel_path)
-                        if full_path:
-                            if full_path in selected:
-                                selected.remove(full_path)
-                            else:
-                                selected.add(full_path)
-
-                print(
-                    colors.green(f"Selection updated. Total selected: {len(selected)}")
-                )
-                print_listing(curr_dir, selected, show_external=True)
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                print(colors.red(" or fzf not found."))
-            continue
-
-        tokens = user.split()
-        cmd = tokens[0].lower()
-
-        if cmd == "cd":
-            if len(tokens) == 1:
-                curr_dir = root_dir
-                print_listing(curr_dir, selected)
-                continue
-
-            arg = tokens[1]
-            if arg == "..":
-                curr_dir = os.path.dirname(curr_dir) or curr_dir
-                print_listing(curr_dir, selected)
-                continue
-
-            entries = os.listdir(curr_dir)
-            dirs = sorted(
-                [
-                    e
-                    for e in entries
-                    if os.path.isdir(os.path.join(curr_dir, e))
-                    and e + "/" not in config.DIRS_TO_IGNORE
-                    and e not in config.DIRS_TO_IGNORE
-                ],
-                key=str.lower,
-            )
-
-            # cd by index
-            if arg.isdigit():
-                idx = int(arg)
-                if 1 <= idx <= len(dirs):
-                    curr_dir = os.path.join(curr_dir, dirs[idx - 1])
-                    print_listing(curr_dir, selected)
-                else:
-                    print(colors.red("Directory index out of range."))
-                continue
-
-            # cd by name
-            if arg in dirs:
-                curr_dir = os.path.join(curr_dir, arg)
-                print_listing(curr_dir, selected)
-            else:
-                print(colors.red(f"Directory '{arg}' not found."))
-            continue
-
-        if cmd == "ls":
-            print_listing(curr_dir, selected, show_external=True)
-            continue
-
-        elif cmd.strip().lower() == "clear":
-            os.system("clear")
-            print_listing(curr_dir, selected, show_external=True)
-            continue
-
-        elif cmd == "edit":
-            if not selected:
-                print(colors.yellow("No files selected to edit/deselect."))
-                continue
-
-            selected_list_current_round = sorted(list(selected))
-            if not selected_list_current_round:
-                print(colors.yellow("All files have been deselected."))
-                continue
-
-            print(colors.magenta("Currently selected files (for deselection):"))
-            for k, p in enumerate(selected_list_current_round, 1):
-                print(f"   {k}) {p}")
-
-            try:
-                deselection_prompt_text = colors.magenta(
-                    f"Enter numbers to deselect, '{config.USE_FZF_SEARCH}' for fzf, or EXIT/DONE to finish deselection: "
-                )
-                user_deselection_input = input(deselection_prompt_text).strip()
-
-                if user_deselection_input == config.USE_FZF_SEARCH:
-                    fzf_input = "\n".join(selected_list_current_round)
-                    try:
-                        fzf_process = subprocess.run(
-                            [
-                                "fzf",
-                                "-m",
-                                "--header",
-                                "Use TAB to select files to DESELECT, ENTER to confirm.",
-                            ],
-                            input=fzf_input,
-                            capture_output=True,
-                            text=True,
-                            check=True,
-                            encoding="utf-8",
-                        )
-                        files_to_deselect_fzf = fzf_process.stdout.strip().split("\n")
-                        if files_to_deselect_fzf and files_to_deselect_fzf[0]:
-                            for file_path in files_to_deselect_fzf:
-                                if file_path in selected:
-                                    selected.remove(file_path)
-                                    print(colors.red(f"Deselected: {file_path}"))
-                    except (subprocess.CalledProcessError, FileNotFoundError):
-                        print(colors.red(" or fzf not found."))
-
-                    print_listing(curr_dir, selected, show_external=True)
-                    continue
-
-                if (
-                    not user_deselection_input
-                    or user_deselection_input.lower() == "exit"
-                    or user_deselection_input.lower() == "done"
-                ):
-                    continue
-
-                indices_to_deselect = parse_selection_input(user_deselection_input)
-
-                if indices_to_deselect:
-                    unique_indices = sorted(list(set(indices_to_deselect)))
-                    for idx_deselect in unique_indices:
-                        if 1 <= idx_deselect <= len(selected_list_current_round):
-                            file_to_deselect = selected_list_current_round[
-                                idx_deselect - 1
-                            ]
-                            if file_to_deselect in selected:
-                                selected.remove(file_to_deselect)
-                                print(colors.red(f"Deselected: {file_to_deselect}"))
-                        else:
-                            print(
-                                colors.red(
-                                    f"Index {idx_deselect} is out of range for current selection."
-                                )
-                            )
-                else:
-                    print(
-                        colors.red(
-                            "Invalid input for deselection. Please enter numbers, ranges, or EXIT/DONE."
-                        )
-                    )
-
-            except (KeyboardInterrupt, EOFError):
-                print()
-                continue
-
-            print_listing(curr_dir, selected)
-            continue
-
-        # numeric / numeric range selection
-        indices = parse_selection_input(user)
-        if indices is None:
-            continue
-
-        entries = os.listdir(curr_dir)
-        dirs = sorted(
-            [
-                e
-                for e in entries
-                if os.path.isdir(os.path.join(curr_dir, e))
-                and e + "/" not in config.DIRS_TO_IGNORE
-                and e not in config.DIRS_TO_IGNORE
-            ],
-            key=str.lower,
-        )
-        files = sorted(
-            [e for e in entries if os.path.isfile(os.path.join(curr_dir, e))],
-            key=str.lower,
-        )
-        file_start = len(dirs) + 1
-        file_end = file_start + len(files) - 1
-
-        for idx in indices:
-            if 1 <= idx <= len(dirs):
-                chosen = dirs[idx - 1]
-                dir_path = os.path.join(curr_dir, chosen)
-                dir_files = collect_files(dir_path)
-
-                if not dir_files:
-                    print(colors.yellow(f"No selectable files found in {dir_path}"))
-                    continue
-
-                # toggle: if ALL are selected -> unselect, else select missing
-                if dir_files and all(f in selected for f in dir_files):
-                    for fp in dir_files:
-                        selected.remove(fp)
-                    print(colors.yellow(f"Unselected all in {dir_path}"))
-                else:
-                    for fp in dir_files:
-                        if fp not in selected:
-                            selected.add(fp)
-                    print(colors.green(f"Selected all in {dir_path}"))
-                continue
-
-            if idx < file_start or idx > file_end:
-                print(colors.red(f"Index {idx} is not a file selection."))
-                continue
-
-            fname = files[idx - file_start]
-            full = os.path.join(curr_dir, fname)
-            if fname in config.FILES_TO_IGNORE:
-                print(colors.yellow(f"Ignoring file: {full}"))
-                continue
-            if full in selected:
-                selected.remove(full)
-                print(colors.yellow(f"Unselected: {full}"))
-            else:
-                selected.add(full)
-                print(colors.green(f"Selected: {full}"))
-
-    return sorted(list(selected))
+    return sorted(list(selected_files))
 
 
 def msg_content_load(client):
