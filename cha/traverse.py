@@ -17,7 +17,7 @@ def collect_files(directory):
         # prevent os.walk from descending into ignored directories
         dirnames[:] = [d for d in dirnames if d not in ignored_dir_names]
 
-        # safeguard - skip files if root itself is in an ignored directory path
+        # safeguard skip files if root itself is in an ignored directory path
         current_path_segments = set(os.path.normpath(root).split(os.sep))
         if not ignored_dir_names.isdisjoint(current_path_segments):
             continue  # skip files in this root
@@ -45,7 +45,7 @@ def print_help():
 
 
 def run_fzf(items, prompt="", multi_select=False, header=""):
-    """Run fzf with the given items and return selected items."""
+    """Run fzf with the given items and return selected items"""
     if not items:
         return []
 
@@ -75,16 +75,16 @@ def run_fzf(items, prompt="", multi_select=False, header=""):
             return result.split("\n")
         return []
     except FileNotFoundError:
-        print(colors.red("fzf not found. Please install fzf to use this feature."))
+        print(colors.red("fzf not found. Please install fzf to use this feature!"))
         return []
     except subprocess.CalledProcessError:
-        # User cancelled fzf (pressed Escape or Ctrl+C)
-        print(colors.yellow("Selection cancelled."))
+        # user cancelled fzf (pressed Escape or Ctrl+C)
+        print(colors.yellow("Selection cancelled"))
         return []
 
 
 def cd_command(current_dir, root_dir):
-    """Navigate directories using fzf."""
+    """Navigate directories using fzf"""
     try:
         entries = os.listdir(current_dir)
         dirs = [
@@ -103,7 +103,7 @@ def cd_command(current_dir, root_dir):
         options.extend(sorted(dirs, key=str.lower))
 
         if not options:
-            print(colors.yellow("No directories to navigate to."))
+            print(colors.yellow("No directories to navigate to"))
             return current_dir
 
         selected = run_fzf(
@@ -121,7 +121,7 @@ def cd_command(current_dir, root_dir):
                 if os.path.isdir(new_dir):
                     return new_dir
                 else:
-                    print(colors.red(f"Directory '{choice}' not found."))
+                    print(colors.red(f"Directory '{choice}' not found"))
 
         return current_dir
 
@@ -131,7 +131,7 @@ def cd_command(current_dir, root_dir):
 
 
 def select_command(current_dir, selected_files):
-    """Select files/dirs in current directory using fzf."""
+    """Select files/dirs in current directory using fzf"""
     try:
         entries = os.listdir(current_dir)
         dirs = [
@@ -151,7 +151,7 @@ def select_command(current_dir, selected_files):
         options = sorted(dirs + files, key=str.lower)
 
         if not options:
-            print(colors.yellow("No files or directories to select."))
+            print(colors.yellow("No files or directories to select"))
             return selected_files
 
         selected = run_fzf(
@@ -183,9 +183,9 @@ def select_command(current_dir, selected_files):
 
 
 def unselect_command(selected_files):
-    """Remove files from current selection using fzf."""
+    """Remove files from current selection using fzf"""
     if not selected_files:
-        print(colors.yellow("No files currently selected."))
+        print(colors.yellow("No files currently selected"))
         return selected_files
 
     try:
@@ -211,7 +211,7 @@ def unselect_command(selected_files):
 
 
 def traverse_and_select_files():
-    """Main interface for file selection."""
+    """Main interface for file selection"""
     root_dir = os.getcwd()
     current_dir = root_dir
     selected_files = set()
@@ -263,7 +263,7 @@ def traverse_and_select_files():
                         ):
                             current_dir = target_dir
                         else:
-                            print(colors.yellow(f"Directory '{dir_name}' is ignored."))
+                            print(colors.yellow(f"Directory '{dir_name}' is ignored"))
             elif user_input.lower() == "cd":
                 current_dir = cd_command(current_dir, root_dir)
             elif user_input.lower() == "select":
@@ -272,7 +272,7 @@ def traverse_and_select_files():
                 selected_files = unselect_command(selected_files)
             else:
                 print(colors.red(f"Unknown command: {user_input}"))
-                print(colors.red("Type 'help' to see available commands."))
+                print(colors.red("Type 'help' to see available commands"))
 
         except (KeyboardInterrupt, EOFError):
             print()
