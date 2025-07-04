@@ -30,6 +30,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Integrated Shell Access**: Execute shell commands directly within Cha's environment, enhancing workflow efficiency by providing immediate terminal access.
 - **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
 - **`fzf` for Selection**: Use `fzf` for interactive selection when searching chat history, traversing local files, or using the codedump feature.
+- **Streamlined File Navigation**: Intuitive directory traversal with direct path support (`cd dirname`, `cd ..`), clean interface, and efficient file selection using `fzf`.
 - **Chat History Management**: Save, load, and search through your past conversations.
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
 - **Interactive Code Generation**: Draft, review, modify, and execute Python code directly in the chat. The model generates code, lets you review or modify it, runs it, and provides insights based on the execution output.
@@ -138,6 +139,14 @@ You can check the instructions below for more details on what Cha can do and how
 
 - `cha --code_dump`
 - `cha -d`
+
+The code dump feature uses `fzf` for an improved file selection experience:
+
+- Navigate directories with `cd` (supports direct paths like `cd dirname` and `cd ..`)
+- Select files with `select` command
+- Remove files from selection with `unselect` command
+- Type `help` to see all available commands
+- Clean interface that only shows directory path when it changes or selection count changes
 
 #### Answer Search
 
