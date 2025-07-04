@@ -216,26 +216,59 @@ def traverse_and_select_files():
     current_dir = root_dir
     selected_files = set()
 
-    print(colors.magenta(print_help()))
+    # Track previous state to only show changes
+    prev_dir = None
+    prev_selected_count = -1
+
+    print(colors.cyan("Type 'help' for command options"))
 
     while True:
         try:
-            header_line = (
-                colors.red(f"[{len(selected_files)}]") + " " + colors.green(current_dir)
-            )
-            print(header_line)
-            user_input = input(colors.yellow(colors.bold(">>> "))).strip().lower()
+            # Only show directory/count if something changed
+            if current_dir != prev_dir or len(selected_files) != prev_selected_count:
+                header_line = (
+                    colors.red(f"[{len(selected_files)}]")
+                    + " "
+                    + colors.green(current_dir)
+                )
+                print(header_line)
+                prev_dir = current_dir
+                prev_selected_count = len(selected_files)
 
-            if not user_input or user_input in {"exit", "quit"}:
+            user_input = input(colors.yellow(colors.bold(">>> "))).strip()
+
+            if not user_input or user_input.lower() in {"exit", "quit"}:
                 break
-            elif user_input in {"help", "--help", "-h"}:
+            elif user_input.lower() in {"help", "--help", "-h"}:
                 print(colors.magenta(print_help()))
                 continue
-            elif user_input == "cd":
+            elif user_input == "cd ..":
+                parent_dir = os.path.dirname(current_dir)
+                if parent_dir != current_dir:  # Not at filesystem root
+                    current_dir = parent_dir
+            elif user_input.lower().startswith("cd "):
+                # Extract directory name from "cd dirname"
+                dir_name = user_input[3:].strip()
+                if dir_name == "..":
+                    parent_dir = os.path.dirname(current_dir)
+                    if parent_dir != current_dir:  # Not at filesystem root
+                        current_dir = parent_dir
+                else:
+                    target_dir = os.path.join(current_dir, dir_name)
+                    if os.path.isdir(target_dir):
+                        # Check if directory is not in ignore list
+                        if (
+                            dir_name + "/" not in config.DIRS_TO_IGNORE
+                            and dir_name not in config.DIRS_TO_IGNORE
+                        ):
+                            current_dir = target_dir
+                        else:
+                            print(colors.yellow(f"Directory '{dir_name}' is ignored."))
+            elif user_input.lower() == "cd":
                 current_dir = cd_command(current_dir, root_dir)
-            elif user_input == "select":
+            elif user_input.lower() == "select":
                 selected_files = select_command(current_dir, selected_files)
-            elif user_input == "unselect":
+            elif user_input.lower() == "unselect":
                 selected_files = unselect_command(selected_files)
             else:
                 print(colors.red(f"Unknown command: {user_input}"))
