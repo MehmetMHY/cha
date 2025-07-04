@@ -447,7 +447,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     )
                     if "/" not in str(dir_path):
                         dir_path = None
-                    report = codedump.code_dump(dir_full_path=dir_path)
+                    try:
+                        report = codedump.code_dump(dir_full_path=dir_path)
+                    except SystemExit:
+                        report = None
+                        pass
                     if report != None:
                         messages.append({"role": "user", "content": report})
                     continue

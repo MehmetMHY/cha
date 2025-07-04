@@ -82,87 +82,162 @@ def get_all_files_with_ignore(dir_path):
     return all_paths
 
 
-def interactive_exclusion(root_path, files_dict):
-    excluded = set()
+def interactive_selection(root_path, files_dict, include_mode=False):
+    selected = set()
 
-    all_dirs = set()
-    for f in files_dict:
-        d = os.path.dirname(f)
-        while d and os.path.abspath(d) != os.path.abspath(root_path):
-            all_dirs.add(d)
-            parent = os.path.dirname(d)
-            if parent == d:
-                break
-            d = parent
+    if include_mode:
+        # in include mode, combine directories and files in a single selection
+        all_dirs = set()
+        for f in files_dict:
+            d = os.path.dirname(f)
+            while d and os.path.abspath(d) != os.path.abspath(root_path):
+                all_dirs.add(d)
+                parent = os.path.dirname(d)
+                if parent == d:
+                    break
+                d = parent
 
-    directories = sorted(all_dirs)
-    directories = [
-        d for d in directories if os.path.abspath(d) != os.path.abspath(root_path)
-    ]
-
-    # Handle directory selection with fzf
-    if directories:
-        dir_display_list = [os.path.relpath(d, root_path) + "/" for d in directories]
-        dir_map = {os.path.relpath(d, root_path) + "/": d for d in directories}
-        fzf_input = "\n".join(dir_display_list)
-        try:
-            fzf_process = subprocess.run(
-                [
-                    "fzf",
-                    "-m",
-                    "--header",
-                    "Use TAB to select multiple directories, ENTER to confirm.",
-                ],
-                input=fzf_input,
-                capture_output=True,
-                text=True,
-                check=True,
-                encoding="utf-8",
-            )
-            selected_display_dirs = fzf_process.stdout.strip().split("\n")
-            if selected_display_dirs and selected_display_dirs[0]:
-                selected_dirs = {
-                    dir_map[d] for d in selected_display_dirs if d in dir_map
-                }
-                for f in list(files_dict.keys()):
-                    if any(f.startswith(d) for d in selected_dirs):
-                        excluded.add(f)
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return None
-
-    # Handle file selection with fzf
-    remaining_files = [f for f in files_dict.keys() if f not in excluded]
-    if remaining_files:
-        remaining_files_sorted = sorted(remaining_files)
-        file_display_list = [
-            os.path.relpath(rf, root_path) for rf in remaining_files_sorted
+        directories = sorted(all_dirs)
+        directories = [
+            d for d in directories if os.path.abspath(d) != os.path.abspath(root_path)
         ]
-        path_map = {os.path.relpath(rf, root_path): rf for rf in remaining_files_sorted}
-        fzf_input = "\n".join(file_display_list)
-        try:
-            fzf_process = subprocess.run(
-                [
-                    "fzf",
-                    "-m",
-                    "--header",
-                    "Use TAB to select multiple files, ENTER to confirm.",
-                ],
-                input=fzf_input,
-                capture_output=True,
-                text=True,
-                check=True,
-                encoding="utf-8",
-            )
-            selected_display_files = fzf_process.stdout.strip().split("\n")
-            if selected_display_files and selected_display_files[0]:
-                for display_path in selected_display_files:
-                    full_path = path_map.get(display_path)
-                    if full_path:
-                        excluded.add(full_path)
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return None
 
-    return excluded
+        # create a combined list of directories and files for selection
+        items_to_select = []
+        item_map = {}
+
+        # add directories
+        for d in directories:
+            display_name = os.path.relpath(d, root_path) + "/"
+            items_to_select.append(display_name)
+            item_map[display_name] = ("dir", d)
+
+        # add files
+        for f in files_dict.keys():
+            display_name = os.path.relpath(f, root_path)
+            items_to_select.append(display_name)
+            item_map[display_name] = ("file", f)
+
+        if items_to_select:
+            items_to_select.sort()
+            fzf_input = "\n".join(items_to_select)
+
+            try:
+                fzf_process = subprocess.run(
+                    [
+                        "fzf",
+                        "-m",
+                        "--header",
+                        "Use TAB to select multiple files/directories to include, ENTER to confirm.",
+                    ],
+                    input=fzf_input,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    encoding="utf-8",
+                )
+                selected_display_items = fzf_process.stdout.strip().split("\n")
+                if selected_display_items and selected_display_items[0]:
+                    for display_item in selected_display_items:
+                        if display_item in item_map:
+                            item_type, item_path = item_map[display_item]
+                            if item_type == "dir":
+                                # add all files in this directory
+                                for f in files_dict.keys():
+                                    if f.startswith(item_path):
+                                        selected.add(f)
+                            else:
+                                # add the specific file
+                                selected.add(item_path)
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                return None
+    else:
+        # original exclude mode logic - two-phase selection
+        all_dirs = set()
+        for f in files_dict:
+            d = os.path.dirname(f)
+            while d and os.path.abspath(d) != os.path.abspath(root_path):
+                all_dirs.add(d)
+                parent = os.path.dirname(d)
+                if parent == d:
+                    break
+                d = parent
+
+        directories = sorted(all_dirs)
+        directories = [
+            d for d in directories if os.path.abspath(d) != os.path.abspath(root_path)
+        ]
+
+        # handle directory selection with fzf
+        if directories:
+            dir_display_list = [
+                os.path.relpath(d, root_path) + "/" for d in directories
+            ]
+            dir_map = {os.path.relpath(d, root_path) + "/": d for d in directories}
+            fzf_input = "\n".join(dir_display_list)
+
+            try:
+                fzf_process = subprocess.run(
+                    [
+                        "fzf",
+                        "-m",
+                        "--header",
+                        "Use TAB to select multiple directories to exclude, ENTER to confirm.",
+                    ],
+                    input=fzf_input,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    encoding="utf-8",
+                )
+                selected_display_dirs = fzf_process.stdout.strip().split("\n")
+                if selected_display_dirs and selected_display_dirs[0]:
+                    selected_dirs = {
+                        dir_map[d] for d in selected_display_dirs if d in dir_map
+                    }
+                    for f in list(files_dict.keys()):
+                        if any(f.startswith(d) for d in selected_dirs):
+                            selected.add(f)
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                return None
+
+            # handle file selection with fzf
+            remaining_files = [f for f in files_dict.keys() if f not in selected]
+
+            if remaining_files:
+                remaining_files_sorted = sorted(remaining_files)
+                file_display_list = [
+                    os.path.relpath(rf, root_path) for rf in remaining_files_sorted
+                ]
+                path_map = {
+                    os.path.relpath(rf, root_path): rf for rf in remaining_files_sorted
+                }
+                fzf_input = "\n".join(file_display_list)
+
+                try:
+                    fzf_process = subprocess.run(
+                        [
+                            "fzf",
+                            "-m",
+                            "--header",
+                            "Use TAB to select multiple files to exclude, ENTER to confirm.",
+                        ],
+                        input=fzf_input,
+                        capture_output=True,
+                        text=True,
+                        check=True,
+                        encoding="utf-8",
+                    )
+                    selected_display_files = fzf_process.stdout.strip().split("\n")
+                    if selected_display_files and selected_display_files[0]:
+                        for display_path in selected_display_files:
+                            full_path = path_map.get(display_path)
+                            if full_path:
+                                selected.add(full_path)
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    return None
+
+    return selected
 
 
 def get_tree_output(dir_path):
@@ -176,8 +251,16 @@ def get_tree_output(dir_path):
         return "Failed to generate tree output"
 
 
-def generate_text_output(root_path, files_dict, excluded_files):
-    included = [f for f in files_dict if f not in excluded_files]
+def generate_text_output(root_path, files_dict, selected_files, include_mode=False):
+    if include_mode:
+        included = [f for f in files_dict if f in selected_files]
+        # check for empty selection in include mode
+        if not included:
+            print(colors.red("No files selected in include mode!"))
+            return None
+    else:
+        included = [f for f in files_dict if f not in selected_files]
+
     utc_now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
     tree_output = get_tree_output(root_path)
     epoch_time = time.time()
@@ -213,7 +296,7 @@ def generate_text_output(root_path, files_dict, excluded_files):
     return header + "".join(body)
 
 
-def extract_code(dir_path):
+def extract_code(dir_path, include_mode=False):
     root_path = os.path.abspath(dir_path)
     if os.path.isdir(os.path.join(root_path, ".git")):
         rel_paths = get_git_tracked_and_untracked_files(root_path)
@@ -233,11 +316,16 @@ def extract_code(dir_path):
         print(colors.red("No text files found!"))
         return None
 
-    excluded_files = interactive_exclusion(root_path, files_dict)
-    if excluded_files is None:
+    selected_files = interactive_selection(root_path, files_dict, include_mode)
+    if selected_files is None:
         return None
 
-    output_text = generate_text_output(root_path, files_dict, excluded_files)
+    output_text = generate_text_output(
+        root_path, files_dict, selected_files, include_mode
+    )
+    if output_text is None:
+        return None
+
     token_count = utils.count_tokens(
         output_text, config.DEFAULT_SEARCH_BIG_MODEL, False
     )
@@ -257,7 +345,15 @@ def code_dump(save_file_to_current_dir=False, dir_full_path=None):
                 return None
             dir_path = dir_full_path
 
-        content = extract_code(dir_path)
+        mode_str = (
+            utils.safe_input(colors.green("[E]xclude (default) / [I]nclude: "))
+            .strip()
+            .lower()
+        )
+
+        include_mode = mode_str.startswith("i")
+
+        content = extract_code(dir_path, include_mode)
 
         if content == None:
             return None
