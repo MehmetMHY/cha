@@ -28,7 +28,6 @@ EXPORT_FILES_IN_OUTPUT_KEY = "!e"
 PICK_AND_RUN_A_SHELL_OPTION = "!sh"
 ENABLE_OR_DISABLE_AUTO_SD = "!s"
 LOAD_HISTORY_TRIGGER = "!hs"
-USE_FZF_SEARCH = "!f"
 RUN_CODER_ALIAS = "!code"
 
 # last updated on 4-10-2024
@@ -55,6 +54,9 @@ CHA_USE_SEAR_XNG = False
 CHA_SEAR_XNG_TIMEOUT = 30
 
 # other random configs
+OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5", "o6", "o7"]
+OPENAI_IGNORE_DATED_MODEL_NAMES = False
+BY_PASS_SLOW_MODEL_DETECTION = False
 OPENAI_MODELS_TO_IGNORE = [
     "instruct",
     "realtime",
@@ -63,9 +65,6 @@ OPENAI_MODELS_TO_IGNORE = [
     "image",
     "transcribe",
 ]
-OPENAI_MODELS_TO_KEEP = ["gpt", "o0", "o1", "o2", "o3", "o4", "o5", "o6", "o7"]
-OPENAI_IGNORE_DATED_MODEL_NAMES = False
-BY_PASS_SLOW_MODEL_DETECTION = False
 
 # terminal/console config
 SUPPORTED_TERMINAL_IDES = ["vim", "nvim", "vi", "nano", "hx", "pico", "micro", "emacs"]
@@ -121,7 +120,6 @@ FILES_TO_IGNORE = [
     ".env.production",
     ".env.test",
 ]
-
 DIRS_TO_IGNORE = [
     # version control
     ".git/",
@@ -169,7 +167,6 @@ DIRS_TO_IGNORE = [
     ".coverage/",
     ".cache/",
 ]
-
 BINARY_EXTENSIONS = {
     ".jpg",
     ".jpeg",
@@ -208,18 +205,20 @@ BINARY_EXTENSIONS = {
 }
 
 
-# Updated: March 2, 2025
-# Source: https://pypi.org/project/openai-whisper/
-# *--------*--------*--------*-------*------------*
-# | Model  | Params | VRAM   | Speed | Error Rate |
-# |--------|--------|--------|-------|------------|
-# | tiny   | 39M    | ~1 GB  | ~10x  | ~23.6%     |
-# | base   | 74M    | ~1 GB  | ~7x   | ~16.5%     |
-# | small  | 244M   | ~2 GB  | ~4x   | ~9.8%      |
-# | medium | 769M   | ~5 GB  | ~2x   | ~8.9%      |
-# | large  | 1,550M | ~10 GB | 1x    | ~7.9%      |
-# | turbo  | 809M   | ~6 GB  | ~8x   | ~7.7%      |
-# *--------*--------*--------*-------*------------*
+"""
+Updated: March 2, 2025
+Source: https://pypi.org/project/openai-whisper/
+*--------*--------*--------*-------*------------*
+| Model  | Params | VRAM   | Speed | Error Rate |
+|--------|--------|--------|-------|------------|
+| tiny   | 39M    | ~1 GB  | ~10x  | ~23.6%     |
+| base   | 74M    | ~1 GB  | ~7x   | ~16.5%     |
+| small  | 244M   | ~2 GB  | ~4x   | ~9.8%      |
+| medium | 769M   | ~5 GB  | ~2x   | ~8.9%      |
+| large  | 1,550M | ~10 GB | 1x    | ~7.9%      |
+| turbo  | 809M   | ~6 GB  | ~8x   | ~7.7%      |
+*--------*--------*--------*-------*------------*
+"""
 DEFAULT_WHISPER_MODEL_NAME = "tiny"
 
 # support file formats
@@ -396,9 +395,11 @@ VALID_VIDEO_ROOT_URL_DOMAINS_FOR_SCRAPING = [
     "https://ard.de",
 ]
 
-# ascii, text based, terminal animations for loading animations
-# - https://stackoverflow.com/questions/2685435/cooler-ascii-spinners
-# - https://raw.githubusercontent.com/sindresorhus/cli-spinners/master/spinners.json
+"""
+ascii, text based, terminal animations for loading animations
+- https://stackoverflow.com/questions/2685435/cooler-ascii-spinners
+- https://raw.githubusercontent.com/sindresorhus/cli-spinners/master/spinners.json
+"""
 LOADING_ANIMATIONS = {
     "basic": ["|", "/", "-", "\\"],
     "star": ["✶", "✸", "✹", "✺", "✹", "✷"],

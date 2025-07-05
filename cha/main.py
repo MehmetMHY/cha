@@ -174,14 +174,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             message = utils.safe_input(user_input_string).rstrip("\n")
 
-            if message.startswith((config.USE_FZF_SEARCH)):
-                print(
-                    colors.red(
-                        f"Fzf search can only be used in `{config.LOAD_MESSAGE_CONTENT}`"
-                    )
-                )
-                continue
-
             if message.strip().startswith(config.RUN_CODER_ALIAS):
                 coder_message = None
                 if len(message.split(" ")) > 1:
@@ -259,9 +251,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 hs_output = None
                 try:
                     hs_output = local.browse_and_select_history_file()
-                    selected_path = hs_output["path"]
-                    content = hs_output["content"]
-                    chat_msgs = hs_output["chat"]
+                    if hs_output:
+                        selected_path = hs_output["path"]
+                        content = hs_output["content"]
+                        chat_msgs = hs_output["chat"]
                 except (KeyboardInterrupt, EOFError):
                     print()
                     continue
@@ -270,17 +263,23 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 if hs_output != None:
                     print(colors.magenta(selected_path))
                     local.print_history_browse_and_select_history_file(chat_msgs)
-                    messages.append(
-                        {
-                            "role": "user",
-                            "content": utils.rls(
-                                f"""
-                                Load the following chat history into the current chat:
-                                {str(content)}
-                                """
-                            ),
-                        }
-                    )
+
+                    CURRENT_CHAT_HISTORY.clear()
+                    CURRENT_CHAT_HISTORY.extend(chat_msgs)
+
+                    messages.clear()
+                    if not reasoning_model:
+                        messages.append(
+                            {"role": "user", "content": config.INITIAL_PROMPT}
+                        )
+
+                    for item in chat_msgs[1:]:
+                        if item.get("user"):
+                            messages.append({"role": "user", "content": item["user"]})
+                        if item.get("bot"):
+                            messages.append(
+                                {"role": "assistant", "content": item["bot"]}
+                            )
                 continue
 
             if message.startswith(config.PICK_AND_RUN_A_SHELL_OPTION):

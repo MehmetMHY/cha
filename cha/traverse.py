@@ -95,7 +95,7 @@ def cd_command(current_dir, root_dir):
             and d not in config.DIRS_TO_IGNORE
         ]
 
-        # Always add ".." unless we're at filesystem root
+        # always add ".." unless we're at filesystem root
         options = []
         parent_dir = os.path.dirname(current_dir)
         if parent_dir != current_dir:  # Not at filesystem root
@@ -164,14 +164,12 @@ def select_command(current_dir, selected_files):
         if selected:
             for item in selected:
                 if item.endswith("/"):
-                    # Directory - select all files in it
                     dir_name = item[:-1]
                     dir_path = os.path.join(current_dir, dir_name)
                     dir_files = collect_files(dir_path)
                     for file_path in dir_files:
                         selected_files.add(file_path)
                 else:
-                    # File
                     file_path = os.path.join(current_dir, item)
                     selected_files.add(file_path)
 
@@ -244,19 +242,19 @@ def traverse_and_select_files():
                 continue
             elif user_input == "cd ..":
                 parent_dir = os.path.dirname(current_dir)
-                if parent_dir != current_dir:  # Not at filesystem root
+                if parent_dir != current_dir:  # not at filesystem root
                     current_dir = parent_dir
             elif user_input.lower().startswith("cd "):
-                # Extract directory name from "cd dirname"
+                # extract directory name from "cd dirname"
                 dir_name = user_input[3:].strip()
                 if dir_name == "..":
                     parent_dir = os.path.dirname(current_dir)
-                    if parent_dir != current_dir:  # Not at filesystem root
+                    if parent_dir != current_dir:  # not at filesystem root
                         current_dir = parent_dir
                 else:
                     target_dir = os.path.join(current_dir, dir_name)
                     if os.path.isdir(target_dir):
-                        # Check if directory is not in ignore list
+                        # check if directory is not in ignore list
                         if (
                             dir_name + "/" not in config.DIRS_TO_IGNORE
                             and dir_name not in config.DIRS_TO_IGNORE
