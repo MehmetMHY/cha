@@ -164,7 +164,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if multi_line_input:
                 print(
                     colors.yellow(
-                        f"Entered multi-line input mode. Type '{config.MULTI_LINE_SEND}' to send message"
+                        f"Multi-Line Mode (type '{config.MULTI_LINE_SEND}' to send message)"
                     )
                 )
                 user_input_string = colors.red("[M] ") + colors.blue("User: ")
