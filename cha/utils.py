@@ -1,6 +1,7 @@
 import statistics
 import subprocess
 import tempfile
+import textwrap
 import random
 import base64
 import uuid
@@ -600,28 +601,30 @@ def normalize_whitespace(text: str, tab_size: int = 4) -> str:
     return leading + middle + trailing
 
 
-def rls(text: str, fast_mode: bool = False) -> str:
-    lines = text.split("\n")
+def rls(text: str, fast_mode: bool = True) -> str:
+    if fast_mode:
+        return textwrap.dedent(text)
+    else:
+        lines = text.split("\n")
 
-    lc = 0
-    for line in lines:
-        if fast_mode == False:
+        lc = 0
+        for line in lines:
             line = normalize_whitespace(line)
 
-        match = re.match(r"^\s*", line)
-        c = len(match.group()) if match else 0
+            match = re.match(r"^\s*", line)
+            c = len(match.group()) if match else 0
 
-        if (lc > c and c > 0) or (lc == 0 and c > lc):
-            lc = c
+            if (lc > c and c > 0) or (lc == 0 and c > lc):
+                lc = c
 
-    if lc == 0:
-        return text
+        if lc == 0:
+            return text
 
-    output = ""
-    for line in lines:
-        if len(line) >= lc:
-            output = output + line[lc:] + "\n"
-        else:
-            output += "\n"
+        output = ""
+        for line in lines:
+            if len(line) >= lc:
+                output = output + line[lc:] + "\n"
+            else:
+                output += "\n"
 
-    return output.strip()
+        return output.strip()
