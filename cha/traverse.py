@@ -271,7 +271,6 @@ def traverse_and_select_files():
             elif user_input.lower() == "unselect":
                 selected_files = unselect_command(selected_files)
             else:
-                print(colors.red(f"Unknown command: {user_input}"))
                 print(colors.red("Type 'help' to see available commands"))
 
         except (KeyboardInterrupt, EOFError):
