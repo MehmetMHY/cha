@@ -35,11 +35,11 @@ def collect_files(directory):
 def print_help():
     return utils.rls(
         """
-        cd       : Navigate directories using fzf (includes ".." to go back)
-        select   : Select multiple files/dirs in current directory (use TAB to multi-select)
-        unselect : Remove files from current selection (use TAB to multi-select)
-        help     : Show this help message
-        exit     : Exit the file selection interface
+        [c] cd       : Navigate directories using fzf (includes ".." to go back)
+        [s] select   : Select multiple files/dirs in current directory (use TAB to multi-select)
+        [u] unselect : Remove files from current selection (use TAB to multi-select)
+        [h] help     : Show this help message
+        [e] exit     : Exit the file selection interface
         """
     )
 
@@ -50,7 +50,7 @@ def run_fzf(items, prompt="", multi_select=False, header=""):
         return []
 
     fzf_input = "\n".join(items)
-    fzf_args = ["fzf"]
+    fzf_args = ["fzf", "--reverse", "--height=40%", "--border"]
 
     if multi_select:
         fzf_args.append("-m")
@@ -78,8 +78,6 @@ def run_fzf(items, prompt="", multi_select=False, header=""):
         print(colors.red("fzf not found. Please install fzf to use this feature!"))
         return []
     except subprocess.CalledProcessError:
-        # user cancelled fzf (pressed Escape or Ctrl+C)
-        print(colors.yellow("Selection cancelled"))
         return []
 
 
@@ -234,27 +232,30 @@ def traverse_and_select_files():
                 prev_selected_count = len(selected_files)
 
             user_input = input(colors.yellow(colors.bold(">>> "))).strip()
+            user_input_lower = user_input.lower()
 
-            if not user_input or user_input.lower() in {"exit", "quit"}:
+            if not user_input or user_input_lower in {"exit", "quit", "e"}:
                 break
-            elif user_input.lower() in {"help", "--help", "-h"}:
+            elif user_input_lower in {"help", "--help", "-h", "h"}:
                 print(colors.magenta(print_help()))
                 continue
             elif user_input == "cd ..":
                 parent_dir = os.path.dirname(current_dir)
-                if parent_dir != current_dir:  # not at filesystem root
+                if parent_dir != current_dir:
                     current_dir = parent_dir
-            elif user_input.lower().startswith("cd "):
-                # extract directory name from "cd dirname"
-                dir_name = user_input[3:].strip()
+            elif user_input_lower.startswith("cd ") or user_input_lower.startswith(
+                "c "
+            ):
+                parts = user_input.split(maxsplit=1)
+                dir_name = parts[1].strip() if len(parts) > 1 else ""
+
                 if dir_name == "..":
                     parent_dir = os.path.dirname(current_dir)
-                    if parent_dir != current_dir:  # not at filesystem root
+                    if parent_dir != current_dir:
                         current_dir = parent_dir
-                else:
+                elif dir_name:
                     target_dir = os.path.join(current_dir, dir_name)
                     if os.path.isdir(target_dir):
-                        # check if directory is not in ignore list
                         if (
                             dir_name + "/" not in config.DIRS_TO_IGNORE
                             and dir_name not in config.DIRS_TO_IGNORE
@@ -262,11 +263,11 @@ def traverse_and_select_files():
                             current_dir = target_dir
                         else:
                             print(colors.yellow(f"Directory '{dir_name}' is ignored"))
-            elif user_input.lower() == "cd":
+            elif user_input_lower in {"cd", "c"}:
                 current_dir = cd_command(current_dir, root_dir)
-            elif user_input.lower() == "select":
+            elif user_input_lower in {"select", "s"}:
                 selected_files = select_command(current_dir, selected_files)
-            elif user_input.lower() == "unselect":
+            elif user_input_lower in {"unselect", "u"}:
                 selected_files = unselect_command(selected_files)
             else:
                 print(colors.red("Type 'help' to see available commands"))

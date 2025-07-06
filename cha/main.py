@@ -1,3 +1,4 @@
+import subprocess
 import traceback
 import argparse
 import time
@@ -17,6 +18,51 @@ except (KeyboardInterrupt, EOFError):
 
 
 CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
+
+
+def backtrack_history(chat_history):
+    """
+    Allow users to backtrack through their chat history using fzf for selection.
+    Returns the selected index to backtrack to, or None if cancelled.
+    """
+    try:
+        history_items = []
+        for i, msg in enumerate(chat_history[1:], 1):
+            user_msg = msg.get("user", "").replace("\n", " ").strip()
+            user_msg = re.sub(r"\s+", " ", user_msg)
+            timestamp = time.strftime("%H:%M:%S", time.localtime(msg["time"]))
+            history_items.append(f"[{i}] ({timestamp}) {user_msg}")
+
+        history_items = history_items[::-1]
+
+        try:
+            fzf_process = subprocess.run(
+                [
+                    "fzf",
+                    "--reverse",
+                    "--height=40%",
+                    "--border",
+                    "--prompt=Select message to backtrack to: ",
+                ],
+                input="\n".join(history_items).encode(),
+                capture_output=True,
+                check=True,
+            )
+            selected = fzf_process.stdout.decode().strip()
+            if not selected:
+                return None
+
+            index_match = re.match(r"\[(\d+)\]", selected)
+            if index_match:
+                return int(index_match.group(1))
+            return None
+
+        except (subprocess.CalledProcessError, subprocess.SubprocessError):
+            return None
+
+    except Exception as e:
+        print(colors.red(f"Error during backtrack: {e}"))
+        return None
 
 
 def title_print(selected_model):
@@ -39,6 +85,7 @@ def title_print(selected_model):
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
                 - `{config.RUN_CODER_ALIAS}` to run the coder tool to reduce hallucination
+                - `{config.BACKTRACK_HISTORY_KEY}` to backtrack to a previous point in chat history
                 """
             )
         )
@@ -173,6 +220,35 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 user_input_string = colors.yellow("[S] ") + colors.blue("User: ")
 
             message = utils.safe_input(user_input_string).rstrip("\n")
+
+            if message.strip() == config.BACKTRACK_HISTORY_KEY:
+                if len(CURRENT_CHAT_HISTORY) <= 1:
+                    print(colors.yellow("No chat history to backtrack through."))
+                    continue
+
+                selected_index = backtrack_history(CURRENT_CHAT_HISTORY)
+                if selected_index is not None:
+                    CURRENT_CHAT_HISTORY = CURRENT_CHAT_HISTORY[: selected_index + 1]
+
+                    messages = (
+                        []
+                        if reasoning_model
+                        else [{"role": "user", "content": config.INITIAL_PROMPT}]
+                    )
+                    for item in CURRENT_CHAT_HISTORY[1:]:
+                        if item.get("user"):
+                            messages.append({"role": "user", "content": item["user"]})
+                        if item.get("bot"):
+                            messages.append(
+                                {"role": "assistant", "content": item["bot"]}
+                            )
+
+                    num_removed = len(CURRENT_CHAT_HISTORY) - selected_index
+                    backtrack_message = f"Backtracked {num_removed} message"
+                    if num_removed > 1:
+                        backtrack_message += "s"
+                    print(colors.red(backtrack_message))
+                continue
 
             if message.strip().startswith(config.RUN_CODER_ALIAS):
                 coder_message = None
