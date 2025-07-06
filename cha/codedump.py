@@ -374,11 +374,12 @@ def code_dump(save_file_to_current_dir=False, dir_full_path=None):
             return None
 
         return utils.rls(
-            f"""
+            text=f"""
             =====[CODE DUMP STARTS]=====
             {content}
             ======[CODE DUMP ENDS]======
-            """
+            """,
+            fast_mode=True,
         )
     except Exception as e:
         print(colors.red(f"Codedump failed due to: {e}"))
