@@ -217,6 +217,7 @@ def coder(
                 return history
     except (KeyboardInterrupt, EOFError):
         loading.stop_loading()
+        print()
         raise
 
 
@@ -294,6 +295,7 @@ def call_coder(client, initial_prompt, model_name, max_retries):
 
             print(colors.green(f"Saved code to {final_filename}"))
     except (KeyboardInterrupt, EOFError):
+        print()
         pass
 
     return conversation_history
