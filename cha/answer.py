@@ -195,7 +195,7 @@ def quick_search(user_input, min_search_result=3):
             count=min_search_result,
             region="wt-wt",
             safesearch="off",
-            timelimit="none",
+            timelimit=None,
         )
 
         urls = []
