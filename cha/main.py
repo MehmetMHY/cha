@@ -137,14 +137,22 @@ def list_models():
             models_info=platform_config["models"],
         )
 
-    print(
-        colors.yellow(f"Available {config.CHA_CURRENT_PLATFORM_NAME.upper()} Models:")
-    )
-    for i in range(len(provided_models)):
-        model = provided_models[i]
-        print(colors.yellow(f"   {i+1}) {model}"))
+    if not provided_models:
+        print(colors.red("No models available to select."))
+        return None
 
-    return provided_models
+    fzf_prompt = f"Select a {config.CHA_CURRENT_PLATFORM_NAME.upper()} model: "
+    try:
+        fzf_process = subprocess.run(
+            ["fzf", "--reverse", "--height=40%", "--border", f"--prompt={fzf_prompt}"],
+            input="\n".join(provided_models).encode(),
+            capture_output=True,
+            check=True,
+        )
+        selected_model = fzf_process.stdout.decode().strip()
+        return selected_model if selected_model else None
+    except (subprocess.CalledProcessError, subprocess.SubprocessError):
+        return None
 
 
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
@@ -286,23 +294,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if message.startswith(config.SWITCH_MODEL_TEXT):
                 parts = message.strip().split(maxsplit=1)
                 if len(parts) == 1:
-                    provided_models = list_models()
-
-                    selection = utils.safe_input(
-                        colors.blue(f"Select a model (1-{len(provided_models)}): ")
-                    )
-                    if selection.isdigit():
-                        idx = int(selection) - 1
-                        if 0 <= idx < len(provided_models):
-                            selected_model = provided_models[idx]
-                            print(
-                                colors.magenta(f"Switched to model: {selected_model}")
-                            )
-                            reasoning_model = utils.is_slow_model(selected_model)
-                        else:
-                            print(colors.red("Invalid model number."))
-                    else:
-                        print(colors.red("Invalid input."))
+                    new_selected_model = list_models()
+                    if new_selected_model:
+                        selected_model = new_selected_model
+                        print(colors.magenta(f"Switched to model: {selected_model}"))
+                        reasoning_model = utils.is_slow_model(selected_model)
 
                 else:
                     # NOTE: this is not user-safe and can cause an error if the user inputs a model name wrong, but it's much faster to do this
@@ -914,19 +910,11 @@ def cli():
                 raise Exception(f"Failed to switch platform due to {e}")
 
         if args.select_model:
-            provided_models = list_models()
-
-            selection = utils.safe_input(
-                colors.blue(f"Select a model (1-{len(provided_models)}): ")
-            )
-            selected_a_model = False
-            if selection.isdigit():
-                selection = int(selection) - 1
-                if 0 <= selection < len(provided_models):
-                    selected_model = provided_models[selection]
-                    selected_a_model = True
-            if selected_a_model == False:
-                print(colors.red("Invalid number selected!"))
+            new_selected_model = list_models()
+            if new_selected_model:
+                selected_model = new_selected_model
+            else:
+                print(colors.red("No model selected, exiting"))
                 return
 
         if args.coder:

@@ -1,3 +1,4 @@
+import subprocess
 import copy
 
 from cha import utils, config, colors, loading
@@ -48,18 +49,26 @@ def get_platform_model_list(url, headers, models_info):
 
 def auto_select_a_platform(platform_key=None, model_name=None):
     if platform_key is None or platform_key not in config.THIRD_PARTY_PLATFORMS.keys():
-        print(colors.yellow("Available platforms:"))
-        for index, platform in enumerate(config.THIRD_PARTY_PLATFORMS.keys(), start=1):
-            print(colors.yellow(f"   {index}) {platform}"))
-        while True:
-            try:
-                choice = int(utils.safe_input(colors.blue("Select a platform: ")))
-                if 1 <= choice <= len(config.THIRD_PARTY_PLATFORMS):
-                    break
-                raise Exception(f"Invalid input selected")
-            except ValueError:
-                print(colors.red("Please enter a valid number"))
-        platform_key = list(config.THIRD_PARTY_PLATFORMS.keys())[choice - 1]
+        try:
+            platforms = list(config.THIRD_PARTY_PLATFORMS.keys())
+            fzf_process = subprocess.run(
+                [
+                    "fzf",
+                    "--reverse",
+                    "--height=40%",
+                    "--border",
+                    "--prompt=Select a platform: ",
+                ],
+                input="\n".join(platforms).encode(),
+                capture_output=True,
+                check=True,
+            )
+            platform_key = fzf_process.stdout.decode().strip()
+            if not platform_key:
+                print(colors.red("No platform selected"))
+                return None
+        except (subprocess.CalledProcessError, subprocess.SubprocessError):
+            return None
 
     selected_platform = config.THIRD_PARTY_PLATFORMS[platform_key]
 
@@ -85,25 +94,31 @@ def auto_select_a_platform(platform_key=None, model_name=None):
             loading.stop_loading()
 
         if failed_to_get_models:
-            return
+            return None
 
         if not models_list or not isinstance(models_list, list):
             print(colors.red("No models found or returned in an unexpected format"))
-            return
+            return None
 
-        print(colors.yellow("Available models:"))
-        for idx, model in enumerate(models_list, start=1):
-            print(colors.yellow(f"   {idx}) {model}"))
-        while True:
-            try:
-                model_choice = int(utils.safe_input(colors.blue("Select a model: ")))
-                if 1 <= model_choice <= len(models_list):
-                    break
-                raise Exception(f"Invalid input selected")
-            except ValueError:
-                print(colors.red("Please enter a valid number"))
-
-        final_model = models_list[model_choice - 1]
+        try:
+            fzf_process = subprocess.run(
+                [
+                    "fzf",
+                    "--reverse",
+                    "--height=40%",
+                    "--border",
+                    "--prompt=Select a model: ",
+                ],
+                input="\n".join(models_list).encode(),
+                capture_output=True,
+                check=True,
+            )
+            final_model = fzf_process.stdout.decode().strip()
+            if not final_model:
+                print(colors.red("No model selected"))
+                return None
+        except (subprocess.CalledProcessError, subprocess.SubprocessError):
+            return None
 
     output = copy.deepcopy(config.THIRD_PARTY_PLATFORMS[platform_key])
     output["models"] = models_list
