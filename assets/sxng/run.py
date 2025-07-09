@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 
-import os
-import sys
+from pathlib import Path
 import subprocess
 import yaml
 import time
-from pathlib import Path
+import sys
+import os
 
-# default values
+# NOTE: default values
 DEFAULT_PORT = "8080"
 DEFAULT_NAME = "searxng-search"
 DEFAULT_URL = "http://localhost"
 
 
 def check_docker():
-    """check if docker is running"""
     try:
         subprocess.run(["docker", "info"], capture_output=True, check=True)
         return True
@@ -24,13 +23,11 @@ def check_docker():
 
 
 def get_user_input(prompt, default_value):
-    """get user input with default value"""
     user_input = input(f"{prompt} (default {default_value}): ").strip()
     return user_input if user_input else default_value
 
 
 def check_running_container(port):
-    """check if a container is already running on the specified port"""
     try:
         result = subprocess.run(
             ["docker", "ps", "--filter", f"publish={port}", "--format", "{{.ID}}"],
@@ -44,7 +41,6 @@ def check_running_container(port):
 
 
 def stop_container(container_id):
-    """stop a running container"""
     try:
         subprocess.run(["docker", "stop", container_id], check=True)
         return True
@@ -53,7 +49,6 @@ def stop_container(container_id):
 
 
 def update_searxng_image():
-    """pull the latest searxng image"""
     try:
         print("Pulling latest searxng image...")
         subprocess.run(["docker", "pull", "searxng/searxng"], check=True)
@@ -64,7 +59,6 @@ def update_searxng_image():
 
 
 def create_initial_config(port, name, base_url):
-    """create initial searxng configuration by running container briefly"""
     try:
         print("Creating initial SearXNG configuration...")
 
@@ -121,7 +115,6 @@ def create_initial_config(port, name, base_url):
 
 
 def enable_json_format():
-    """check and enable json format in settings.yml if needed"""
     settings_file = Path("searxng/settings.yml")
 
     if not settings_file.exists():
@@ -174,14 +167,13 @@ def enable_json_format():
 
 
 def start_searxng_container(port, name, base_url):
-    """start the searxng container"""
     try:
         print("Starting SearXNG container...")
 
         # get current directory for volume mount
         current_dir = os.getcwd()
 
-        result = subprocess.run(
+        subprocess.run(
             [
                 "docker",
                 "run",
@@ -204,8 +196,8 @@ def start_searxng_container(port, name, base_url):
             check=True,
         )
 
-        container_id = result.stdout.strip()
         print(f"SearXNG instance '{name}' is running on {base_url}:{port}")
+
         return True
 
     except subprocess.CalledProcessError as e:
@@ -218,7 +210,6 @@ def start_searxng_container(port, name, base_url):
 
 
 def main():
-    """main function"""
     # check if docker is running
     if not check_docker():
         sys.exit(1)
