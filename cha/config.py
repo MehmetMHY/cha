@@ -111,6 +111,7 @@ REQUEST_DEFAULT_HEADERS = {
 }
 
 # codedump variables
+NOTHING_SELECTED_TAG = "<<<NOTHING>>>"
 FILES_TO_IGNORE = [
     ".DS_Store",
     ".env",

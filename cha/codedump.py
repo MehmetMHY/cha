@@ -103,7 +103,7 @@ def interactive_selection(root_path, files_dict, include_mode=False):
         ]
 
         # create a combined list of directories and files for selection
-        items_to_select = []
+        items_to_select = [config.NOTHING_SELECTED_TAG]
         item_map = {}
 
         # add directories
@@ -137,7 +137,11 @@ def interactive_selection(root_path, files_dict, include_mode=False):
                     encoding="utf-8",
                 )
                 selected_display_items = fzf_process.stdout.strip().split("\n")
-                if selected_display_items and selected_display_items[0]:
+                if (
+                    selected_display_items
+                    and selected_display_items[0]
+                    and config.NOTHING_SELECTED_TAG not in selected_display_items
+                ):
                     for display_item in selected_display_items:
                         if display_item in item_map:
                             item_type, item_path = item_map[display_item]
@@ -174,6 +178,7 @@ def interactive_selection(root_path, files_dict, include_mode=False):
                 os.path.relpath(d, root_path) + "/" for d in directories
             ]
             dir_map = {os.path.relpath(d, root_path) + "/": d for d in directories}
+            dir_display_list.insert(0, config.NOTHING_SELECTED_TAG)
             fzf_input = "\n".join(dir_display_list)
 
             try:
@@ -191,7 +196,11 @@ def interactive_selection(root_path, files_dict, include_mode=False):
                     encoding="utf-8",
                 )
                 selected_display_dirs = fzf_process.stdout.strip().split("\n")
-                if selected_display_dirs and selected_display_dirs[0]:
+                if (
+                    selected_display_dirs
+                    and selected_display_dirs[0]
+                    and config.NOTHING_SELECTED_TAG not in selected_display_dirs
+                ):
                     selected_dirs = {
                         dir_map[d] for d in selected_display_dirs if d in dir_map
                     }
@@ -212,6 +221,7 @@ def interactive_selection(root_path, files_dict, include_mode=False):
                 path_map = {
                     os.path.relpath(rf, root_path): rf for rf in remaining_files_sorted
                 }
+                file_display_list.insert(0, config.NOTHING_SELECTED_TAG)
                 fzf_input = "\n".join(file_display_list)
 
                 try:
@@ -229,7 +239,11 @@ def interactive_selection(root_path, files_dict, include_mode=False):
                         encoding="utf-8",
                     )
                     selected_display_files = fzf_process.stdout.strip().split("\n")
-                    if selected_display_files and selected_display_files[0]:
+                    if (
+                        selected_display_files
+                        and selected_display_files[0]
+                        and config.NOTHING_SELECTED_TAG not in selected_display_files
+                    ):
                         for display_path in selected_display_files:
                             full_path = path_map.get(display_path)
                             if full_path:
