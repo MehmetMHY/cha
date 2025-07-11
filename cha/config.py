@@ -5,6 +5,11 @@ import os
 
 from cha import local
 
+
+def lazy_tool(module_path, class_name):
+    return {"_lazy_tool": True, "module_path": module_path, "class_name": class_name}
+
+
 # system prompt
 INITIAL_PROMPT = """
 You are a helpful assistant powered by Cha who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details.
@@ -662,12 +667,50 @@ TOOL_MOST_HAVE_VARIABLES = {
     "timeout_sec": {"type": int, "required": False, "default": 15},
     "pipe_input": {"type": bool, "required": False, "default": False},
     "pipe_output": {"type": bool, "required": False, "default": True},
+    "show_loading_animation": {"type": bool, "required": False, "default": True},
 }
 
 LOCAL_CHA_CONFIG_DIR = os.path.join(str(Path.home()), ".cha/")
 LOCAL_CHA_CONFIG_HISTORY_DIR = os.path.join(LOCAL_CHA_CONFIG_DIR, "history/")
 LOCAL_CHA_CONFIG_TOOLS_DIR = os.path.join(LOCAL_CHA_CONFIG_DIR, "tools/")
 LOCAL_CHA_CONFIG_FILE = os.path.join(LOCAL_CHA_CONFIG_DIR, "config.py")
+
+_external_config_loaded = False
+
+
+def _load_external_config():
+    global _external_config_loaded
+    if _external_config_loaded:
+        return
+
+    CUSTOM_CONFIG_PATH = os.environ.get("CHA_PYTHON_CUSTOM_CONFIG_PATH")
+    OVERRIGHT_CONFIG = None
+    if CUSTOM_CONFIG_PATH and os.path.exists(CUSTOM_CONFIG_PATH):
+        OVERRIGHT_CONFIG = CUSTOM_CONFIG_PATH
+    elif LOCAL_CHA_CONFIG_FILE and os.path.exists(LOCAL_CHA_CONFIG_FILE):
+        OVERRIGHT_CONFIG = LOCAL_CHA_CONFIG_FILE
+
+    if OVERRIGHT_CONFIG:
+        spec = importlib.util.spec_from_file_location(
+            "external_config", OVERRIGHT_CONFIG
+        )
+        external_config = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(external_config)
+
+        for key, value in external_config.__dict__.items():
+            if key.isupper():
+                globals()[key] = value
+
+    _external_config_loaded = True
+
+
+def get_external_tools_execute():
+    _load_external_config()
+
+    if len(globals().get("EXTERNAL_TOOLS", [])) > 0:
+        return local.get_tools()
+    return []
+
 
 CUSTOM_CONFIG_PATH = os.environ.get("CHA_PYTHON_CUSTOM_CONFIG_PATH")
 OVERRIGHT_CONFIG = None
@@ -681,12 +724,8 @@ if OVERRIGHT_CONFIG != None:
     external_config = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(external_config)
 
-    # update the current module's globals with values from the external file
     for key, value in external_config.__dict__.items():
-        # assuming all config variables are in uppercase
-        if key.isupper():
+        if key.isupper() and key != "EXTERNAL_TOOLS":
             globals()[key] = value
 
 EXTERNAL_TOOLS_EXECUTE = []
-if len(EXTERNAL_TOOLS) > 0:
-    EXTERNAL_TOOLS_EXECUTE = local.get_tools()

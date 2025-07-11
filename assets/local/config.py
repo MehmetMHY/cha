@@ -6,11 +6,21 @@ ROOT = os.path.dirname(__file__)
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+try:
+    from cha.config import lazy_tool
+except ImportError:
+
+    def lazy_tool(module_path, class_name):
+        return {
+            "_lazy_tool": True,
+            "module_path": module_path,
+            "class_name": class_name,
+        }
+
+
 # LOAD EXTERNAL TOOLS (EDIT AS NEEDED)
 
-from tools.weather.main import UsersCurrentWeatherStats
-
-EXTERNAL_TOOLS = [UsersCurrentWeatherStats()]
+EXTERNAL_TOOLS = [lazy_tool("tools.weather.main", "UsersCurrentWeatherStats")]
 
 # OVERRIDE DEFAULT CONFIG CHA VARIABLES (EDIT AS NEEDED)
 

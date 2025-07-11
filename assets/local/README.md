@@ -2,11 +2,11 @@
 
 ## Last Updated
 
-April 23, 2025
+January 20, 2025
 
 ## About
 
-Cha supports user-created external tools that can be dropped into your local Cha config and automatically be discovered by Cha if setup correctly.
+Cha supports user-created external tools that can be dropped into your local Cha config and automatically be discovered by Cha if setup correctly. As of the latest version, Cha uses lazy loading for external tools to improve startup performance - tools are only loaded when actually used.
 
 ## First Step
 
@@ -31,11 +31,11 @@ The `config.py` file allows you to set and/or override the default global variab
 
 - **NOTE:** _If you want to use Cha entirely with open-source software and avoid closed-source dependencies (mainly OpenAI), really review the `config.py`. There are variables you can set to do this. By default Cha uses OpenAI but that is not permanent. Right now, the example config in `config.py` is set such that is you set an environment variable named `CHA_LOCAL_MODE` to `true`. But if you want to make this more permanent, just move all those variables in that if statement that checks the `CHA_LOCAL_MODE` environment variable outside of that if statement and remove that if statement. By doing this, you make Cha fully local and open-source without depending on any closed-source dependencies and/or providers like OpenAI._
 
-In this directory (where this README is located), you’ll find an example `config.py` and a `tools/` folder. The `config.py` file loads an example tool from `tools/`, disables the initial help message for every Cha interaction, and sets up Cha to record and save all your conversations in the `history/` directory.
+In this directory (where this README is located), you'll find an example `config.py` and a `tools/` folder. The `config.py` file loads an example tool from `tools/`, disables the initial help message for every Cha interaction, and sets up Cha to record and save all your conversations in the `history/` directory.
 
 To set up this example, move both the `config.py` file and the `tools/` directory into your `$HOME/.cha/` directory. Replace existing content if necessary, unless you want to preserve your current setup.
 
-This example tool retrieves your current weather data and makes it available as context to Cha. To use it, run `!weather` in Cha and press ENTER. You can review the tool’s code to learn how tools are implemented in Cha. This example demonstrates all possible variables you can set for tools in Cha, so refer to its code for details.
+This example tool retrieves your current weather data and makes it available as context to Cha. To use it, run `!weather` in Cha and press ENTER. You can review the tool's code to learn how tools are implemented in Cha. This example demonstrates all possible variables you can set for tools in Cha, so refer to its code for details.
 
 ## Deeper Look
 
@@ -72,17 +72,33 @@ import os, sys
 ROOT = os.path.dirname(__file__)
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
+
+# Import lazy_tool for performance optimization
+try:
+    from cha.config import lazy_tool
+except ImportError:
+    def lazy_tool(module_path, class_name):
+        return {"_lazy_tool": True, "module_path": module_path, "class_name": class_name}
 ```
 
 This code allows your custom config file to load all your tools in this directory structure. To add/set tool(s), add something like the following to your config file below the code above:
 
 ```python
-from tools.weather.main import UsersCurrentWeatherStats
-
-EXTERNAL_TOOLS = [UsersCurrentWeatherStats()]
+EXTERNAL_TOOLS = [lazy_tool("tools.weather.main", "UsersCurrentWeatherStats")]
 ```
 
-In this example, you are loading the tool `weather` and adding it to the global variable `EXTERNAL_TOOLS` that Cha uses to determine what tools it can use. The first code is something you should always include, and the second code is just an example of how you can import your tool following the suggested directory structure.
+In this example, you are loading the tool `weather` using lazy loading and adding it to the global variable `EXTERNAL_TOOLS` that Cha uses to determine what tools it can use. The lazy loading approach significantly improves Cha's startup time by only importing and instantiating tools when they are actually used.
+
+**Note**: The old approach of directly importing and instantiating tools still works but is deprecated:
+
+```python
+# OLD APPROACH (still works but not recommended):
+# from tools.weather.main import UsersCurrentWeatherStats
+# EXTERNAL_TOOLS = [UsersCurrentWeatherStats()]
+
+# NEW APPROACH (recommended for better performance):
+EXTERNAL_TOOLS = [lazy_tool("tools.weather.main", "UsersCurrentWeatherStats")]
+```
 
 ### Tool Spec
 
@@ -150,7 +166,7 @@ class EchoTool:
 
 ## Registering Tools
 
-In `~/.cha/config.py`, import and register your tool class manually:
+In `~/.cha/config.py`, register your tool using the lazy loading approach for optimal performance:
 
 ```python
 import os, sys
@@ -159,15 +175,20 @@ ROOT = os.path.dirname(__file__)
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from tools.echo.main import EchoTool
+# Import lazy_tool for performance optimization
+try:
+    from cha.config import lazy_tool
+except ImportError:
+    def lazy_tool(module_path, class_name):
+        return {"_lazy_tool": True, "module_path": module_path, "class_name": class_name}
 
 EXTERNAL_TOOLS = [
-    EchoTool,
+    lazy_tool("tools.echo.main", "EchoTool"),
     # other tools…
 ]
 ```
 
-Cha will automatically instantiate the class and hook it into the CLI. The `alias` (`!echo`) is what users type to call it.
+Cha will automatically load and instantiate the tool class when it's first used. The `alias` (`!echo`) is what users type to call it.
 
 ## Example `requirements.txt`
 
@@ -188,3 +209,5 @@ pip install -r ~/.cha/tools/echo/requirements.txt
 - Avoid long-running logic unless your timeout is adjusted.
 - Keep your `description` short — it is shown in tool help prompts.
 - Tools that rely on prior messages (like summary/chat) should set `include_history`.
+- Use the `lazy_tool()` approach for better startup performance instead of direct imports.
+- Set `show_loading_animation = False` in your tool if it prints output directly (to avoid interference with loading animations).

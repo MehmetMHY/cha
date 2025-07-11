@@ -98,8 +98,9 @@ def title_print(selected_model):
             )
         )
 
-    if len(config.EXTERNAL_TOOLS_EXECUTE) > 0:
-        for tool in config.EXTERNAL_TOOLS_EXECUTE:
+    external_tools = config.get_external_tools_execute()
+    if len(external_tools) > 0:
+        for tool in external_tools:
             alias = tool["alias"]
             about = re.sub(r"[.!?]+$", "", tool["description"].lower())
             print(colors.magenta(f"- '{alias}' {about}"))
@@ -383,7 +384,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             # NOTE: handle logic for external tool calling and processing
             exist_early_due_to_tool_calling_config = False
-            for tool_data in config.EXTERNAL_TOOLS_EXECUTE:
+            external_tools = config.get_external_tools_execute()
+            for tool_data in external_tools:
                 alias = tool_data["alias"]
                 show_loading_animation = tool_data.get("show_loading_animation", True)
                 if message.strip().startswith(alias):

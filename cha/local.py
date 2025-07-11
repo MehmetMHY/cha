@@ -1,11 +1,21 @@
 from datetime import datetime, timezone
 import subprocess
+import importlib
 import signal
 import json
 import os
 import re
 
 from cha import config, colors
+
+
+def _lazy_load_tool(tool_def):
+    try:
+        module = importlib.import_module(tool_def["module_path"])
+        tool_class = getattr(module, tool_def["class_name"])
+        return tool_class()
+    except Exception as e:
+        return None
 
 
 def setup_cha_config_dir():
@@ -47,6 +57,16 @@ def validate_tools(tools):
     seen_names = set()
 
     for tool in tools:
+        if isinstance(tool, dict) and tool.get("_lazy_tool"):
+            lazy_tool_instance = _lazy_load_tool(tool)
+            if lazy_tool_instance is None:
+                invalid.append(tool)
+                errors.append(
+                    f"Failed to load lazy tool: {tool.get('class_name', 'Unknown')}"
+                )
+                continue
+            tool = lazy_tool_instance
+
         tool_id = getattr(tool, "name", repr(tool))
         tool_errors = []
 
