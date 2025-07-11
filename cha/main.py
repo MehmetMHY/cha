@@ -99,6 +99,9 @@ def interactive_help(selected_model):
         f"{config.RUN_CODER_ALIAS} - Run the coder tool to reduce hallucination"
     )
     help_options.append(
+        f"{config.RUN_EDITOR_ALIAS} - Interactive file editor with diff and shell access"
+    )
+    help_options.append(
         f"{config.BACKTRACK_HISTORY_KEY} - Backtrack to a previous point in chat history"
     )
     help_options.append(f"{config.HELP_PRINT_OPTIONS_KEY} - List all options")
@@ -161,6 +164,7 @@ def title_print(selected_model):
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
                 - `{config.RUN_CODER_ALIAS}` to run the coder tool to reduce hallucination
+                - `{config.RUN_EDITOR_ALIAS}` interactive file editor with diff and shell access
                 - `{config.BACKTRACK_HISTORY_KEY}` to backtrack to a previous point in chat history
                 """
             )
@@ -351,6 +355,26 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     )
 
                     messages.extend(code_messages)
+                except (KeyboardInterrupt, EOFError):
+                    continue
+
+                continue
+
+            if message.strip().startswith(config.RUN_EDITOR_ALIAS):
+                editor_message = None
+                if len(message.split(" ")) > 1:
+                    editor_message = message.replace(
+                        config.RUN_EDITOR_ALIAS, ""
+                    ).strip()
+
+                try:
+                    from cha import editor
+
+                    editor.call_editor(
+                        client=get_current_chat_client(),
+                        initial_prompt=editor_message,
+                        model_name=selected_model,
+                    )
                 except (KeyboardInterrupt, EOFError):
                     continue
 

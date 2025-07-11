@@ -35,6 +35,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
 - **Interactive Code Generation**: Draft, review, modify, and execute Python code directly in the chat. The model generates code, lets you review or modify it, runs it, and provides insights based on the execution output.
 - **Code Verification**: Run and verify code solutions using the coder feature to reduce hallucinations and ensure working code.
+- **Interactive File Editor**: Edit files with AI assistance using `!editor`. Select files, make AI-powered edits, view diffs, and access shell for testing.
 - **Export Responses to Files**: Export model responses to files. In interactive mode, use the export command to export the latest response. Use `all` for all responses in the history. Add the `single` argument to save the whole response as one file instead of extracting code blocks (e.g., `single` or `all single`).
 
 ## Getting Started

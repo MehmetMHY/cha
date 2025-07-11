@@ -14,6 +14,12 @@ install_pkg() {
 	fi
 }
 
+# check if Homebrew is installed
+if ! command -v brew >/dev/null 2>&1; then
+	echo "Homebrew is not installed. Please install Homebrew first: https://brew.sh/"
+	exit 1
+fi
+
 # install ffmpeg if not already installed
 if ! command -v ffmpeg >/dev/null 2>&1; then
 	install_pkg ffmpeg

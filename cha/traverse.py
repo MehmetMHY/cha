@@ -281,7 +281,7 @@ def traverse_and_select_files():
     return sorted(list(selected_files))
 
 
-def simple_file_select():
+def simple_file_select(single_file=False):
     current_dir = os.getcwd()
 
     try:
@@ -302,9 +302,13 @@ def simple_file_select():
 
         selected = run_fzf(
             files,
-            prompt="Select files> ",
-            multi_select=True,
-            header="Use TAB to select/deselect multiple files, ENTER to confirm",
+            prompt="Select file> " if single_file else "Select files> ",
+            multi_select=not single_file,
+            header=(
+                "Select a file to edit"
+                if single_file
+                else "Use TAB to select/deselect multiple files, ENTER to confirm"
+            ),
         )
 
         if selected:
@@ -316,17 +320,20 @@ def simple_file_select():
         return []
 
 
-def msg_content_load(client, simple=False):
+def msg_content_load(client, simple=False, return_path_only=False):
     try:
         from cha import utils, loading
 
         if simple:
-            paths = simple_file_select()
+            paths = simple_file_select(single_file=return_path_only)
         else:
             paths = traverse_and_select_files()
 
         if not paths:
             return None
+
+        if return_path_only:
+            return paths[0] if paths else None
 
         complex_types = (
             config.SUPPORTED_AUDIO_FORMATS

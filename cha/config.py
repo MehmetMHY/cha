@@ -17,6 +17,11 @@ You are a helpful assistant powered by Cha who provides concise, clear, and accu
 Always return any code or file output in a Markdown code fence, with syntax ```<language or filetype>\n...``` so it can be parsed automatically. Only do this when needed, no need to do this for responses just code segments and/or when directly asked to do so from the user.
 """.strip()
 
+# editor system prompt
+EDITOR_SYSTEM_PROMPT = """
+You are a code editor. Modify the provided file according to the user's request. Return only the complete modified file content, no explanations or markdown formatting. Preserve all formatting and structure unless specifically requested to change it.
+""".strip()
+
 # key words
 MULTI_LINE_SEND = "q"
 MULTI_LINE_MODE_TEXT = "!m"
@@ -35,6 +40,7 @@ PICK_AND_RUN_A_SHELL_OPTION = "!sh"
 ENABLE_OR_DISABLE_AUTO_SD = "!s"
 LOAD_HISTORY_TRIGGER = "!hs"
 RUN_CODER_ALIAS = "!code"
+RUN_EDITOR_ALIAS = "!editor"
 BACKTRACK_HISTORY_KEY = "!b"
 
 # last updated on 4-10-2024
