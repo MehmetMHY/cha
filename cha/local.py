@@ -125,11 +125,6 @@ def get_tools():
 
     valid_tools, invalid_tools, tool_errors = validate_tools(config.EXTERNAL_TOOLS)
 
-    if len(invalid_tools) > 0:
-        print(colors.red("Errors well loading tools:"))
-        for err in tool_errors:
-            print(colors.red(f"- {err}"))
-
     if len(valid_tools) == 0:
         return []
 

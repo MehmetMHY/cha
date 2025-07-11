@@ -43,6 +43,18 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 
 You can install Cha using one of the following methods
 
+#### Using install.sh (Recommended)
+
+Clone the repository and run the installation script:
+
+```bash
+git clone <repository-url>
+cd <repository-directory>
+./install.sh
+```
+
+This creates a local virtual environment, checks if all dependencies are setup correctly, and provides instructions for adding Cha to your PATH.
+
 #### Pip
 
 If you have Python installed, you can install Cha via pip, which should be available by default:

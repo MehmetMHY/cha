@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.21.1",
+    version="0.21.3",
     packages=find_packages(),
     license="MIT",
     description="A simple cli tool that simplifies interactions with AI models, offering features like chat, web scraping, and answer search. It supports multiple platforms and file types, enhancing productivity for all.",
@@ -27,7 +27,7 @@ setup(
         "pillow==11.3.0",
         "pytesseract==0.3.13",
         "mutagen==1.47.0",
-        "PyYAML>=6.0",
+        "PyYAML==6.0.2",
     ],
     python_requires=">=3.9.2",
     entry_points={

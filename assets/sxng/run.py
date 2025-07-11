@@ -215,18 +215,28 @@ def main():
         sys.exit(1)
 
     # get user inputs
-    port = get_user_input("Enter port", DEFAULT_PORT)
-    name = get_user_input("Enter instance name", DEFAULT_NAME)
-    base_url = get_user_input("Enter base URL", DEFAULT_URL)
-
-    # check for running container on the same port
-    running_container = check_running_container(port)
-    if running_container:
+    if "--default" in sys.argv:
+        port = DEFAULT_PORT
+        name = DEFAULT_NAME
+        base_url = DEFAULT_URL
+        update_choice = "y"
+        stop_choice = "y"
+    else:
+        port = get_user_input("Enter port", DEFAULT_PORT)
+        name = get_user_input("Enter instance name", DEFAULT_NAME)
+        base_url = get_user_input("Enter base URL", DEFAULT_URL)
+        update_choice = (
+            input("Do you want to update the searxng image? (y/n): ").strip().lower()
+        )
         stop_choice = (
             input(f"An instance is already running on port {port}. Stop it? (y/n): ")
             .strip()
             .lower()
         )
+
+    # check for running container on the same port
+    running_container = check_running_container(port)
+    if running_container:
         if stop_choice == "y":
             if not stop_container(running_container):
                 print("Failed to stop the running container.")
@@ -236,9 +246,6 @@ def main():
             sys.exit(0)
 
     # ask about updating the image
-    update_choice = (
-        input("Do you want to update the searxng image? (y/n): ").strip().lower()
-    )
     if update_choice == "y":
         update_searxng_image()
 

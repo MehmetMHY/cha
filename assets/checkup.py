@@ -122,21 +122,23 @@ def checkup():
             raise Exception(f"Failed to find setup.py file")
 
         try:
-            import pkg_resources
+            from importlib.metadata import version
+
+            version("setuptools")
         except ImportError:
             subprocess.check_call(
                 [sys.executable, "-m", "pip", "install", "setuptools"]
             )
-            import pkg_resources
 
         packages = parse_setup_py(PYTHON_SETUP_FILE_PATH)
 
         result = check_installed_packages_with_pip(packages)
         if len(result["missing"]) > 0:
-            failed(f"Cha's dependencies are not installed: {response['missing']}")
+            failed(f"Cha's dependencies are not installed: {result['missing']}")
         else:
             passed("All of Cha's dependencies are installed")
-    except:
+    except Exception as e:
+        print("===>>>", e)
         failed("Failed to check if Cha's dependencies are installed or not")
 
     try:
@@ -266,6 +268,18 @@ def checkup():
         passed("$HOME/.cha/ directly exists!")
     else:
         failed("$HOME/.cha/ directly does NOT exist!")
+
+    # check if docker is installed or not
+    try:
+        subprocess.run(
+            ["docker", "--version"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        passed("Docker is installed")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        failed("Docker is not installed")
 
     # check if searxng is running locally in user's Docker
     try:
