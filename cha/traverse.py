@@ -281,11 +281,50 @@ def traverse_and_select_files():
     return sorted(list(selected_files))
 
 
-def msg_content_load(client):
+def simple_file_select():
+    current_dir = os.getcwd()
+
+    try:
+        entries = os.listdir(current_dir)
+        files = [
+            f
+            for f in entries
+            if os.path.isfile(os.path.join(current_dir, f))
+            and f not in config.FILES_TO_IGNORE
+            and os.path.splitext(f)[1].lower() not in config.BINARY_EXTENSIONS
+        ]
+
+        if not files:
+            print(colors.yellow("No files found in current directory"))
+            return []
+
+        files.sort(key=str.lower)
+
+        selected = run_fzf(
+            files,
+            prompt="Select files> ",
+            multi_select=True,
+            header="Use TAB to select/deselect multiple files, ENTER to confirm",
+        )
+
+        if selected:
+            return [os.path.join(current_dir, f) for f in selected]
+        return []
+
+    except Exception as e:
+        print(colors.red(f"Error selecting files: {e}"))
+        return []
+
+
+def msg_content_load(client, simple=False):
     try:
         from cha import utils, loading
 
-        paths = traverse_and_select_files()
+        if simple:
+            paths = simple_file_select()
+        else:
+            paths = traverse_and_select_files()
+
         if not paths:
             return None
 

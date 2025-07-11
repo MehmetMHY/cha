@@ -19,7 +19,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI.
 - **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done though an argument or in interactive mode.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
-- **Answer Search (Deep Search)**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution.
+- **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution. Use `!a` for deep search or `!a <query>` for quick search.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
@@ -30,7 +30,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Integrated Shell Access**: Execute shell commands directly within Cha's environment, enhancing workflow efficiency by providing immediate terminal access.
 - **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
 - **`fzf` for Selection**: Use `fzf` for interactive selection when searching chat history, traversing local files, or using the codedump feature.
-- **Streamlined File Navigation**: Intuitive directory traversal with direct path support (`cd dirname`, `cd ..`), clean interface, and efficient file selection using `fzf`.
+- **Streamlined File Navigation**: Two modes for file selection - simple mode (`!l`) for quick selection in current directory, and advanced mode (`!la`) with full directory traversal, direct path support (`cd dirname`, `cd ..`), clean interface, and efficient file selection using `fzf`.
 - **Chat History Management**: Save, load, and search through your past conversations.
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
 - **Interactive Code Generation**: Draft, review, modify, and execute Python code directly in the chat. The model generates code, lets you review or modify it, runs it, and provides insights based on the execution output.

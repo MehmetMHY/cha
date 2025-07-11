@@ -74,9 +74,10 @@ def title_print(selected_model):
                 - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
                 - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
                 - '{config.SAVE_CHAT_HISTORY}' to save chat history
-                - '{config.LOAD_MESSAGE_CONTENT}' to load a file
+                - '{config.LOAD_MESSAGE_CONTENT}' to load files (simple mode)
+                - '{config.LOAD_MESSAGE_CONTENT_ADVANCED}' to load files (advanced mode)
                 - '{config.HELP_PRINT_OPTIONS_KEY}' to list all options
-                - '{config.RUN_ANSWER_FEATURE}' to run answer search
+                - '{config.RUN_ANSWER_FEATURE}' to run answer search (deep search) or '{config.RUN_ANSWER_FEATURE} <query>' for quick search
                 - '{config.TEXT_EDITOR_INPUT_MODE}' for text-editor input mode
                 - '{config.MULTI_LINE_MODE_TEXT}' for multi-line switching (type '{config.MULTI_LINE_SEND}' to send)
                 - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
@@ -502,11 +503,24 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 title_print(selected_model)
                 continue
 
-            # prompt user to load a file
+            # prompt user to load files (simple mode)
             if message == config.LOAD_MESSAGE_CONTENT:
                 from cha import traverse
 
-                message = traverse.msg_content_load(get_current_chat_client())
+                message = traverse.msg_content_load(
+                    get_current_chat_client(), simple=True
+                )
+                if message != None:
+                    messages.append({"role": "user", "content": message})
+                continue
+
+            # prompt user to load files (advanced mode)
+            if message == config.LOAD_MESSAGE_CONTENT_ADVANCED:
+                from cha import traverse
+
+                message = traverse.msg_content_load(
+                    get_current_chat_client(), simple=False
+                )
                 if message != None:
                     messages.append({"role": "user", "content": message})
                 continue
