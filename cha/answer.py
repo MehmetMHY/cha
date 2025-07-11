@@ -161,7 +161,7 @@ def search_engine(
                 # print(colors.yellow(f"SearXNG failed, switching to DuckDuckGo"))
                 pass
 
-        from duckduckgo_search import DDGS
+        from ddgs import DDGS
 
         with DDGS() as ddgs:
             search_results_ddg = list(
