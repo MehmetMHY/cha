@@ -65,6 +65,81 @@ def backtrack_history(chat_history):
         return None
 
 
+def interactive_help(selected_model):
+    help_options = []
+
+    help_options.append(f"{config.EXIT_STRING_KEY} - Exit chat or CTRL-C")
+    help_options.append(f"{config.CLEAR_HISTORY_TEXT} - Clear chat history")
+    help_options.append(f"{config.SAVE_CHAT_HISTORY} - Save chat history")
+    help_options.append(f"{config.LOAD_MESSAGE_CONTENT} - Load files (simple mode)")
+    help_options.append(
+        f"{config.LOAD_MESSAGE_CONTENT_ADVANCED} - Load files (advanced mode)"
+    )
+    help_options.append(
+        f"{config.RUN_ANSWER_FEATURE} - Run answer search (deep search) or '{config.RUN_ANSWER_FEATURE} <query>' for quick search"
+    )
+    help_options.append(f"{config.TEXT_EDITOR_INPUT_MODE} - Text-editor input mode")
+    help_options.append(
+        f"{config.MULTI_LINE_MODE_TEXT} - Multi-line switching (type '{config.MULTI_LINE_SEND}' to send)"
+    )
+    help_options.append(
+        f"{config.SWITCH_MODEL_TEXT} - Switch between models during a session"
+    )
+    help_options.append(f"{config.USE_CODE_DUMP} - Codedump a directory as context")
+    help_options.append(
+        f"{config.EXPORT_FILES_IN_OUTPUT_KEY} [all/single] - Export files from response(s)"
+    )
+    help_options.append(
+        f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Pick and run a shell while still being in Cha"
+    )
+    help_options.append(
+        f"{config.ENABLE_OR_DISABLE_AUTO_SD} - Enable or disable auto url detection and scraping"
+    )
+    help_options.append(
+        f"{config.RUN_CODER_ALIAS} - Run the coder tool to reduce hallucination"
+    )
+    help_options.append(
+        f"{config.BACKTRACK_HISTORY_KEY} - Backtrack to a previous point in chat history"
+    )
+    help_options.append(f"{config.HELP_PRINT_OPTIONS_KEY} - List all options")
+
+    if os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR):
+        help_options.append(
+            f"{config.LOAD_HISTORY_TRIGGER} - Search and load previous chats"
+        )
+
+    external_tools = config.get_external_tools_execute()
+    if len(external_tools) > 0:
+        for tool in external_tools:
+            alias = tool["alias"]
+            about = re.sub(r"[.!?]+$", "", tool["description"].lower())
+            help_options.append(f"{alias} - {about}")
+
+    try:
+        fzf_process = subprocess.run(
+            [
+                "fzf",
+                "--reverse",
+                "--height=40%",
+                "--border",
+                "--prompt=TAB to multi-select, ENTER to confirm, & Esc to cancel: ",
+                "--multi",
+                "--header",
+                f"Chatting On {config.CHA_CURRENT_PLATFORM_NAME.upper()} With {selected_model}",
+            ],
+            input="\n".join(help_options).encode(),
+            capture_output=True,
+            check=True,
+        )
+        selected_output = fzf_process.stdout.decode().strip()
+        if selected_output:
+            for item in selected_output.split("\n"):
+                print(colors.yellow(item))
+
+    except (subprocess.CalledProcessError, subprocess.SubprocessError):
+        pass
+
+
 def title_print(selected_model):
     print(
         colors.yellow(
@@ -314,7 +389,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 multi_line_input = True
                 continue
 
-            elif message.replace(" ", "") == config.EXIT_STRING_KEY.lower():
+            elif message.replace(" ", "").lower() == config.EXIT_STRING_KEY.lower():
                 break
 
             elif os.path.isdir(
@@ -360,7 +435,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 utils.run_a_shell()
                 continue
 
-            elif message.replace(" ", "") == config.CLEAR_HISTORY_TEXT:
+            elif message.replace(" ", "").lower() == config.CLEAR_HISTORY_TEXT.lower():
                 messages = (
                     []
                     if reasoning_model
@@ -432,6 +507,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if exist_early_due_to_tool_calling_config:
                 continue
 
+            # print help
+            if message.strip().lower() == config.HELP_PRINT_OPTIONS_KEY.lower():
+                interactive_help(selected_model)
+                continue
+
             if message.strip().startswith(config.ENABLE_OR_DISABLE_AUTO_SD):
                 if (
                     auto_scrape_detection_mode == False
@@ -496,11 +576,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             )
                     else:
                         print(colors.yellow("No message to export."))
-                continue
-
-            # print help
-            if message == config.HELP_PRINT_OPTIONS_KEY:
-                title_print(selected_model)
                 continue
 
             # prompt user to load files (simple mode)
