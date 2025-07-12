@@ -47,17 +47,25 @@ def run_editor(client: OpenAI, model_name: str, initial_prompt: str = None):
             )
 
         if not file_path:
-            print(colors.yellow("no file selected, opening shell"))
-            utils.run_a_shell()
-            return
+            file_path = input(colors.blue("File To Create: ")).strip()
+            if not file_path:
+                return
+            if not os.path.isabs(file_path):
+                file_path = os.path.abspath(file_path)
 
         if os.path.isdir(file_path):
             print(colors.red("cannot edit directory"))
             return
 
         if not os.path.exists(file_path):
-            print(colors.red(f"file does not exist: {file_path}"))
-            return
+            try:
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write("")
+                print(colors.green(f"created: {file_path}"))
+            except Exception as e:
+                print(colors.red(f"failed to create file: {e}"))
+                return
 
         try:
             with open(file_path, "r", encoding="utf-8") as f:

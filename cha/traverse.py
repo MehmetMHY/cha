@@ -305,7 +305,7 @@ def simple_file_select(single_file=False):
             prompt="Select file> " if single_file else "Select files> ",
             multi_select=not single_file,
             header=(
-                "Select a file to edit"
+                "Select a file to edit, ESC to exit or create new file"
                 if single_file
                 else "Use TAB to select/deselect multiple files, ENTER to confirm"
             ),
