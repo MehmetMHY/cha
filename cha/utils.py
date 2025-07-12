@@ -264,6 +264,29 @@ def write_json(path, data):
         json.dump(data, file, indent=4)
 
 
+def open_file_in_editor(file_path):
+    """opens the given file path in a preferred terminal editor."""
+    terminals = copy.deepcopy(config.SUPPORTED_TERMINAL_IDES)
+    if config.PREFERRED_TERMINAL_IDE:
+        terminals.insert(0, config.PREFERRED_TERMINAL_IDE)
+
+    for editor in terminals:
+        try:
+            # check if the editor is installed by checking its version
+            subprocess.run(
+                [editor, "--version"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+            )
+            # open the editor with the file
+            subprocess.run([editor, file_path])
+            return True
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            continue
+    return False
+
+
 def check_terminal_editors_and_edit():
     terminals = copy.deepcopy(config.SUPPORTED_TERMINAL_IDES)
     if config.PREFERRED_TERMINAL_IDE != None:
