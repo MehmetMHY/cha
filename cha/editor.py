@@ -122,7 +122,6 @@ def run_editor(client: OpenAI, model_name: str, initial_prompt: str = None):
                         with open(file_path, "w", encoding="utf-8") as f:
                             f.write(new_content)
                         original_content = new_content
-                        print(colors.green("saved"))
                     elif action == "e":
                         with tempfile.NamedTemporaryFile(
                             mode="w", suffix=".tmp", delete=False
@@ -145,7 +144,6 @@ def run_editor(client: OpenAI, model_name: str, initial_prompt: str = None):
                                     with open(file_path, "w", encoding="utf-8") as f:
                                         f.write(modified_content)
                                     original_content = modified_content
-                                    print(colors.green("saved"))
                         except Exception as e:
                             print(colors.red(f"editor failed: {e}"))
                         finally:
