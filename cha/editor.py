@@ -1,26 +1,16 @@
-import difflib
 import subprocess
-import tempfile
-import os
-import sys
 import readline
+import tempfile
+import difflib
+import os
 
 from cha import colors, utils, loading, config
 
-# attempt to import pygments for syntax highlighting
-try:
-    from pygments import highlight
-    from pygments.lexers import get_lexer_by_name, guess_lexer_for_filename
-    from pygments.formatters import TerminalFormatter
-
-    PYGMENTS_AVAILABLE = True
-except ImportError:
-    PYGMENTS_AVAILABLE = False
+import os
+import sys
 
 
-# check if fzf is available
 def is_fzf_available():
-    """check if fzf is installed and in the path."""
     try:
         subprocess.run(["fzf", "--version"], capture_output=True, check=True)
         return True
@@ -32,7 +22,6 @@ FZF_AVAILABLE = is_fzf_available()
 
 
 class InteractiveEditor:
-    """a class to handle interactive file editing sessions."""
 
     def __init__(self, client, model_name, file_path=None):
         self.client = client
@@ -44,7 +33,6 @@ class InteractiveEditor:
         self.history_file = os.path.join(tempfile.gettempdir(), ".cha_editor_history")
 
     def run(self):
-        """start the interactive editing session."""
         try:
             if not self.file_path:
                 self.file_path = self._select_file()
@@ -54,7 +42,6 @@ class InteractiveEditor:
                 return
 
             self._load_file()
-            # loading failed
             if self.file_path is None:
                 return
 
@@ -72,7 +59,6 @@ class InteractiveEditor:
                     user_input = input(colors.blue(">>> ")).strip()
                     if not user_input:
                         continue
-                    # exit loop if process_command returns false
                     if not self._process_command(user_input):
                         break
                 except (KeyboardInterrupt, EOFError):
@@ -83,7 +69,6 @@ class InteractiveEditor:
             self._save_readline_history()
 
     def _select_file(self):
-        """select a file, using fzf if available."""
         if FZF_AVAILABLE:
             return self._select_file_with_fzf()
         else:
@@ -94,7 +79,6 @@ class InteractiveEditor:
                 return None
 
     def _select_file_with_fzf(self):
-        """select a file using fzf with smart options."""
         try:
             current_dir = os.getcwd()
             all_files = []
@@ -132,13 +116,9 @@ class InteractiveEditor:
                 capture_output=True,
             )
 
-            # handle different exit codes
-            # 130: user aborted (esc, ctrl-c)
             if fzf_process.returncode == 130:
                 return None
-            # 0: match found, 1: no match (but user entered text)
             if fzf_process.returncode not in [0, 1]:
-                # other errors
                 return None
 
             output = fzf_process.stdout.decode().strip().split("\n")
@@ -146,7 +126,6 @@ class InteractiveEditor:
             if not output or not output[0]:
                 return None
 
-            # if user selected an item, it's the last line, otherwise it's the query
             selected = output[-1] if len(output) > 1 else output[0]
 
             return os.path.abspath(selected) if selected else None
@@ -155,7 +134,6 @@ class InteractiveEditor:
             return None
 
     def _load_file(self):
-        """load file content or create a new file."""
         if os.path.isdir(self.file_path):
             print(colors.red(f"error: {self.file_path} is a directory"))
             self.file_path = None
@@ -181,17 +159,14 @@ class InteractiveEditor:
             self.file_path = None
 
     def _setup_readline(self):
-        """set up readline for persistent history."""
         if os.path.exists(self.history_file):
             readline.read_history_file(self.history_file)
         readline.set_auto_history(True)
 
     def _save_readline_history(self):
-        """save readline history to a file."""
         readline.write_history_file(self.history_file)
 
     def _process_command(self, user_input):
-        """process user input, routing to commands or edit requests."""
         command = user_input.lower()
 
         command_map = {
@@ -207,15 +182,12 @@ class InteractiveEditor:
         if action:
             action()
             if command in ["quit", "exit"]:
-                # signal to exit loop
                 return False
         else:
             self._make_edit_request(user_input)
-        # signal to continue loop
         return True
 
     def _make_edit_request(self, request):
-        """send edit request to the ai and update content."""
         loading.start_loading("processing request")
         try:
             messages = [
@@ -230,7 +202,6 @@ class InteractiveEditor:
             )
             new_content = response.choices[0].message.content
 
-            # clean the response: remove backticks and language identifiers
             if new_content.startswith("```") and new_content.endswith("```"):
                 new_content = "\n".join(new_content.split("\n")[1:-1])
 
@@ -248,7 +219,6 @@ class InteractiveEditor:
             print(colors.red(f"an error occurred: {e}"))
 
     def _show_diff(self):
-        """show the diff between original and current content."""
         if self.original_content == self.current_content:
             print(colors.yellow("no changes to show"))
             return
@@ -278,7 +248,6 @@ class InteractiveEditor:
         print()
 
     def _save_changes(self):
-        """save the current content to the file."""
         if self.original_content == self.current_content:
             print(colors.yellow("no changes to save"))
             return
@@ -292,7 +261,6 @@ class InteractiveEditor:
             print(colors.red(f"error saving file: {e}"))
 
     def _undo_change(self):
-        """revert the last change."""
         if not self.undo_stack:
             print(colors.yellow("no changes to undo"))
             return
@@ -301,7 +269,6 @@ class InteractiveEditor:
         self._show_diff()
 
     def _view_content(self):
-        """opens the file in a text editor and reloads it after changes."""
         if self.original_content != self.current_content:
             try:
                 prompt = colors.red("Save before viewing (y/N)? ")
@@ -316,7 +283,6 @@ class InteractiveEditor:
             print(colors.red("could not open any terminal editor"))
             return
 
-        # after editor is closed, reload the file to get any external changes
         try:
             with open(self.file_path, "r", encoding="utf-8") as f:
                 new_content = f.read()
@@ -328,7 +294,6 @@ class InteractiveEditor:
             print(colors.red(f"failed to reload file: {e}"))
 
     def _quit(self):
-        """exit the editor, prompting to save if there are changes."""
         if self.original_content != self.current_content:
             try:
                 prompt = colors.red("Save before quitting (y/N)? ")
@@ -336,12 +301,10 @@ class InteractiveEditor:
                 if save_changes == "y":
                     self._save_changes()
             except (KeyboardInterrupt, EOFError):
-                # if user cancels prompt, just exit without saving
                 print()
                 pass
 
 
 def call_editor(client, initial_prompt, model_name):
-    """entry point for editor functionality."""
     editor = InteractiveEditor(client, model_name, file_path=initial_prompt)
     editor.run()

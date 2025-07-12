@@ -28,7 +28,6 @@ setup(
         "pytesseract==0.3.13",
         "mutagen==1.47.0",
         "PyYAML==6.0.2",
-        "Pygments==2.18.0",
     ],
     python_requires=">=3.9.2",
     entry_points={
