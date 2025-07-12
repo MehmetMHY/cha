@@ -30,6 +30,16 @@ if ! command -v fzf >/dev/null 2>&1; then
 	install_pkg fzf
 fi
 
+# install bat if not already installed
+if ! command -v bat >/dev/null 2>&1; then
+	install_pkg bat
+fi
+
+# install ripgrep if not already installed
+if ! command -v rg >/dev/null 2>&1; then
+	install_pkg ripgrep
+fi
+
 # create virtual environment in the current directory
 echo "Creating Python virtual environment in ./venv"
 

@@ -102,7 +102,7 @@ def validate_tools(tools):
                     f"{expected_types}, got {type(val)}"
                 )
 
-        # Check for duplicate 'name' value
+        # check for duplicate 'name' value
         name = getattr(tool, "name", None)
         if name is not None:
             if name in seen_names:
@@ -183,118 +183,71 @@ def read_json(path):
 def browse_and_select_history_file():
     history_dir = os.path.join(os.environ["HOME"], ".cha", "history")
 
-    file_paths = []
-    if os.path.isdir(history_dir):
-        for filename in os.listdir(history_dir):
-            full_path = os.path.join(history_dir, filename)
-            if os.path.isfile(full_path) and full_path.endswith(".json"):
-                file_paths.append(full_path)
-
-    # multithreading to process files in parallel is needed
-    output = {}
-    for file_path in file_paths:
-        content = read_json(file_path)
-        messages = content.get("chat", None)
-        if messages is None:
-            messages = content
-
-        clean_content = ""
-        for msg in messages[1:]:
-            if msg.get("user", None) is not None:
-                clean_content = clean_content + msg.get("user") + " "
-            if msg.get("user", None) is None and msg.get("bot", None) is not None:
-                clean_content = clean_content + msg.get("bot") + " "
-
-        # clean up content to better work with selector
-        clean_content = re.sub(
-            r"https?://\S+|www\.\S+", "", clean_content
-        )  # remove urls from the string
-        clean_content = re.sub(
-            r"([A-Za-z]:\\(?:[^\\\s]+\\)*[^\\\s]+|\/(?:[^\/\s]+\/)*[^\/\s]+)",
-            "",
-            clean_content,
-        )  # remove file/dir paths from string
-        clean_content = re.sub(r"\n", "", clean_content)  # remove new lines
-        clean_content = re.sub(r"\s+", " ", clean_content)  # remove extra whitespaces
-
-        output[file_path] = clean_content.strip()
-
-    # all the code below apply the fzf integration
-    try:
-        terminal_width = os.get_terminal_size().columns
-    except OSError:
-        terminal_width = 80
-
-    # prepare data for fzf, truncating content to fit
-    entries = []
-    line_to_path_map = {}
-    for path, content in output.items():
-        basename = os.path.basename(path)
-        timestamp_str = "<Unknown Time>"
-        epoch_val = float("inf")
-        try:
-            parts = basename.split("_")
-            if len(parts) > 1 and parts[-1].endswith(".json"):
-                epoch_part = parts[-1][:-5]
-                if epoch_part.isdigit():
-                    epoch_val = int(epoch_part)
-                    timestamp_str = datetime.fromtimestamp(
-                        epoch_val, tz=timezone.utc
-                    ).strftime("%Y-%m-%d %H:%M:%S UTC")
-        except Exception:
-            pass
-
-        prefix = f"[{timestamp_str}] "
-
-        # new display format - using full content
-        display_line = f"{prefix}{content}"
-
-        # store entry with epoch value for sorting
-        entries.append((epoch_val, display_line, path))
-
-    # if no history files are found, return None
-    if len(entries) == 0:
+    if not os.path.isdir(history_dir):
         return None
-
-    # attempt to sort entries by epoch (newest to oldest)
-    entries.sort(key=lambda x: x[0], reverse=True)
-    fzf_input_lines = [entry[1] for entry in entries]
-    line_to_path_map = {entry[1]: entry[2] for entry in entries}
-    fzf_input_string = "\n".join(fzf_input_lines)
 
     selected_path = None
     try:
-        try:
-            fzf_process = subprocess.run(
-                [
-                    "fzf",
-                    "--exact",
-                    "-e",
-                    "--delimiter",
-                    "\\t",
-                    "--with-nth",
-                    "1",
-                    "-i",  # case-insensitive flag
-                ],
-                input=fzf_input_string,
-                capture_output=True,
-                text=True,
-                check=True,  # raise exception on non-zero exit code (e.g., user pressing Esc)
-                encoding="utf-8",
-            )
-            selected_line = fzf_process.stdout.strip()
-            selected_path = line_to_path_map[selected_line]
-        except KeyboardInterrupt:
-            pass
-    except Exception as e:
-        pass
+        # use ripgrep with fzf to search through all JSON files
+        rg_command = [
+            "rg",
+            "--line-number",
+            "--color=always",
+            "",
+            "--glob",
+            "*.json",
+            history_dir,
+        ]
 
-    file_content = read_json(selected_path)
-    chat_content = file_content
-    if file_content.get("chat") != None:
-        chat_content = file_content.get("chat")
+        fzf_command = [
+            "fzf",
+            "--ansi",
+            "--delimiter",
+            ":",
+            "--preview",
+            "bat --style=numbers --color=always --highlight-line {2} --wrap auto {1}",
+            "--preview-window=right,50%,wrap",
+            "--header",
+            "[Shift↑/↓] [ESC] [ENTER]",
+        ]
 
-    return {"path": selected_path, "content": file_content, "chat": chat_content}
+        # run ripgrep and pipe to fzf
+        rg_process = subprocess.Popen(
+            rg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        fzf_process = subprocess.run(
+            fzf_command,
+            stdin=rg_process.stdout,
+            capture_output=True,
+            text=True,
+            check=True,
+            encoding="utf-8",
+        )
+        rg_process.stdout.close()
+        rg_process.wait()
+
+        # extract filename from the output (everything before the first colon)
+        selected_line = fzf_process.stdout.strip()
+        if selected_line:
+            selected_path = selected_line.split(":", 1)[0]
+
+    except (subprocess.CalledProcessError, KeyboardInterrupt):
+        return None
+    except Exception:
+        return None
+
+    if not selected_path:
+        return None
+
+    try:
+        file_content = read_json(selected_path)
+        chat_content = file_content
+        if file_content.get("chat") != None:
+            chat_content = file_content.get("chat")
+
+        return {"path": selected_path, "content": file_content, "chat": chat_content}
+    except Exception:
+        return None
 
 
 def print_history_browse_and_select_history_file(chat, include_timestamp=True):

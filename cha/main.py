@@ -1183,6 +1183,7 @@ def cli():
             file_id = str(uuid.uuid4())
 
             history_save = {
+                "chat": CURRENT_CHAT_HISTORY,
                 "id": file_id,
                 "version": version_id,
                 "date": {
@@ -1191,7 +1192,6 @@ def cli():
                 },
                 "args": {},
                 "config": utils.get_json_serializable_globals(config),
-                "chat": CURRENT_CHAT_HISTORY,
             }
 
             if args != None:

@@ -103,6 +103,14 @@ uv pip install "git+https://github.com/MehmetMHY/cha.git"
 
    # checkout docs for installing here: https://github.com/junegunn/fzf
    brew install fzf
+
+   # required for history search functionality (!hs)
+   # checkout docs for installing here: https://github.com/BurntSushi/ripgrep
+   brew install ripgrep
+
+   # required for history search preview functionality (!hs)
+   # checkout docs for installing here: https://github.com/sharkdp/bat
+   brew install bat
    ```
 
 ### Configuration
