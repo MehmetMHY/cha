@@ -210,46 +210,46 @@ def interactive_selection(root_path, files_dict, include_mode=False):
             except (subprocess.CalledProcessError, FileNotFoundError):
                 return None
 
-            # handle file selection with fzf
-            remaining_files = [f for f in files_dict.keys() if f not in selected]
+        # handle file selection with fzf
+        remaining_files = [f for f in files_dict.keys() if f not in selected]
 
-            if remaining_files:
-                remaining_files_sorted = sorted(remaining_files)
-                file_display_list = [
-                    os.path.relpath(rf, root_path) for rf in remaining_files_sorted
-                ]
-                path_map = {
-                    os.path.relpath(rf, root_path): rf for rf in remaining_files_sorted
-                }
-                file_display_list.insert(0, config.NOTHING_SELECTED_TAG)
-                fzf_input = "\n".join(file_display_list)
+        if remaining_files:
+            remaining_files_sorted = sorted(remaining_files)
+            file_display_list = [
+                os.path.relpath(rf, root_path) for rf in remaining_files_sorted
+            ]
+            path_map = {
+                os.path.relpath(rf, root_path): rf for rf in remaining_files_sorted
+            }
+            file_display_list.insert(0, config.NOTHING_SELECTED_TAG)
+            fzf_input = "\n".join(file_display_list)
 
-                try:
-                    fzf_process = subprocess.run(
-                        [
-                            "fzf",
-                            "-m",
-                            "--header",
-                            "Use TAB to select multiple files to exclude, ENTER to confirm.",
-                        ],
-                        input=fzf_input,
-                        capture_output=True,
-                        text=True,
-                        check=True,
-                        encoding="utf-8",
-                    )
-                    selected_display_files = fzf_process.stdout.strip().split("\n")
-                    if (
-                        selected_display_files
-                        and selected_display_files[0]
-                        and config.NOTHING_SELECTED_TAG not in selected_display_files
-                    ):
-                        for display_path in selected_display_files:
-                            full_path = path_map.get(display_path)
-                            if full_path:
-                                selected.add(full_path)
-                except (subprocess.CalledProcessError, FileNotFoundError):
-                    return None
+            try:
+                fzf_process = subprocess.run(
+                    [
+                        "fzf",
+                        "-m",
+                        "--header",
+                        "Use TAB to select multiple files to exclude, ENTER to confirm.",
+                    ],
+                    input=fzf_input,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    encoding="utf-8",
+                )
+                selected_display_files = fzf_process.stdout.strip().split("\n")
+                if (
+                    selected_display_files
+                    and selected_display_files[0]
+                    and config.NOTHING_SELECTED_TAG not in selected_display_files
+                ):
+                    for display_path in selected_display_files:
+                        full_path = path_map.get(display_path)
+                        if full_path:
+                            selected.add(full_path)
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                return None
 
     return selected
 
