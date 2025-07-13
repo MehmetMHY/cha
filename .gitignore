@@ -178,7 +178,7 @@ cython_debug/
 *.ppt
 *.pptx
 
-# Compressed Files
+# Compressions
 *.7z
 *.zip
 *.tar
@@ -198,16 +198,12 @@ cython_debug/
 .DS_Store
 *.jpg
 *.jpeg
-bd.json
-ms.json
-sd.json
 *.srt
 cha_*.json
 ig_*.json
-ig_*.jpg
+ig_*.txt
 code_dump_*.txt
 codedump*.txt
-codedump_*.txt
 .sandbox/
 export_*
 cha_hs_*.json
