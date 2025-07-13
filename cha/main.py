@@ -96,9 +96,6 @@ def interactive_help(selected_model):
         f"{config.ENABLE_OR_DISABLE_AUTO_SD} - Enable or disable auto url detection and scraping"
     )
     help_options.append(
-        f"{config.RUN_CODER_ALIAS} - Run the coder tool to reduce hallucination"
-    )
-    help_options.append(
         f"{config.RUN_EDITOR_ALIAS} - Interactive file editor with diff and shell access"
     )
     help_options.append(
@@ -163,7 +160,6 @@ def title_print(selected_model):
                 - `{config.EXPORT_FILES_IN_OUTPUT_KEY} [all/single]` export files from response(s)
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
-                - `{config.RUN_CODER_ALIAS}` to run the coder tool to reduce hallucination
                 - `{config.RUN_EDITOR_ALIAS}` interactive file editor with diff and shell access
                 - `{config.BACKTRACK_HISTORY_KEY}` to backtrack to a previous point in chat history
                 """
@@ -337,27 +333,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     if num_removed > 1:
                         backtrack_message += "s"
                     print(colors.red(backtrack_message))
-                continue
-
-            if message.strip().startswith(config.RUN_CODER_ALIAS):
-                coder_message = None
-                if len(message.split(" ")) > 1:
-                    coder_message = message.replace(config.RUN_CODER_ALIAS, "").strip()
-
-                try:
-                    from cha import coder
-
-                    code_messages = coder.call_coder(
-                        client=get_current_chat_client(),
-                        initial_prompt=coder_message,
-                        model_name=selected_model,
-                        max_retries=3,
-                    )
-
-                    messages.extend(code_messages)
-                except (KeyboardInterrupt, EOFError):
-                    continue
-
                 continue
 
             if message.strip().startswith(config.RUN_EDITOR_ALIAS):
@@ -831,13 +806,6 @@ def cli():
             action="store_true",
         )
         parser.add_argument(
-            "-c",
-            "--coder",
-            nargs="?",
-            const=True,
-            help="Run the coder tool to reduce hallucination",
-        )
-        parser.add_argument(
             "-e",
             "--export_parsed_text",
             help="Extract code blocks from the final output and save them as files",
@@ -1031,29 +999,6 @@ def cli():
             else:
                 print(colors.red("No model selected, exiting"))
                 return
-
-        if args.coder:
-            try:
-                from cha import coder
-
-                initial_prompt = args.coder if isinstance(args.coder, str) else None
-                conversation_history = coder.call_coder(
-                    client=get_current_chat_client(),
-                    initial_prompt=initial_prompt,
-                    model_name=selected_model,
-                    max_retries=3,
-                )
-            except (KeyboardInterrupt, EOFError, SystemExit):
-                return None
-            except Exception as e:
-                save_chat_state = False
-                raise Exception(f"Coder feature failed: {e}")
-
-            save_chat_state = False
-            if conversation_history is None:
-                raise Exception("Coder feature exited with None")
-
-            return
 
         if args.token_count:
             save_chat_state = False

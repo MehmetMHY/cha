@@ -33,8 +33,6 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Streamlined File Navigation**: Two modes for file selection - simple mode (`!l`) for quick selection in current directory, and advanced mode (`!la`) with full directory traversal, direct path support (`cd dirname`, `cd ..`), clean interface, and efficient file selection using `fzf`.
 - **Chat History Management**: Save, load, and search through your past conversations.
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
-- **Interactive Code Generation**: Draft, review, modify, and execute Python code directly in the chat. The model generates code, lets you review or modify it, runs it, and provides insights based on the execution output.
-- **Code Verification**: Run and verify code solutions using the coder feature to reduce hallucinations and ensure working code.
 - **Interactive File Editor**: Edit files with AI assistance using `!editor`. Select files, make AI-powered edits, view diffs, and access shell for testing.
 - **Export Responses to Files**: Export model responses to files. In interactive mode, use the export command to export the latest response. Use `all` for all responses in the history. Add the `single` argument to save the whole response as one file instead of extracting code blocks (e.g., `single` or `all single`).
 
@@ -207,28 +205,6 @@ The code dump feature uses `fzf` for an improved file selection experience:
   cha -ocr meme.jpg > output.txt
   ```
 
-#### Code Verification with Coder (-c)
-
-- `cha -c "<CODE_REQUEST>"`
-- `cha -c`
-- Examples:
-
-  ```bash
-  # Generate Python code with review and execution
-  cha -c "calculate the area of a circle with radius 5"
-  # 1. Model generates the code
-  # 2. You review and can modify it
-  # 3. Code runs and shows output
-  # 4. Model provides insights based on execution
-
-  # Start interactive code generation session
-  cha -c
-  # Then type your code request at the prompt
-
-  # Use with specific model for more advanced code generation
-  cha -m gpt-4 -c "create a function that sorts a list using bubble sort"
-  ```
-
 #### Platform Switching (-p) and Model Combined
 
 - `cha -p "<PLATFORM_OR_URL|API_KEY_ENV>" -m "<MODEL_NAME>"`
@@ -294,7 +270,7 @@ These appear frequently with "cha" followed by a question/request referencing pr
 In essence, your unique "cha" CLI usage falls into these main patterns:
 
 - Running "cha" with a direct query.
-- Doing code dumps or debug dumps (-code_dump, -c, -d).
+- Doing code dumps or debug dumps (-code_dump, -d).
 - Performing deep answer searches (-a).
 - Perform a quick web search before answering your question/prompt (-b).
 - Feeding in file input (-f).
@@ -302,7 +278,6 @@ In essence, your unique "cha" CLI usage falls into these main patterns:
 - Running OCR operations (-ocr).
 - Switching platforms (-p).
 - Checking token counts (-t).
-- Using the coder feature to generate and verify code (-c).
 - Asking a broad variety of how-to / make-me requests directly after "cha ...".
 
 Note that when you run Cha directly, meaning it conducts a single call to the model through the CLI as an argument, you can use the optional `-e` argument. This will export all code/file blocks in the model's last response that are enclosed in markdown fences. This feature makes it easy for Cha to generate files, such as a Python script, and have them accessible on you system (current directory) without needing to manually create a file, select, copy, and paste the content into a file. You can do this by running Cha like this (example):
@@ -316,7 +291,7 @@ When you run the example command above, it will answer your question in one shot
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 
 ```txt
-usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [-hs] [-x] [-c [CODER]] [string ...]
+usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [-hs] [-x] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -345,8 +320,6 @@ options:
   -hs, --history_search
                         Search and display a previous chat history without starting a new session
   -x, --private         Enable private mode, no chat history will be saved locally
-  -c [CODER], --coder [CODER]
-                        Run the coder tool to reduce hallucination
 ```
 
 ## Development
