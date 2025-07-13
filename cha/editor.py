@@ -305,6 +305,11 @@ class InteractiveEditor:
                 pass
 
 
+def run_editor(client, model_name, file_path=None):
+    editor = InteractiveEditor(client, model_name, file_path=file_path)
+    editor.run()
+
+
 def call_editor(client, initial_prompt, model_name):
     editor = InteractiveEditor(client, model_name, file_path=initial_prompt)
     editor.run()

@@ -835,6 +835,12 @@ def cli():
             help="Enable private mode, no chat history will be saved locally",
             action="store_true",
         )
+        parser.add_argument(
+            "--editor",
+            nargs="?",
+            const=True,
+            help="Run the interactive editor. Optionally provide a file path.",
+        )
 
         args = parser.parse_args()
 
@@ -868,6 +874,16 @@ def cli():
                 print()
             except Exception as e:
                 print(colors.red(f"Failed to search history: {e}"))
+            return
+
+        if args.editor:
+            from cha import editor
+
+            editor.run_editor(
+                client=get_current_chat_client(),
+                model_name=args.model,
+                file_path=args.editor if isinstance(args.editor, str) else None,
+            )
             return
 
         if args.private:

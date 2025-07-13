@@ -188,6 +188,19 @@ The code dump feature uses `fzf` for an improved file selection experience:
 
 - `cha -ide`
 
+#### Interactive Editor with --editor
+
+- `cha --editor`
+- `cha --editor <FILE_PATH>`
+- Example:
+  ```bash
+  cha --editor
+  # or
+  cha --editor ./src/main.py
+  ```
+
+The interactive editor allows you to edit files with AI assistance. You can start it with or without a file path. If no path is provided, you can select a file using an `fzf`-based file picker.
+
 #### Model Selection with -m
 
 - `cha -m <MODEL_NAME>`
@@ -291,7 +304,7 @@ When you run the example command above, it will answer your question in one shot
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 
 ```txt
-usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [-hs] [-x] [string ...]
+usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [-hs] [-x] [--editor [EDITOR]] [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -320,6 +333,7 @@ options:
   -hs, --history_search
                         Search and display a previous chat history without starting a new session
   -x, --private         Enable private mode, no chat history will be saved locally
+  --editor [EDITOR]     Run the interactive editor. Optionally provide a file path.
 ```
 
 ## Development
