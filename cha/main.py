@@ -886,8 +886,23 @@ def cli():
             const=True,
             help="Run the interactive editor. Optionally provide a file path.",
         )
+        parser.add_argument(
+            "-v",
+            "--version",
+            help="Show version information",
+            action="store_true",
+        )
 
         args = parser.parse_args()
+
+        if args.version:
+            try:
+                from importlib.metadata import version
+
+                print(version("cha"))
+            except:
+                print("?")
+            return
 
         if args.init:
             from cha import local
