@@ -71,11 +71,11 @@ def backtrack_history(chat_history):
         return None
 
 
-def interactive_help(selected_model):
+def get_help_options():
     help_options = []
     bracket_options = []
 
-    help_options.append(f"{config.HELP_ALL_ALIAS}")
+    help_options.append(f"{config.HELP_ALL_ALIAS} - Show all help options")
     help_options.append(f"{config.EXIT_STRING_KEY} - Exit chat or CTRL-C")
     help_options.append(f"{config.CLEAR_HISTORY_TEXT} - Clear chat history")
     help_options.append(f"{config.LOAD_MESSAGE_CONTENT} - Load files (simple mode)")
@@ -104,7 +104,6 @@ def interactive_help(selected_model):
     )
     help_options.append(f"{config.HELP_PRINT_OPTIONS_KEY} - List all options")
 
-    # Options with brackets go at the bottom
     bracket_options.append(
         f"{config.MULTI_LINE_MODE_TEXT} - Multi-line switching (type '{config.MULTI_LINE_SEND}' to send)"
     )
@@ -121,16 +120,20 @@ def interactive_help(selected_model):
             f"{config.LOAD_HISTORY_TRIGGER} - Search and load previous chats"
         )
 
-    # Add bracket options to main list
     help_options.extend(bracket_options)
 
-    # External tools go at the very bottom
     external_tools = config.get_external_tools_execute()
     if len(external_tools) > 0:
         for tool in external_tools:
             alias = tool["alias"]
             about = re.sub(r"[.!?]+$", "", tool["description"].lower())
             help_options.append(f"{alias} - {about}")
+
+    return help_options
+
+
+def interactive_help(selected_model):
+    help_options = get_help_options()
 
     try:
         fzf_process = subprocess.run(
@@ -150,18 +153,20 @@ def interactive_help(selected_model):
         )
         selected_output = fzf_process.stdout.decode().strip()
         if selected_output:
-            for item in selected_output.split("\n"):
-                if config.HELP_ALL_ALIAS in item:
-                    print(
-                        colors.yellow(
-                            f"Chatting On {config.CHA_CURRENT_PLATFORM_NAME.upper()} With {selected_model}"
-                        )
+            selected_items = selected_output.split("\n")
+            if len(selected_items) == 1 and config.HELP_ALL_ALIAS in selected_items[0]:
+                print(
+                    colors.yellow(
+                        f"Chatting On {config.CHA_CURRENT_PLATFORM_NAME.upper()} With {selected_model}"
                     )
-                    for help_item in help_options:
-                        if config.HELP_ALL_ALIAS not in help_item:
-                            print(colors.yellow(help_item))
-                else:
-                    print(colors.yellow(item))
+                )
+                for help_item in help_options:
+                    if config.HELP_ALL_ALIAS not in help_item:
+                        print(colors.yellow(help_item))
+            else:
+                for item in selected_items:
+                    if config.HELP_ALL_ALIAS not in item:
+                        print(colors.yellow(item))
 
     except (subprocess.CalledProcessError, subprocess.SubprocessError):
         pass
@@ -170,44 +175,13 @@ def interactive_help(selected_model):
 def title_print(selected_model):
     print(
         colors.yellow(
-            utils.rls(
-                f"""
-                Chatting With {config.CHA_CURRENT_PLATFORM_NAME.upper()} Model: {selected_model}
-                - '{config.EXIT_STRING_KEY}' or CTRL-C to exit
-                - '{config.CLEAR_HISTORY_TEXT}' to clear chat history
-                - '{config.SAVE_CHAT_HISTORY}' to save chat history
-                - '{config.LOAD_MESSAGE_CONTENT}' to load files (simple mode)
-                - '{config.LOAD_MESSAGE_CONTENT_ADVANCED}' to load files (advanced mode)
-                - '{config.HELP_PRINT_OPTIONS_KEY}' to list all options
-                - '{config.RUN_ANSWER_FEATURE}' to run answer search (deep search) or '{config.RUN_ANSWER_FEATURE} <query>' for quick search
-                - '{config.TEXT_EDITOR_INPUT_MODE}' for text-editor input mode
-                - '{config.MULTI_LINE_MODE_TEXT}' for multi-line switching (type '{config.MULTI_LINE_SEND}' to send)
-                - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
-                - '{config.USE_CODE_DUMP}' to codedump a directory as context
-                - `{config.EXPORT_FILES_IN_OUTPUT_KEY} [all/single]` export files from response(s)
-                - `{config.SAVE_CHAT_HISTORY} [text/txt]` save chat history as JSON (default) or text file
-                - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
-                - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
-                - `{config.RUN_EDITOR_ALIAS}` interactive file editor with diff and shell access
-                - `{config.BACKTRACK_HISTORY_KEY}` select and remove specific chats from history
-                """
-            )
+            f"Chatting With {config.CHA_CURRENT_PLATFORM_NAME.upper()} Model: {selected_model}"
         )
     )
-
-    if os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR):
-        print(
-            colors.cyan(
-                f"- '{config.LOAD_HISTORY_TRIGGER} search and load previous chats"
-            )
-        )
-
-    external_tools = config.get_external_tools_execute()
-    if len(external_tools) > 0:
-        for tool in external_tools:
-            alias = tool["alias"]
-            about = re.sub(r"[.!?]+$", "", tool["description"].lower())
-            print(colors.magenta(f"- '{alias}' {about}"))
+    help_options = get_help_options()
+    for option in help_options:
+        if config.HELP_ALL_ALIAS not in option:
+            print(colors.yellow(f"- {option}"))
 
 
 def list_models():

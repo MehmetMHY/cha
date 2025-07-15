@@ -62,7 +62,7 @@ python assets/checkup.py
 printf "\n\n"
 echo "Cha installation is complete!"
 echo
-echo "ImportantNotes:"
+echo "Important Notes:"
 echo "   - If you use 'pyenv', you may need to run 'pyenv rehash'."
 echo "   - The 'checkup.py' script just ran to verify your setup. If you saw any '✗', please address them."
 echo "   - To add custom tools, activate the venv ('source venv/bin/activate') before installing their dependencies."
