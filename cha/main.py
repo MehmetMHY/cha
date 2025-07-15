@@ -23,8 +23,8 @@ CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bo
 
 def backtrack_history(chat_history):
     """
-    Allow users to backtrack through their chat history using fzf for selection.
-    Returns the selected index to backtrack to, or None if cancelled.
+    Allow users to select multiple chat messages to remove from history using fzf.
+    Returns a list of selected indices to remove, or None if cancelled.
     """
     try:
         history_items = []
@@ -43,20 +43,25 @@ def backtrack_history(chat_history):
                     "--reverse",
                     "--height=40%",
                     "--border",
-                    "--prompt=Select message to backtrack to: ",
+                    "--multi",
+                    "--prompt=TAB to multi-select chats to remove, ENTER to confirm: ",
                 ],
                 input="\n".join(history_items).encode(),
                 capture_output=True,
                 check=True,
             )
-            selected = fzf_process.stdout.decode().strip()
-            if not selected:
+            selected_output = fzf_process.stdout.decode().strip()
+            if not selected_output:
                 return None
 
-            index_match = re.match(r"\[(\d+)\]", selected)
-            if index_match:
-                return int(index_match.group(1))
-            return None
+            selected_indices = []
+            for line in selected_output.split("\n"):
+                if line.strip():
+                    index_match = re.match(r"\[(\d+)\]", line)
+                    if index_match:
+                        selected_indices.append(int(index_match.group(1)))
+
+            return selected_indices if selected_indices else None
 
         except (subprocess.CalledProcessError, subprocess.SubprocessError):
             return None
@@ -103,7 +108,7 @@ def interactive_help(selected_model):
         f"{config.RUN_EDITOR_ALIAS} - Interactive file editor with diff and shell access"
     )
     help_options.append(
-        f"{config.BACKTRACK_HISTORY_KEY} - Backtrack to a previous point in chat history"
+        f"{config.BACKTRACK_HISTORY_KEY} - Select and remove specific chats from history"
     )
     help_options.append(f"{config.HELP_PRINT_OPTIONS_KEY} - List all options")
 
@@ -166,7 +171,7 @@ def title_print(selected_model):
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
                 - `{config.RUN_EDITOR_ALIAS}` interactive file editor with diff and shell access
-                - `{config.BACKTRACK_HISTORY_KEY}` to backtrack to a previous point in chat history
+                - `{config.BACKTRACK_HISTORY_KEY}` select and remove specific chats from history
                 """
             )
         )
@@ -316,9 +321,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     print(colors.yellow("No chat history to backtrack through."))
                     continue
 
-                selected_index = backtrack_history(CURRENT_CHAT_HISTORY)
-                if selected_index is not None:
-                    CURRENT_CHAT_HISTORY = CURRENT_CHAT_HISTORY[: selected_index + 1]
+                selected_indices = backtrack_history(CURRENT_CHAT_HISTORY)
+                if selected_indices is not None:
+                    original_length = len(CURRENT_CHAT_HISTORY)
+                    selected_indices = sorted(selected_indices, reverse=True)
+
+                    for index in selected_indices:
+                        if 1 <= index < len(CURRENT_CHAT_HISTORY):
+                            CURRENT_CHAT_HISTORY.pop(index)
 
                     messages = (
                         []
@@ -333,11 +343,13 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                                 {"role": "assistant", "content": item["bot"]}
                             )
 
-                    num_removed = len(CURRENT_CHAT_HISTORY) - selected_index
-                    backtrack_message = f"Backtracked {num_removed} message"
-                    if num_removed > 1:
-                        backtrack_message += "s"
-                    print(colors.red(backtrack_message))
+                    num_removed = original_length - len(CURRENT_CHAT_HISTORY)
+                    if num_removed > 0:
+                        chat_word = "chat" if num_removed == 1 else "chats"
+                        indices_str = ", ".join(
+                            str(i) for i in sorted(selected_indices)
+                        )
+                        print(colors.red(f"Removed {chat_word}: {indices_str}"))
                 continue
 
             if message.strip().startswith(config.RUN_EDITOR_ALIAS):
