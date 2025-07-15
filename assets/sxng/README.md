@@ -8,9 +8,9 @@ SearXNG is an open-source search engine. The catch with it is that you have to h
 
 1. Make sure to install and setup [Docker](https://www.docker.com/)
 
-2. Install the required Python dependencies: `pip install -r requirements.txt`
+2. Make sure [Cha](https://github.com/MehmetMHY/cha/) is installed (this repo).
 
-3. Run the setup script and follow each instruction: `python run.py`
+3. Run the setup script. Use `python run.py` for a default setup or `python run.py --custom` for a custom one.
 
 4. After you have SearXNG setup and running you can have Cha start using your local instance instead of DuckDuckGo's API by setting the `CHA_USE_SEAR_XNG` config variable in `config.py` to `True`. Or you can create and set a variable named `CHA_USE_SEAR_XNG` equal to `True` in your `$HOME/.cha/config.py` file is you have local Cha setup. If you don't know what "local Cha" is, refer to the main [README](../../README.md). When this is set, Cha will default to your local instance of SearXNG. Do not worry, there is logic were if SearXNG fails, Cha tries again with DuckDuckGo.
 

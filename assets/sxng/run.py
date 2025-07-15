@@ -6,6 +6,7 @@ import yaml
 import time
 import sys
 import os
+import argparse
 
 # NOTE: default values
 DEFAULT_PORT = "8080"
@@ -210,43 +211,63 @@ def start_searxng_container(port, name, base_url):
 
 
 def main():
+    # parse command line arguments
+    parser = argparse.ArgumentParser(description="Run SearXNG Docker container")
+    parser.add_argument(
+        "-c",
+        "--custom",
+        action="store_true",
+        help="Enable custom configuration prompts",
+    )
+    args = parser.parse_args()
+
     # check if docker is running
     if not check_docker():
         sys.exit(1)
 
-    # get user inputs
-    if "--default" in sys.argv:
-        port = DEFAULT_PORT
-        name = DEFAULT_NAME
-        base_url = DEFAULT_URL
-        update_choice = "y"
-        stop_choice = "y"
-    else:
+    # get user inputs or use defaults
+    if args.custom:
         port = get_user_input("Enter port", DEFAULT_PORT)
         name = get_user_input("Enter instance name", DEFAULT_NAME)
         base_url = get_user_input("Enter base URL", DEFAULT_URL)
-        update_choice = (
-            input("Do you want to update the searxng image? (y/n): ").strip().lower()
-        )
-        stop_choice = (
-            input(f"An instance is already running on port {port}. Stop it? (y/n): ")
-            .strip()
-            .lower()
-        )
+    else:
+        port = DEFAULT_PORT
+        name = DEFAULT_NAME
+        base_url = DEFAULT_URL
 
     # check for running container on the same port
     running_container = check_running_container(port)
     if running_container:
-        if stop_choice == "y":
+        if args.custom:
+            stop_choice = (
+                input(
+                    f"An instance is already running on port {port}. Stop it? (y/n): "
+                )
+                .strip()
+                .lower()
+            )
+            if stop_choice == "y":
+                if not stop_container(running_container):
+                    print("Failed to stop the running container.")
+                    sys.exit(1)
+            else:
+                print("Exiting without changes.")
+                sys.exit(0)
+        else:
+            print(f"Stopping existing container on port {port}...")
             if not stop_container(running_container):
                 print("Failed to stop the running container.")
                 sys.exit(1)
-        else:
-            print("Exiting without changes.")
-            sys.exit(0)
 
-    # ask about updating the image
-    if update_choice == "y":
+    # ask about updating the image or do it automatically
+    if args.custom:
+        update_choice = (
+            input("Do you want to update the searxng image? (y/n): ").strip().lower()
+        )
+        if update_choice == "y":
+            update_searxng_image()
+    else:
+        print("Updating searxng image...")
         update_searxng_image()
 
     # check if searxng configuration directory exists
