@@ -38,6 +38,7 @@ def print_help():
         [c] cd       : Navigate directories using fzf (includes ".." to go back)
         [s] select   : Select multiple files/dirs in current directory (use TAB to multi-select)
         [u] unselect : Remove files from current selection (use TAB to multi-select)
+        [l] ls       : List all contents in current directory [-f: files | -d: dirs]
         [h] help     : Show this help message
         [e] exit     : Exit the file selection interface
         """
@@ -84,7 +85,21 @@ def run_fzf(items, prompt="", multi_select=False, header=""):
 def cd_command(current_dir, root_dir):
     """Navigate directories using fzf"""
     try:
-        entries = os.listdir(current_dir)
+        entries = []
+        for entry in os.listdir(current_dir):
+            entries.append(entry)
+
+        try:
+            import glob
+
+            hidden_items = glob.glob(os.path.join(current_dir, ".*"))
+            for hidden_path in hidden_items:
+                hidden_name = os.path.basename(hidden_path)
+                if hidden_name not in entries and hidden_name not in [".", ".."]:
+                    entries.append(hidden_name)
+        except:
+            pass
+
         dirs = [
             d
             for d in entries
@@ -128,10 +143,24 @@ def cd_command(current_dir, root_dir):
         return current_dir
 
 
-def select_command(current_dir, selected_files):
-    """Select files/dirs in current directory using fzf"""
+def select_command(current_dir, selected_files, target_name=None):
+    """Select files/dirs in current directory using fzf or direct name"""
     try:
-        entries = os.listdir(current_dir)
+        entries = []
+        for entry in os.listdir(current_dir):
+            entries.append(entry)
+
+        try:
+            import glob
+
+            hidden_items = glob.glob(os.path.join(current_dir, ".*"))
+            for hidden_path in hidden_items:
+                hidden_name = os.path.basename(hidden_path)
+                if hidden_name not in entries and hidden_name not in [".", ".."]:
+                    entries.append(hidden_name)
+        except:
+            pass
+
         dirs = [
             d + "/"
             for d in entries
@@ -151,6 +180,36 @@ def select_command(current_dir, selected_files):
         if not options:
             print(colors.yellow("No files or directories to select"))
             return selected_files
+
+        if target_name:
+            if target_name.startswith("./"):
+                relative_path = target_name[2:]
+                full_path = os.path.join(current_dir, relative_path)
+                if os.path.exists(full_path):
+                    if os.path.isfile(full_path):
+                        selected_files.add(full_path)
+                        return selected_files
+                    elif os.path.isdir(full_path):
+                        dir_files = collect_files(full_path)
+                        for file_path in dir_files:
+                            selected_files.add(file_path)
+                        return selected_files
+                else:
+                    print(colors.red(f"Path '{target_name}' not found"))
+                    return selected_files
+            elif target_name in files:
+                file_path = os.path.join(current_dir, target_name)
+                selected_files.add(file_path)
+                return selected_files
+            elif target_name + "/" in dirs:
+                dir_path = os.path.join(current_dir, target_name)
+                dir_files = collect_files(dir_path)
+                for file_path in dir_files:
+                    selected_files.add(file_path)
+                return selected_files
+            else:
+                print(colors.red(f"File or directory '{target_name}' not found"))
+                return selected_files
 
         selected = run_fzf(
             options,
@@ -178,14 +237,37 @@ def select_command(current_dir, selected_files):
         return selected_files
 
 
-def unselect_command(selected_files):
-    """Remove files from current selection using fzf"""
+def unselect_command(selected_files, target_name=None):
+    """Remove files from current selection using fzf or direct name"""
     if not selected_files:
         print(colors.yellow("No files currently selected"))
         return selected_files
 
     try:
         options = sorted(list(selected_files))
+
+        if target_name:
+            if target_name.startswith("./"):
+                relative_path = target_name[2:]
+                full_path = os.path.join(os.getcwd(), relative_path)
+                full_path = os.path.abspath(full_path)
+                if full_path in selected_files:
+                    selected_files.remove(full_path)
+                    return selected_files
+                else:
+                    print(colors.red(f"Path '{target_name}' not found in selection"))
+                    return selected_files
+            else:
+                matching_files = [
+                    f for f in selected_files if os.path.basename(f) == target_name
+                ]
+                if matching_files:
+                    for file_path in matching_files:
+                        selected_files.remove(file_path)
+                    return selected_files
+                else:
+                    print(colors.red(f"File '{target_name}' not found in selection"))
+                    return selected_files
 
         selected = run_fzf(
             options,
@@ -204,6 +286,54 @@ def unselect_command(selected_files):
     except Exception as e:
         print(colors.red(f"Error unselecting files: {e}"))
         return selected_files
+
+
+def ls_command(current_dir, flag=None):
+    """List all contents in the current directory"""
+    try:
+        entries = []
+        for entry in os.listdir(current_dir):
+            entries.append(entry)
+
+        try:
+            import glob
+
+            hidden_items = glob.glob(os.path.join(current_dir, ".*"))
+            for hidden_path in hidden_items:
+                hidden_name = os.path.basename(hidden_path)
+                if hidden_name not in entries and hidden_name not in [".", ".."]:
+                    entries.append(hidden_name)
+        except:
+            pass
+
+        dirs = []
+        files = []
+
+        for entry in entries:
+            entry_path = os.path.join(current_dir, entry)
+            if os.path.isdir(entry_path):
+                dirs.append(entry + "/")
+            else:
+                files.append(entry)
+
+        dirs.sort(key=str.lower)
+        files.sort(key=str.lower)
+
+        if flag == "-f":
+            all_items = files
+        elif flag == "-d":
+            all_items = dirs
+        else:
+            all_items = dirs + files
+
+        if not all_items:
+            print(colors.yellow("Directory is empty"))
+        else:
+            for item in all_items:
+                print(item)
+
+    except Exception as e:
+        print(colors.red(f"Error listing directory: {e}"))
 
 
 def traverse_and_select_files():
@@ -265,10 +395,32 @@ def traverse_and_select_files():
                             print(colors.yellow(f"Directory '{dir_name}' is ignored"))
             elif user_input_lower in {"cd", "c"}:
                 current_dir = cd_command(current_dir, root_dir)
+            elif user_input_lower.startswith("select ") or user_input_lower.startswith(
+                "s "
+            ):
+                parts = user_input.split(maxsplit=1)
+                target_name = parts[1].strip() if len(parts) > 1 else None
+                selected_files = select_command(
+                    current_dir, selected_files, target_name
+                )
             elif user_input_lower in {"select", "s"}:
                 selected_files = select_command(current_dir, selected_files)
+            elif user_input_lower.startswith(
+                "unselect "
+            ) or user_input_lower.startswith("u "):
+                parts = user_input.split(maxsplit=1)
+                target_name = parts[1].strip() if len(parts) > 1 else None
+                selected_files = unselect_command(selected_files, target_name)
             elif user_input_lower in {"unselect", "u"}:
                 selected_files = unselect_command(selected_files)
+            elif user_input_lower.startswith("ls ") or user_input_lower.startswith(
+                "l "
+            ):
+                parts = user_input.split()
+                flag = parts[1] if len(parts) > 1 else None
+                ls_command(current_dir, flag)
+            elif user_input_lower in {"ls", "l"}:
+                ls_command(current_dir)
             else:
                 print(colors.red("Type 'help' to see available commands"))
 
@@ -285,13 +437,26 @@ def simple_file_select(single_file=False):
     current_dir = os.getcwd()
 
     try:
-        entries = os.listdir(current_dir)
+        entries = []
+        for entry in os.listdir(current_dir):
+            entries.append(entry)
+
+        try:
+            import glob
+
+            hidden_files = glob.glob(os.path.join(current_dir, ".*"))
+            for hidden_path in hidden_files:
+                hidden_name = os.path.basename(hidden_path)
+                if os.path.isfile(hidden_path) and hidden_name not in entries:
+                    entries.append(hidden_name)
+        except:
+            pass
+
         files = [
             f
             for f in entries
             if os.path.isfile(os.path.join(current_dir, f))
             and f not in config.FILES_TO_IGNORE
-            and os.path.splitext(f)[1].lower() not in config.BINARY_EXTENSIONS
         ]
 
         if not files:
