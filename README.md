@@ -305,7 +305,8 @@ When you run the example command above, it will answer your question in one shot
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 
 ```txt
-usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [-hs] [-x] [--editor [EDITOR]] [string ...]
+usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [-hs] [-x] [--editor [EDITOR]] [-v]
+           [string ...]
 
 Chat with an OpenAI GPT model.
 
@@ -335,6 +336,7 @@ options:
                         Search and display a previous chat history without starting a new session
   -x, --private         Enable private mode, no chat history will be saved locally
   --editor [EDITOR]     Run the interactive editor. Optionally provide a file path.
+  -v, --version         Show version information
 ```
 
 ## Development

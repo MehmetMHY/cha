@@ -899,7 +899,7 @@ def cli():
             try:
                 from importlib.metadata import version
 
-                print(version("cha"))
+                print(f"{version('cha')} (Cha)")
             except:
                 print("?")
             return
