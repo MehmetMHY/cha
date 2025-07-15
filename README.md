@@ -103,11 +103,11 @@ uv pip install "git+https://github.com/MehmetMHY/cha.git"
    # checkout docs for installing here: https://github.com/junegunn/fzf
    brew install fzf
 
-   # required for history search functionality (!hs)
+   # required for history search functionality (!r)
    # checkout docs for installing here: https://github.com/BurntSushi/ripgrep
    brew install ripgrep
 
-   # required for history search preview functionality (!hs)
+   # required for history search preview functionality (!r)
    # checkout docs for installing here: https://github.com/sharkdp/bat
    brew install bat
    ```
@@ -387,7 +387,7 @@ Cha lets you store local files to tweak how it works, including:
 - Importing or building your own external tools to use inside Cha
 - Saving all your conversations locally so you can do whatever you want with them
 
-Once local history is enabled, features like browsing and searching your past chats are available using the `-hs` flag or it's alias during an interactive session.
+Once local history is enabled, features like browsing and searching your past chats are available using the `-hs` flag or `!r` during an interactive session.
 
 By default, this is turned off, so there's no need to create any local files for Cha to run. You can set up the local configuration directory by running:
 
