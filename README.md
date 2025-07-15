@@ -16,7 +16,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 
 - **CLI Chat Interface**: Communicate with OpenAI's models via commands `cha`.
 - **Interactive & Non-interactive Modes**: Interact with models via chat interface, command-line arguments, or file input.
-- **Multi-line Input Mode**: Simplifies complex input directly into the CLI.
+- **Multi-line Input Mode**: Simplifies complex input directly into the CLI. Type `\` to toggle multi-line mode, then `\` again to send.
 - **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done though an argument or in interactive mode.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution. Use `!a` for deep search or `!a <query>` for quick search.
@@ -30,12 +30,12 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Integrated Shell Access**: Execute shell commands directly within Cha's environment, enhancing workflow efficiency by providing immediate terminal access.
 - **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
 - **`fzf` for Selection**: Use `fzf` for interactive selection when searching chat history, traversing local files, or using the codedump feature.
-- **Streamlined File Navigation**: Two modes for file selection - simple mode (`!l`) for quick selection in current directory, and advanced mode (`!la`) with full directory traversal, direct path support (`cd dirname`, `cd ..`), clean interface, and efficient file selection using `fzf`.
+- **Streamlined File Navigation**: Two modes for file selection - simple mode (`!l`) for quick selection in current directory, and advanced mode (`!f`) with full directory traversal, direct path support (`cd dirname`, `cd ..`), clean interface, and efficient file selection using `fzf`.
 - **Chat History Management**: Save, load, and search through your past conversations.
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
-- **Interactive File Editor**: Edit files with AI assistance using `!editor`. Select files, make AI-powered edits, view diffs, and access shell for testing.
+- **Interactive File Editor**: Edit files with AI assistance using `!v`. Select files, make AI-powered edits, view diffs, and access shell for testing.
 - **Export Responses to Files**: Export model responses to files. In interactive mode, use the export command to export the latest response. Use `all` for all responses in the history. Add the `single` argument to save the whole response as one file instead of extracting code blocks (e.g., `single` or `all single`).
-- **Export Chat History**: Export your entire chat conversation as JSON (default) or as a readable text file with timestamps and clear user/bot formatting using the `!dw` command (use `!dw text` or `!dw txt` for text format).
+- **Export Chat History**: Export your entire chat conversation as JSON (default) or as a readable text file with timestamps and clear user/bot formatting using the `!w` command (use `!w text` or `!w txt` for text format).
 
 ## Getting Started
 

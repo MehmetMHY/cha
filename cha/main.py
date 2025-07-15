@@ -73,31 +73,23 @@ def backtrack_history(chat_history):
 
 def interactive_help(selected_model):
     help_options = []
+    bracket_options = []
 
+    help_options.append(f"{config.HELP_ALL_ALIAS}")
     help_options.append(f"{config.EXIT_STRING_KEY} - Exit chat or CTRL-C")
     help_options.append(f"{config.CLEAR_HISTORY_TEXT} - Clear chat history")
-    help_options.append(f"{config.SAVE_CHAT_HISTORY} - Save chat history")
     help_options.append(f"{config.LOAD_MESSAGE_CONTENT} - Load files (simple mode)")
     help_options.append(
         f"{config.LOAD_MESSAGE_CONTENT_ADVANCED} - Load files (advanced mode)"
     )
     help_options.append(
-        f"{config.RUN_ANSWER_FEATURE} - Run answer search (deep search) or '{config.RUN_ANSWER_FEATURE} <query>' for quick search"
+        f"{config.RUN_ANSWER_FEATURE} - Answer search or '{config.RUN_ANSWER_FEATURE} <query>' for quick search"
     )
     help_options.append(f"{config.TEXT_EDITOR_INPUT_MODE} - Text-editor input mode")
-    help_options.append(
-        f"{config.MULTI_LINE_MODE_TEXT} - Multi-line switching (type '{config.MULTI_LINE_SEND}' to send)"
-    )
     help_options.append(
         f"{config.SWITCH_MODEL_TEXT} - Switch between models during a session"
     )
     help_options.append(f"{config.USE_CODE_DUMP} - Codedump a directory as context")
-    help_options.append(
-        f"{config.EXPORT_FILES_IN_OUTPUT_KEY} [all/single] - Export files from response(s)"
-    )
-    help_options.append(
-        f"{config.SAVE_CHAT_HISTORY} [text/txt] - Save chat history as JSON (default) or text file"
-    )
     help_options.append(
         f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Pick and run a shell while still being in Cha"
     )
@@ -112,11 +104,27 @@ def interactive_help(selected_model):
     )
     help_options.append(f"{config.HELP_PRINT_OPTIONS_KEY} - List all options")
 
+    # Options with brackets go at the bottom
+    bracket_options.append(
+        f"{config.MULTI_LINE_MODE_TEXT} - Multi-line switching (type '{config.MULTI_LINE_SEND}' to send)"
+    )
+    bracket_options.append(f"{config.SAVE_CHAT_HISTORY} - Save chat history")
+    bracket_options.append(
+        f"{config.EXPORT_FILES_IN_OUTPUT_KEY} [all/single] - Export files from response(s)"
+    )
+    bracket_options.append(
+        f"{config.SAVE_CHAT_HISTORY} [text/txt] - Save chat history as JSON (default) or text file"
+    )
+
     if os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR):
         help_options.append(
             f"{config.LOAD_HISTORY_TRIGGER} - Search and load previous chats"
         )
 
+    # Add bracket options to main list
+    help_options.extend(bracket_options)
+
+    # External tools go at the very bottom
     external_tools = config.get_external_tools_execute()
     if len(external_tools) > 0:
         for tool in external_tools:
@@ -143,7 +151,17 @@ def interactive_help(selected_model):
         selected_output = fzf_process.stdout.decode().strip()
         if selected_output:
             for item in selected_output.split("\n"):
-                print(colors.yellow(item))
+                if config.HELP_ALL_ALIAS in item:
+                    print(
+                        colors.yellow(
+                            f"Chatting On {config.CHA_CURRENT_PLATFORM_NAME.upper()} With {selected_model}"
+                        )
+                    )
+                    for help_item in help_options:
+                        if config.HELP_ALL_ALIAS not in help_item:
+                            print(colors.yellow(help_item))
+                else:
+                    print(colors.yellow(item))
 
     except (subprocess.CalledProcessError, subprocess.SubprocessError):
         pass
@@ -304,11 +322,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             user_input_string = colors.blue("User: ")
 
             if multi_line_input:
-                print(
-                    colors.yellow(
-                        f"Multi-Line Mode (type '{config.MULTI_LINE_SEND}' to send message)"
-                    )
-                )
                 user_input_string = colors.red("[M] ") + colors.blue("User: ")
 
             if auto_scrape_detection_mode:
