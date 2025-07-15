@@ -35,6 +35,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
 - **Interactive File Editor**: Edit files with AI assistance using `!editor`. Select files, make AI-powered edits, view diffs, and access shell for testing.
 - **Export Responses to Files**: Export model responses to files. In interactive mode, use the export command to export the latest response. Use `all` for all responses in the history. Add the `single` argument to save the whole response as one file instead of extracting code blocks (e.g., `single` or `all single`).
+- **Export Chat History**: Export your entire chat conversation as JSON (default) or as a readable text file with timestamps and clear user/bot formatting using the `!dw` command (use `!dw text` or `!dw txt` for text format).
 
 ## Getting Started
 

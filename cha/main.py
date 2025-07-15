@@ -2,6 +2,7 @@ import subprocess
 import traceback
 import argparse
 import time
+import uuid
 import json
 import sys
 import os
@@ -90,6 +91,9 @@ def interactive_help(selected_model):
         f"{config.EXPORT_FILES_IN_OUTPUT_KEY} [all/single] - Export files from response(s)"
     )
     help_options.append(
+        f"{config.SAVE_CHAT_HISTORY} [text/txt] - Save chat history as JSON (default) or text file"
+    )
+    help_options.append(
         f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Pick and run a shell while still being in Cha"
     )
     help_options.append(
@@ -158,6 +162,7 @@ def title_print(selected_model):
                 - '{config.SWITCH_MODEL_TEXT}' switch between models during a session
                 - '{config.USE_CODE_DUMP}' to codedump a directory as context
                 - `{config.EXPORT_FILES_IN_OUTPUT_KEY} [all/single]` export files from response(s)
+                - `{config.SAVE_CHAT_HISTORY} [text/txt]` save chat history as JSON (default) or text file
                 - `{config.PICK_AND_RUN_A_SHELL_OPTION}` pick and run a shell well still being in Cha
                 - `{config.ENABLE_OR_DISABLE_AUTO_SD}` enable or disable auto url detection and scraping
                 - `{config.RUN_EDITOR_ALIAS}` interactive file editor with diff and shell access
@@ -540,11 +545,52 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         )
                     continue
 
-            # save chat history to a JSON file
-            if message == config.SAVE_CHAT_HISTORY:
-                cha_filepath = f"cha_{int(time.time())}.json"
-                utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
-                print(colors.red(f"Saved current chat history to {cha_filepath}"))
+            # save chat history to a JSON file or text file
+            if message.strip().startswith(config.SAVE_CHAT_HISTORY):
+                args = message.strip().lower().split()
+
+                # Check if user wants text export
+                if len(args) > 1 and args[1] in ["text", "txt"]:
+                    # Export as text file (like old !ew command)
+                    if len(CURRENT_CHAT_HISTORY) > 1:
+                        chat_filename = (
+                            f"cha_{str(uuid.uuid4()).replace('-', '')[:8]}.txt"
+                        )
+                        chat_content = ""
+
+                        for history_item in CURRENT_CHAT_HISTORY[1:]:
+                            timestamp = time.strftime(
+                                "%Y-%m-%d %H:%M:%S",
+                                time.localtime(history_item["time"]),
+                            )
+
+                            if history_item.get("user"):
+                                chat_content += (
+                                    f"[{timestamp}] User:\n{history_item['user']}\n\n"
+                                )
+
+                            if history_item.get("bot"):
+                                chat_content += (
+                                    f"[{timestamp}] Bot:\n{history_item['bot']}\n\n"
+                                )
+
+                        try:
+                            with open(chat_filename, "w", encoding="utf-8") as f:
+                                f.write(chat_content.strip())
+                            print(
+                                colors.green(
+                                    f"Chat history exported to {chat_filename}"
+                                )
+                            )
+                        except Exception as e:
+                            print(colors.red(f"Failed to export chat history: {e}"))
+                    else:
+                        print(colors.yellow("No chat history to export."))
+                else:
+                    # Default behavior: save as JSON
+                    cha_filepath = f"cha_{int(time.time())}.json"
+                    utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
+                    print(colors.red(f"Saved current chat history to {cha_filepath}"))
                 continue
 
             if message.strip().startswith(config.EXPORT_FILES_IN_OUTPUT_KEY):

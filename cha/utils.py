@@ -103,13 +103,6 @@ def export_file_logic(text_content, force_single_file=False):
         if extracted["total"] == 0:
             print(colors.yellow("No blocks found for exporting"))
 
-        if extracted["brute_method"] == True:
-            print(
-                colors.red(
-                    f"Failed to extract code blocks, entire response is saved to a single text file"
-                )
-            )
-
         if len(extracted["errors"]) > 0:
             print(
                 colors.red(
@@ -130,10 +123,11 @@ def export_file_logic(text_content, force_single_file=False):
 def extract_code_blocks(text, file_start_str="", force_single_file=False):
     output = {"created": [], "errors": [], "total": 0, "brute_method": False}
 
-    pattern = r"```([a-zA-Z0-9+\-#]*)\n(.*?)```"
+    # improved regex pattern to handle more variations
+    pattern = r"```\s*([a-zA-Z0-9+\-#./]*)\s*\n(.*?)```"
     matches = []
     if not force_single_file:
-        matches = re.findall(pattern, text, re.DOTALL)
+        matches = re.findall(pattern, text, re.DOTALL | re.MULTILINE)
 
     # if no code blocks were found, save the entire text as a .txt file
     if not matches:
@@ -156,6 +150,11 @@ def extract_code_blocks(text, file_start_str="", force_single_file=False):
         filename = None
         try:
             lang = lang.strip().lower() if lang else None
+
+            # handle empty language specifier
+            if not lang:
+                lang = "txt"
+
             extension = config.FILETYPE_TO_EXTENSION.get(lang, ".txt")
 
             filename = (
