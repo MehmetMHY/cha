@@ -623,6 +623,78 @@ def normalize_whitespace(text: str, tab_size: int = 4) -> str:
     return leading + middle + trailing
 
 
+def format_path_for_fzf(path):
+    """
+    format a file/directory path for better fzf display.
+    returns: filename/:full_path for directories, filename:full_path for files
+    """
+    if os.path.isdir(path):
+        dirname = os.path.basename(path) or os.path.basename(os.path.dirname(path))
+        return f"{dirname}/:{path}"
+    else:
+        filename = os.path.basename(path)
+        return f"{filename}:{path}"
+
+
+def extract_path_from_fzf_format(formatted_line):
+    """
+    extract the actual path from a formatted fzf line.
+    input: "filename/:full_path" or "filename:full_path"
+    returns: full_path
+    """
+    if ":/" in formatted_line:
+        # handle directory format "dirname/:full_path"
+        return "/" + formatted_line.split(":/", 1)[1]
+    elif ":" in formatted_line:
+        # handle file format "filename:full_path"
+        path_part = formatted_line.split(":", 1)[1]
+        # if it doesn't start with /, add it back
+        if not path_part.startswith("/"):
+            path_part = "/" + path_part
+        return path_part
+    return formatted_line  # fallback if format is unexpected
+
+
+def format_paths_for_fzf(paths):
+    """
+    format a list of paths for fzf display.
+    returns: (formatted_paths_list, path_mapping_dict)
+    """
+    formatted_paths = []
+    path_mapping = {}
+
+    for path in paths:
+        formatted = format_path_for_fzf(path)
+        formatted_paths.append(formatted)
+        path_mapping[formatted] = path
+
+    return formatted_paths, path_mapping
+
+
+def extract_paths_from_fzf_selection(selected_lines, path_mapping=None):
+    """
+    extract actual paths from fzf selection output.
+    """
+    if not selected_lines:
+        return []
+
+    if isinstance(selected_lines, str):
+        selected_lines = selected_lines.strip().split("\n")
+
+    paths = []
+    for line in selected_lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        if path_mapping and line in path_mapping:
+            paths.append(path_mapping[line])
+        else:
+            paths.append(extract_path_from_fzf_format(line))
+
+    return paths
+
+
 def rls(text: str, fast_mode: bool = False) -> str:
     if fast_mode:
         return textwrap.dedent(text)

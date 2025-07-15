@@ -106,17 +106,22 @@ def interactive_selection(root_path, files_dict, include_mode=False):
         items_to_select = [config.NOTHING_SELECTED_TAG]
         item_map = {}
 
+        # prepare paths for formatting
+        paths_to_format = []
+
         # add directories
         for d in directories:
-            display_name = os.path.relpath(d, root_path) + "/"
-            items_to_select.append(display_name)
-            item_map[display_name] = ("dir", d)
+            paths_to_format.append(d)
+            item_map[d] = ("dir", d)
 
         # add files
         for f in files_dict.keys():
-            display_name = os.path.relpath(f, root_path)
-            items_to_select.append(display_name)
-            item_map[display_name] = ("file", f)
+            paths_to_format.append(f)
+            item_map[f] = ("file", f)
+
+        # format paths for better fzf display
+        formatted_paths, path_mapping = utils.format_paths_for_fzf(paths_to_format)
+        items_to_select.extend(formatted_paths)
 
         if items_to_select:
             items_to_select.sort()
@@ -142,17 +147,22 @@ def interactive_selection(root_path, files_dict, include_mode=False):
                     and selected_display_items[0]
                     and config.NOTHING_SELECTED_TAG not in selected_display_items
                 ):
-                    for display_item in selected_display_items:
-                        if display_item in item_map:
-                            item_type, item_path = item_map[display_item]
+                    # convert back to actual paths
+                    actual_paths = utils.extract_paths_from_fzf_selection(
+                        selected_display_items, path_mapping
+                    )
+
+                    for item_path in actual_paths:
+                        if item_path in item_map:
+                            item_type, actual_item_path = item_map[item_path]
                             if item_type == "dir":
                                 # add all files in this directory
                                 for f in files_dict.keys():
-                                    if f.startswith(item_path):
+                                    if f.startswith(actual_item_path):
                                         selected.add(f)
                             else:
                                 # add the specific file
-                                selected.add(item_path)
+                                selected.add(actual_item_path)
             except (subprocess.CalledProcessError, FileNotFoundError):
                 return None
     else:
@@ -174,11 +184,9 @@ def interactive_selection(root_path, files_dict, include_mode=False):
 
         # handle directory selection with fzf
         if directories:
-            dir_display_list = [
-                os.path.relpath(d, root_path) + "/" for d in directories
-            ]
-            dir_map = {os.path.relpath(d, root_path) + "/": d for d in directories}
-            dir_display_list.insert(0, config.NOTHING_SELECTED_TAG)
+            # format paths for better fzf display
+            formatted_dirs, dir_mapping = utils.format_paths_for_fzf(directories)
+            dir_display_list = [config.NOTHING_SELECTED_TAG] + formatted_dirs
             fzf_input = "\n".join(dir_display_list)
 
             try:
@@ -201,9 +209,12 @@ def interactive_selection(root_path, files_dict, include_mode=False):
                     and selected_display_dirs[0]
                     and config.NOTHING_SELECTED_TAG not in selected_display_dirs
                 ):
-                    selected_dirs = {
-                        dir_map[d] for d in selected_display_dirs if d in dir_map
-                    }
+                    # convert back to actual paths
+                    actual_dirs = utils.extract_paths_from_fzf_selection(
+                        selected_display_dirs, dir_mapping
+                    )
+                    selected_dirs = set(actual_dirs)
+
                     for f in list(files_dict.keys()):
                         if any(f.startswith(d) for d in selected_dirs):
                             selected.add(f)
@@ -215,13 +226,12 @@ def interactive_selection(root_path, files_dict, include_mode=False):
 
         if remaining_files:
             remaining_files_sorted = sorted(remaining_files)
-            file_display_list = [
-                os.path.relpath(rf, root_path) for rf in remaining_files_sorted
-            ]
-            path_map = {
-                os.path.relpath(rf, root_path): rf for rf in remaining_files_sorted
-            }
-            file_display_list.insert(0, config.NOTHING_SELECTED_TAG)
+
+            # format paths for better fzf display
+            formatted_files, file_mapping = utils.format_paths_for_fzf(
+                remaining_files_sorted
+            )
+            file_display_list = [config.NOTHING_SELECTED_TAG] + formatted_files
             fzf_input = "\n".join(file_display_list)
 
             try:
@@ -244,8 +254,11 @@ def interactive_selection(root_path, files_dict, include_mode=False):
                     and selected_display_files[0]
                     and config.NOTHING_SELECTED_TAG not in selected_display_files
                 ):
-                    for display_path in selected_display_files:
-                        full_path = path_map.get(display_path)
+                    # convert back to actual paths
+                    actual_files = utils.extract_paths_from_fzf_selection(
+                        selected_display_files, file_mapping
+                    )
+                    for full_path in actual_files:
                         if full_path:
                             selected.add(full_path)
             except (subprocess.CalledProcessError, FileNotFoundError):

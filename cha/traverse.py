@@ -119,14 +119,30 @@ def cd_command(current_dir, root_dir):
             print(colors.yellow("No directories to navigate to"))
             return current_dir
 
+        # format paths for better fzf display (except for "..")
+        formatted_options = []
+        path_mapping = {}
+
+        for option in options:
+            if option == "..":
+                formatted_options.append(option)
+                path_mapping[option] = option
+            else:
+                full_path = os.path.join(current_dir, option)
+                formatted = utils.format_path_for_fzf(full_path)
+                formatted_options.append(formatted)
+                path_mapping[formatted] = option
+
         selected = run_fzf(
-            options,
+            formatted_options,
             prompt="Navigate to> ",
             header="Select directory to navigate to (.. = go back)",
         )
 
         if selected:
-            choice = selected[0]
+            choice_formatted = selected[0]
+            choice = path_mapping.get(choice_formatted, choice_formatted)
+
             if choice == "..":
                 return parent_dir
             else:
@@ -211,24 +227,37 @@ def select_command(current_dir, selected_files, target_name=None):
                 print(colors.red(f"File or directory '{target_name}' not found"))
                 return selected_files
 
+        # create full paths for formatting
+        full_paths = []
+        for item in options:
+            if item.endswith("/"):
+                dir_name = item[:-1]
+                full_paths.append(os.path.join(current_dir, dir_name))
+            else:
+                full_paths.append(os.path.join(current_dir, item))
+
+        # format paths for better fzf display
+        formatted_paths, path_mapping = utils.format_paths_for_fzf(full_paths)
+
         selected = run_fzf(
-            options,
+            formatted_paths,
             prompt="Select files/dirs> ",
             multi_select=True,
             header="Use TAB to select/deselect multiple items, ENTER to confirm",
         )
 
         if selected:
-            for item in selected:
-                if item.endswith("/"):
-                    dir_name = item[:-1]
-                    dir_path = os.path.join(current_dir, dir_name)
-                    dir_files = collect_files(dir_path)
+            # convert back to actual paths
+            actual_paths = utils.extract_paths_from_fzf_selection(
+                selected, path_mapping
+            )
+            for full_path in actual_paths:
+                if os.path.isdir(full_path):
+                    dir_files = collect_files(full_path)
                     for file_path in dir_files:
                         selected_files.add(file_path)
                 else:
-                    file_path = os.path.join(current_dir, item)
-                    selected_files.add(file_path)
+                    selected_files.add(full_path)
 
         return selected_files
 
@@ -269,17 +298,24 @@ def unselect_command(selected_files, target_name=None):
                     print(colors.red(f"File '{target_name}' not found in selection"))
                     return selected_files
 
+        # format paths for better fzf display
+        formatted_paths, path_mapping = utils.format_paths_for_fzf(options)
+
         selected = run_fzf(
-            options,
+            formatted_paths,
             prompt="Unselect files> ",
             multi_select=True,
             header="Use TAB to select files to REMOVE from selection, ENTER to confirm",
         )
 
         if selected:
-            for item in selected:
-                if item in selected_files:
-                    selected_files.remove(item)
+            # convert back to actual paths and remove them
+            actual_paths = utils.extract_paths_from_fzf_selection(
+                selected, path_mapping
+            )
+            for path in actual_paths:
+                if path in selected_files:
+                    selected_files.remove(path)
 
         return selected_files
 
