@@ -535,7 +535,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     continue
                 message_lines = [message]
                 while True:
-                    line = utils.safe_input("... ").rstrip("\n")
+                    line = utils.safe_input("").rstrip("\n")
                     if line.lower() == config.MULTI_LINE_SEND.lower():
                         break
                     message_lines.append(line)
