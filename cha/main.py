@@ -535,7 +535,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     continue
                 message_lines = [message]
                 while True:
-                    line = utils.safe_input().rstrip("\n")
+                    line = utils.safe_input("... ").rstrip("\n")
                     if line.lower() == config.MULTI_LINE_SEND.lower():
                         break
                     message_lines.append(line)
@@ -619,12 +619,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     continue
                 else:
                     auto_scrape_detection_mode = not auto_scrape_detection_mode
-                    if auto_scrape_detection_mode:
-                        print(
-                            colors.yellow(
-                                f"Entered auto url detection & scraping. Type '{config.ENABLE_OR_DISABLE_AUTO_SD}' to exist"
-                            )
-                        )
                     continue
 
             # save chat history to a JSON file or text file

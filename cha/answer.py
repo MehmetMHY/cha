@@ -257,7 +257,6 @@ def answer_search(
     user_input_mode=False,
 ):
     if user_input_mode or prompt == None:
-        print(colors.red(colors.underline(f"Advance Answer Search - User Input")))
         prompt = utils.safe_input(colors.blue(f"Question: "))
         if prompt == config.TEXT_EDITOR_INPUT_MODE.strip():
             editor_content = utils.check_terminal_editors_and_edit()
