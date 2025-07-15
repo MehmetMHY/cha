@@ -6,7 +6,7 @@ Check out the complete [demo](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
 ## Overview
 
-Cha is an open-source command-line tool that simplifies interactions with AI models from OpenAI. It allows users to efficiently engage with powerful language models directly from their terminal, enhancing development workflows.
+Cha is an open-source command-line tool that simplifies interactions with AI models from multiple providers including OpenAI, Anthropic, Groq, DeepSeek, and more. It allows users to efficiently engage with powerful language models directly from their terminal, with the ability to switch between different AI platforms mid-conversation while maintaining full chat history.
 
 ## Vision
 
@@ -23,7 +23,8 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
-- **Switch Between Models**: Easily switch between models during a conversation.
+- **Switch Between Models**: Easily switch between models during a conversation using `!m`.
+- **Switch Between Platforms**: Switch between different AI platforms (OpenAI, Anthropic, Groq, etc.) mid-conversation using `!p`, maintaining full chat history.
 - **Code Dump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
 - **Quick Web Search**: Well chatting you can ask a question/prompt and have Cha browse the web real quick before answering your question.
 - **Export Markdown Fences**: If desired, export any Markdown fence in the latest message from a model to file(s).
@@ -35,7 +36,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
 - **Interactive File Editor**: Edit files with AI assistance using `!v`. Select files, make AI-powered edits, view diffs, and access shell for testing.
 - **Export Responses to Files**: Export model responses to files. In interactive mode, use the export command to export the latest response. Use `all` for all responses in the history. Add the `single` argument to save the whole response as one file instead of extracting code blocks (e.g., `single` or `all single`).
-- **Export Chat History**: Export your entire chat conversation as JSON (default) or as a readable text file with timestamps and clear user/bot formatting using the `!w` command (use `!w text` or `!w txt` for text format).
+- **Export Chat History**: Export your entire chat conversation as JSON (default) or as a readable text file with timestamps, platform/model information, and clear user/bot formatting using the `!w` command (use `!w text` or `!w txt` for text format).
 
 ## Getting Started
 
@@ -257,7 +258,38 @@ The interactive editor allows you to edit files with AI assistance. You can star
 #### History Search and Management
 
 - `cha -hs` - Search and display previous chat histories
-- `cha` then type `historyload` during interactive mode to load a previous chat
+- `cha` then type `!r` during interactive mode to load a previous chat
+
+#### Interactive Platform and Model Switching
+
+During an interactive chat session, you can switch platforms and models on the fly:
+
+- `!p` - Interactive platform selection (uses fzf for platform and model selection)
+- `!p <platform_name>` - Switch to a specific platform (e.g., `!p anthropic`)
+- `!p <platform_name>|<model_name>` - Switch to specific platform and model (e.g., `!p groq|llama-3.1-8b`)
+- `!m` - Interactive model selection within current platform
+- `!m <model_name>` - Switch to a specific model (e.g., `!m gpt-4`)
+
+**Examples:**
+
+```bash
+# Start a chat
+cha
+
+# During the chat, switch to Anthropic
+!p anthropic
+
+# Switch to Groq with specific model
+!p groq|llama-3.1-8b
+
+# Switch back to OpenAI
+!p openai
+
+# Switch just the model within current platform
+!m gpt-4o
+```
+
+All chat history is preserved when switching platforms, and exported chat history (`!w text`) includes platform/model information for each message.
 
 #### Model Autoselection (-sm)
 

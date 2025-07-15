@@ -18,7 +18,15 @@ except (KeyboardInterrupt, EOFError):
     sys.exit(1)
 
 
-CURRENT_CHAT_HISTORY = [{"time": time.time(), "user": config.INITIAL_PROMPT, "bot": ""}]
+CURRENT_CHAT_HISTORY = [
+    {
+        "time": time.time(),
+        "user": config.INITIAL_PROMPT,
+        "bot": "",
+        "platform": config.CHA_CURRENT_PLATFORM_NAME,
+        "model": config.CHA_DEFAULT_MODEL,
+    }
+]
 
 
 def backtrack_history(chat_history):
@@ -88,6 +96,9 @@ def get_help_options():
     help_options.append(f"{config.TEXT_EDITOR_INPUT_MODE} - Text-editor input mode")
     help_options.append(
         f"{config.SWITCH_MODEL_TEXT} - Switch between models during a session"
+    )
+    help_options.append(
+        f"{config.SWITCH_PLATFORM_TEXT} - Switch between platforms during a session"
     )
     help_options.append(f"{config.USE_CODE_DUMP} - Codedump a directory as context")
     help_options.append(
@@ -241,13 +252,12 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
     auto_scrape_detection_mode = False
 
-    # for models (e.g. "o1") that do NOT accept system prompts, skip the system message
+    # o1 models don't accept system prompts
     messages = (
         [] if reasoning_model else [{"role": "user", "content": config.INITIAL_PROMPT}]
     )
     multi_line_input = False
 
-    # handle file input or direct content string (non-interactive mode)
     if filepath or content_string:
         if filepath:
             if "/" not in filepath:
@@ -359,7 +369,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
                 continue
 
-            # handle text-editor input
             if message == config.TEXT_EDITOR_INPUT_MODE:
                 editor_content = utils.check_terminal_editors_and_edit()
                 if editor_content is None:
@@ -381,10 +390,82 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         reasoning_model = utils.is_slow_model(selected_model)
 
                 else:
-                    # NOTE: this is not user-safe and can cause an error if the user inputs a model name wrong, but it's much faster to do this
+                    # note: unsafe but faster direct model switching
                     selected_model = parts[1].strip()
                     print(colors.magenta(f"Switched to model: {selected_model}"))
                     reasoning_model = utils.is_slow_model(selected_model)
+
+                continue
+
+            if message.startswith(config.SWITCH_PLATFORM_TEXT):
+                parts = message.strip().split(maxsplit=1)
+                if len(parts) == 1:
+                    from cha import platforms
+
+                    try:
+                        platform_values = platforms.auto_select_a_platform()
+                        if platform_values:
+                            API_KEY_NAME = platform_values["env_name"]
+                            BASE_URL_VALUE = platform_values["base_url"]
+                            selected_model = platform_values["picked_model"]
+                            platform_name = platform_values["platform_name"]
+
+                            API_KEY_VALUE = API_KEY_NAME
+                            if API_KEY_VALUE in os.environ:
+                                API_KEY_VALUE = os.environ.get(API_KEY_NAME)
+
+                            set_current_chat_client(API_KEY_VALUE, BASE_URL_VALUE)
+                            config.CHA_CURRENT_PLATFORM_NAME = platform_name
+                            reasoning_model = utils.is_slow_model(selected_model)
+
+                            print(
+                                colors.magenta(f"Switched to platform: {platform_name}")
+                            )
+                            print(colors.magenta(f"Using model: {selected_model}"))
+                        else:
+                            print(colors.red("No platform selected"))
+                    except Exception as e:
+                        print(colors.red(f"Failed to switch platform: {e}"))
+                else:
+                    try:
+                        from cha import platforms
+
+                        platform_args = parts[1].strip()
+                        platform_values = platforms.auto_select_a_platform(
+                            platform_key=(
+                                platform_args.split("|")[0]
+                                if "|" in platform_args
+                                else platform_args
+                            ),
+                            model_name=(
+                                platform_args.split("|")[1]
+                                if "|" in platform_args
+                                else None
+                            ),
+                        )
+
+                        if platform_values:
+                            API_KEY_NAME = platform_values["env_name"]
+                            BASE_URL_VALUE = platform_values["base_url"]
+                            selected_model = platform_values["picked_model"]
+                            platform_name = platform_values["platform_name"]
+
+                            API_KEY_VALUE = API_KEY_NAME
+                            if API_KEY_VALUE in os.environ:
+                                API_KEY_VALUE = os.environ.get(API_KEY_NAME)
+
+                            set_current_chat_client(API_KEY_VALUE, BASE_URL_VALUE)
+                            config.CHA_CURRENT_PLATFORM_NAME = platform_name
+                            reasoning_model = utils.is_slow_model(selected_model)
+
+                            print(
+                                colors.magenta(f"Switched to platform: {platform_name}")
+                            )
+                            print(colors.magenta(f"Using model: {selected_model}"))
+                        else:
+                            print(colors.red("Failed to switch platform"))
+                    except Exception as e:
+                        print(colors.red(f"Failed to switch platform: {e}"))
 
                 continue
 
@@ -496,6 +577,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                                     "time": time.time(),
                                     "user": message,
                                     "bot": tool_result,
+                                    "platform": config.CHA_CURRENT_PLATFORM_NAME,
+                                    "model": selected_model,
                                 }
                             )
                         message = tool_result
@@ -562,16 +645,15 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                                 "%Y-%m-%d %H:%M:%S",
                                 time.localtime(history_item["time"]),
                             )
+                            platform = history_item.get("platform", "unknown")
+                            model = history_item.get("model", "unknown")
+                            platform_info = f"[{platform}:{model}]"
 
                             if history_item.get("user"):
-                                chat_content += (
-                                    f"[{timestamp}] User:\n{history_item['user']}\n\n"
-                                )
+                                chat_content += f"[{timestamp}] {platform_info} User:\n{history_item['user']}\n\n"
 
                             if history_item.get("bot"):
-                                chat_content += (
-                                    f"[{timestamp}] Bot:\n{history_item['bot']}\n\n"
-                                )
+                                chat_content += f"[{timestamp}] {platform_info} Bot:\n{history_item['bot']}\n\n"
 
                         try:
                             with open(chat_filename, "w", encoding="utf-8") as f:
@@ -713,7 +795,13 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         messages.append({"role": "user", "content": message})
 
                         CURRENT_CHAT_HISTORY.append(
-                            {"time": time.time(), "user": "", "bot": message}
+                            {
+                                "time": time.time(),
+                                "user": "",
+                                "bot": message,
+                                "platform": config.CHA_CURRENT_PLATFORM_NAME,
+                                "model": selected_model,
+                            }
                         )
                     except (KeyboardInterrupt, EOFError, SystemExit):
                         pass
@@ -734,6 +822,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             "time": time.time(),
             "user": messages[-1]["content"],
             "bot": "",
+            "platform": config.CHA_CURRENT_PLATFORM_NAME,
+            "model": selected_model,
         }
 
         # attempt to send the user's prompt to the selected model
