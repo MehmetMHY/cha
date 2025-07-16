@@ -25,7 +25,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
 - **Switch Between Models**: Easily switch between models during a conversation using `!m`.
 - **Switch Between Platforms**: Switch between different AI platforms (OpenAI, Anthropic, Groq, etc.) mid-conversation using `!p`, maintaining full chat history.
-- **Code Dump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
+- **Codedump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
 - **Quick Web Search**: Well chatting you can ask a question/prompt and have Cha browse the web real quick before answering your question.
 - **Export Markdown Fences**: If desired, export any Markdown fence in the latest message from a model to file(s).
 - **Integrated Shell Access**: Execute shell commands directly within Cha's environment using `!x` (interactive shell) or `!x <command>` (run specific commands), enhancing workflow efficiency by providing immediate terminal access.
@@ -170,7 +170,7 @@ You can check the instructions below for more details on what Cha can do and how
 - `cha --code_dump`
 - `cha -d`
 
-The code dump feature uses `fzf` for an improved file selection experience:
+The codedump feature uses `fzf` for an improved file selection experience:
 
 - Navigate directories with `cd` (supports direct paths like `cd dirname` and `cd ..`)
 - Select files with `select` command
@@ -325,7 +325,7 @@ These appear frequently with "cha" followed by a question/request referencing pr
 In essence, your unique "cha" CLI usage falls into these main patterns:
 
 - Running "cha" with a direct query.
-- Doing code dumps or debug dumps (-code_dump, -d).
+- Doing codedumps or debug dumps (-code_dump, -d).
 - Performing deep answer searches (-a).
 - Perform a quick web search before answering your question/prompt (-b).
 - Feeding in file input (-f).
@@ -365,7 +365,7 @@ options:
   -p [PLATFORM], --platform [PLATFORM]
                         Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag with "-p" for True
   -d [CODE_DUMP], --code_dump [CODE_DUMP]
-                        Do a full code dump into one file in your current directory
+                        Do a full codedump into one file in your current directory
   -a, -as, --answer_search
                         Run answer search
   -e, --export_parsed_text

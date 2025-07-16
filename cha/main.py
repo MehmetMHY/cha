@@ -979,7 +979,7 @@ def cli():
             "--code_dump",
             nargs="?",
             const=True,
-            help="Do a full code dump into one file in your current directory",
+            help="Do a full codedump into one file in your current directory",
         )
         parser.add_argument(
             "-a",

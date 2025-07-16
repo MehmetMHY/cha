@@ -398,9 +398,9 @@ def code_dump(save_file_to_current_dir=False, dir_full_path=None):
 
         return utils.rls(
             text=f"""
-            =====[CODE DUMP STARTS]=====
+            =====[CODE-DUMP STARTS]=====
             {content}
-            ======[CODE DUMP ENDS]======
+            ======[CODE-DUMP ENDS]======
             """,
             fast_mode=True,
         )

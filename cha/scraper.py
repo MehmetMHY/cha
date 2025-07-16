@@ -76,7 +76,7 @@ def yt_dlp_transcript_extractor(url, lang="en"):
             os.remove(base_filepath)
             os.remove(subtitle_path)
         except OSError as e:
-            loading.print_message(colors.red(f"failed to delete temporary files: {e}"))
+            loading.print_message(colors.red(f"Failed to delete temporary files: {e}"))
 
         return processed_content
 
@@ -90,7 +90,7 @@ def yt_dlp_transcript_extractor(url, lang="en"):
         except OSError:
             pass
 
-        loading.print_message(colors.red(f"yt-dlp scraper failed - {e}"))
+        loading.print_message(colors.red(f"Failed to scrape with yt-dlp: {e}"))
         return None
 
 
@@ -269,7 +269,7 @@ def scrape_pdf_url(url):
     try:
         response = utils.get_request(url)
         if response == None:
-            raise Exception(f"http GET request failed due to an error code or timeout")
+            raise Exception(f"HTTP GET request failed due to an error code or timeout")
 
         if response.headers.get("Content-Type") == "application/pdf":
             with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:

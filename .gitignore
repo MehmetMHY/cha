@@ -199,14 +199,9 @@ cython_debug/
 *.jpg
 *.jpeg
 *.srt
-cha_*.json
-ig_*.json
-ig_*.txt
-code_dump_*.txt
-codedump*.txt
+cha_*
+code_dump_*
 .sandbox/
 export_*
-cha_hs_*.json
-cha_hs_*.txt
 history/
 searxng/
