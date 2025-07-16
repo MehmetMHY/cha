@@ -39,6 +39,14 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Export Responses to Files**: Export model responses to files. In interactive mode, use the export command to export the latest response. Use `all` for all responses in the history. Add the `single` argument to save the whole response as one file instead of extracting code blocks (e.g., `single` or `all single`).
 - **Export Chat History**: Export your entire chat conversation as JSON (default) or as a readable text file with timestamps, platform/model information, and clear user/bot formatting using the `!w` command (use `!w text` or `!w txt` for text format).
 
+## Dependencies
+
+Cha relies on a few external command-line tools for some of its features. Please ensure these are installed on your system for the best experience:
+
+- **`fzf`**: Essential for all interactive selection features, such as history search (`!r`), file navigation (`!f`, `!n`), and the codedump (`!d`) helper. A recent version is highly recommended to ensure compatibility with all features.
+- **`ripgrep` (`rg`)**: Required for the history search feature (`!r`) to function.
+- **`bat`**: Used to provide syntax-highlighted previews within the history search feature. While optional, it greatly improves the user experience.
+
 ## Getting Started
 
 ### Installation

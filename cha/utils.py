@@ -16,31 +16,25 @@ from cha import colors, config
 
 
 def run_fzf_ssh_safe(fzf_args, input_text, return_process=False):
-    """
-    Run fzf in a way that works properly with SSH mobile clients,
-    even with older fzf versions. It uses shell redirection to a
-    temporary file to capture the output, while allowing fzf to
-    take over the terminal directly.
-    """
     import shlex
     from collections import namedtuple
 
     output_tmp_file = tempfile.NamedTemporaryFile(
         mode="w", delete=False, encoding="utf-8"
     )
-    output_tmp_file.close()  # We only need the name
+    output_tmp_file.close()  # we only need the name
 
     try:
-        # Quote each argument to make it safe for the shell
+        # quote each argument to make it safe for the shell
         safe_fzf_args = " ".join(shlex.quote(arg) for arg in fzf_args)
 
-        # Construct the full shell command with redirection.
+        # construct the full shell command with redirection.
         # fzf's selection (stdout) will go to the temp file.
-        # Its interactive UI (stderr) will go to the terminal.
+        # its interactive ui (stderr) will go to the terminal.
         command = f"{safe_fzf_args} > {shlex.quote(output_tmp_file.name)}"
 
-        # Run the command, passing the list of items to fzf via stdin.
-        # We do NOT capture stdout/stderr, so fzf can use the terminal.
+        # run the command, passing the list of items to fzf via stdin.
+        # we do not capture stdout/stderr, so fzf can use the terminal.
         process = subprocess.run(
             command,
             shell=True,
@@ -50,22 +44,22 @@ def run_fzf_ssh_safe(fzf_args, input_text, return_process=False):
             check=False,
         )
 
-        # Read the selection from the temporary output file
+        # read the selection from the temporary output file
         with open(output_tmp_file.name, "r", encoding="utf-8") as f:
             result = f.read().strip()
 
-        # This part is for editor.py which needs the process result
+        # this part is for editor.py which needs the process result
         if return_process:
             ProcessResult = namedtuple("ProcessResult", ["returncode", "stdout"])
             return ProcessResult(returncode=process.returncode, stdout=result)
         else:
-            # fzf returns 130 on ESC, 1 on no match. We want to return None for both.
+            # fzf returns 130 on esc, 1 on no match. we want to return none for both.
             if process.returncode != 0:
                 return None
             return result
 
     finally:
-        # Clean up the temporary file
+        # clean up the temporary file
         os.unlink(output_tmp_file.name)
 
 
