@@ -83,7 +83,7 @@ def run_a_shell():
         line_text = f"{left_padding}[{chosen_name}]{right_padding}"
 
         print(colors.green(line_text))
-        subprocess.run(chosen_name)
+        subprocess.run(chosen_name, cwd=os.getcwd())
         print(colors.green(line_text))
 
     except Exception as e:
