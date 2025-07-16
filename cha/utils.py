@@ -17,48 +17,56 @@ from cha import colors, config
 
 def run_fzf_ssh_safe(fzf_args, input_text, return_process=False):
     """
-    Run fzf in a way that works properly with SSH mobile clients.
-    Uses a temporary file approach to avoid terminal issues.
+    Run fzf in a way that works properly with SSH mobile clients,
+    even with older fzf versions. It uses shell redirection to a
+    temporary file to capture the output, while allowing fzf to
+    take over the terminal directly.
     """
-    import tempfile
+    import shlex
+    from collections import namedtuple
+
+    output_tmp_file = tempfile.NamedTemporaryFile(
+        mode="w", delete=False, encoding="utf-8"
+    )
+    output_tmp_file.close()  # We only need the name
 
     try:
-        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
-            tmp.write(input_text)
-            tmp.flush()
+        # Quote each argument to make it safe for the shell
+        safe_fzf_args = " ".join(shlex.quote(arg) for arg in fzf_args)
 
-            with open(tmp.name, "r") as stdin_file:
-                process = subprocess.run(
-                    fzf_args,
-                    stdin=stdin_file,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    check=not return_process,  # don't check if we're returning the process
-                )
+        # Construct the full shell command with redirection.
+        # fzf's selection (stdout) will go to the temp file.
+        # Its interactive UI (stderr) will go to the terminal.
+        command = f"{safe_fzf_args} > {shlex.quote(output_tmp_file.name)}"
 
-        os.unlink(tmp.name)
+        # Run the command, passing the list of items to fzf via stdin.
+        # We do NOT capture stdout/stderr, so fzf can use the terminal.
+        process = subprocess.run(
+            command,
+            shell=True,
+            input=input_text,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
 
+        # Read the selection from the temporary output file
+        with open(output_tmp_file.name, "r", encoding="utf-8") as f:
+            result = f.read().strip()
+
+        # This part is for editor.py which needs the process result
         if return_process:
-            return process
+            ProcessResult = namedtuple("ProcessResult", ["returncode", "stdout"])
+            return ProcessResult(returncode=process.returncode, stdout=result)
         else:
-            return process.stdout.strip()
+            # fzf returns 130 on ESC, 1 on no match. We want to return None for both.
+            if process.returncode != 0:
+                return None
+            return result
 
-    except subprocess.CalledProcessError as e:
-        # user cancelled or error occurred
-        try:
-            os.unlink(tmp.name)
-        except:
-            pass
-        if return_process:
-            return e
-        return None
-    except Exception as e:
-        try:
-            os.unlink(tmp.name)
-        except:
-            pass
-        raise e
+    finally:
+        # Clean up the temporary file
+        os.unlink(output_tmp_file.name)
 
 
 def number_of_urls(text):
