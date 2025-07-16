@@ -28,6 +28,27 @@ CURRENT_CHAT_HISTORY = [
     }
 ]
 
+# track visited directories for exit display
+VISITED_DIRECTORIES = []
+
+
+def format_visited_directories(directories):
+    """
+    format visited directories for exit display
+    """
+    if not directories:
+        return ""
+
+    if len(directories) == 1:
+        return directories[0]
+    elif len(directories) == 2:
+        return f"{directories[0]} & {directories[1]}"
+    else:
+        # more than 2 directories
+        formatted = ", ".join(directories[:-1])
+        formatted += f" & {directories[-1]}"
+        return formatted
+
 
 def backtrack_history(chat_history):
     """
@@ -112,6 +133,9 @@ def get_help_options():
     )
     help_options.append(
         f"{config.BACKTRACK_HISTORY_KEY} - Select and remove specific chats from history"
+    )
+    help_options.append(
+        f"{config.CHANGE_DIRECTORY_ALIAS} - Navigate and change cha's current directory"
     )
     help_options.append(f"{config.HELP_PRINT_OPTIONS_KEY} - List all options")
 
@@ -347,6 +371,34 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             str(i) for i in sorted(selected_indices)
                         )
                         print(colors.red(f"Removed {chat_word}: {indices_str}"))
+                continue
+
+            if message.startswith(config.CHANGE_DIRECTORY_ALIAS):
+                try:
+                    from cha import nav
+
+                    # store current directory to check if it actually changes
+                    current_dir = os.getcwd()
+
+                    # extract directory path if provided
+                    dir_path = None
+                    parts = message.split(maxsplit=1)
+                    if len(parts) > 1:
+                        dir_path = parts[1].strip()
+
+                    # navigate to new directory
+                    new_dir = nav.fzf_directory_navigation(dir_path)
+                    if new_dir and os.path.isdir(new_dir):
+                        os.chdir(new_dir)
+                        # only print success message if directory actually changed
+                        if os.getcwd() != current_dir:
+                            print(colors.green(f"Changed directory to: {new_dir}"))
+                            # track visited directory for exit display
+                            if new_dir not in VISITED_DIRECTORIES:
+                                VISITED_DIRECTORIES.append(new_dir)
+                    # don't print error message if user simply cancelled/exited
+                except Exception as e:
+                    print(colors.red(f"error changing directory: {e}"))
                 continue
 
             if message.strip().startswith(config.RUN_EDITOR_ALIAS):
@@ -1313,3 +1365,8 @@ def cli():
             print(colors.red(str(traceback.format_exc())))
         else:
             print(colors.red(f"Unexpected error well handling local logic: {str(e)}"))
+
+    # display visited directories on exit if enabled and directories were visited
+    if config.CHA_SHOW_VISITED_DIRECTORIES_ON_EXIT and VISITED_DIRECTORIES:
+        formatted_dirs = format_visited_directories(VISITED_DIRECTORIES)
+        print(colors.cyan(f"Visited: {formatted_dirs}"))

@@ -42,6 +42,7 @@ ENABLE_OR_DISABLE_AUTO_SD = "!u"
 LOAD_HISTORY_TRIGGER = "!r"
 RUN_EDITOR_ALIAS = "!v"
 BACKTRACK_HISTORY_KEY = "!b"
+CHANGE_DIRECTORY_ALIAS = "!n"
 HELP_ALL_ALIAS = "<<<ALL>>>"
 
 # last updated on 4-10-2024
@@ -54,6 +55,7 @@ CHA_CURRENT_PLATFORM_NAME = "openai"
 # local config variables
 CHA_DEFAULT_SHOW_PRINT_TITLE = True
 CHA_LOCAL_SAVE_ALL_CHA_CHATS = False
+CHA_SHOW_VISITED_DIRECTORIES_ON_EXIT = True
 
 # answer feature config
 DEFAULT_SEARCH_BIG_MODEL = "gpt-4.1"
@@ -125,6 +127,7 @@ REQUEST_DEFAULT_HEADERS = {
 
 # codedump variables
 NOTHING_SELECTED_TAG = "<<<NOTHING>>>"
+EXIT_SELECTION_TAG = "<<<EXIT>>>"
 FILES_TO_IGNORE = [
     ".DS_Store",
     ".env",

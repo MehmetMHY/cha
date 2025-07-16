@@ -32,6 +32,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
 - **`fzf` for Selection**: Use `fzf` for interactive selection when searching chat history, traversing local files, or using the codedump feature.
 - **Streamlined File Navigation**: Two modes for file selection - simple mode (`!l`) for quick selection in current directory, and advanced mode (`!f`) with full directory traversal, direct path support (`cd dirname`, `cd ..`), clean interface, and efficient file selection using `fzf`.
+- **Dynamic Directory Navigation**: Navigate and change Cha's current directory mid-chat using `!n`. Supports direct path navigation (`!n /path/to/directory`) or interactive fzf-based navigation starting from your home directory. Track directory history and select final destination from visited directories.
 - **Chat History Management**: Save, load, and search through your past conversations.
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
 - **Interactive File Editor**: Edit files with AI assistance using `!v`. Select files, make AI-powered edits, view diffs, and access shell for testing.
