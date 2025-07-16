@@ -15,6 +15,52 @@ import os
 from cha import colors, config
 
 
+def run_fzf_ssh_safe(fzf_args, input_text, return_process=False):
+    """
+    Run fzf in a way that works properly with SSH mobile clients.
+    Uses a temporary file approach to avoid terminal issues.
+    """
+    import tempfile
+
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as tmp:
+            tmp.write(input_text)
+            tmp.flush()
+
+            with open(tmp.name, "r") as stdin_file:
+                process = subprocess.run(
+                    fzf_args,
+                    stdin=stdin_file,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    check=not return_process,  # don't check if we're returning the process
+                )
+
+        os.unlink(tmp.name)
+
+        if return_process:
+            return process
+        else:
+            return process.stdout.strip()
+
+    except subprocess.CalledProcessError as e:
+        # user cancelled or error occurred
+        try:
+            os.unlink(tmp.name)
+        except:
+            pass
+        if return_process:
+            return e
+        return None
+    except Exception as e:
+        try:
+            os.unlink(tmp.name)
+        except:
+            pass
+        raise e
+
+
 def number_of_urls(text):
     url_pattern = r"https?://(?:www\.)?\S+"
     urls = re.findall(url_pattern, text)

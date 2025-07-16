@@ -211,23 +211,24 @@ def browse_and_select_history_file():
             "[Shift↑/↓] [ESC] [ENTER]",
         ]
 
-        # run ripgrep and pipe to fzf
-        rg_process = subprocess.Popen(
-            rg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        # run ripgrep and pipe to fzf through temp file for SSH compatibility
+        rg_process = subprocess.run(
+            rg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
-        fzf_process = subprocess.run(
-            fzf_command,
-            stdin=rg_process.stdout,
-            capture_output=True,
-            text=True,
-            check=True,
-            encoding="utf-8",
-        )
-        rg_process.stdout.close()
-        rg_process.wait()
+
+        if rg_process.returncode != 0:
+            return []
+
+        # use our ssh-safe fzf helper with ripgrep output
+        from cha import utils
+
+        fzf_result = utils.run_fzf_ssh_safe(fzf_command, rg_process.stdout)
+
+        if not fzf_result:
+            return []
 
         # extract filename from the output (everything before the first colon)
-        selected_line = fzf_process.stdout.strip()
+        selected_line = fzf_result.strip()
         if selected_line:
             selected_path = selected_line.split(":", 1)[0]
 

@@ -101,7 +101,9 @@ class InteractiveEditor:
                 reverse=True,
             )
 
-            fzf_process = subprocess.run(
+            from cha import utils
+
+            fzf_process = utils.run_fzf_ssh_safe(
                 [
                     "fzf",
                     "--reverse",
@@ -112,8 +114,8 @@ class InteractiveEditor:
                     "bat --style=numbers --color=always {} 2>/dev/null || head -n 50 {}",
                     "--print-query",
                 ],
-                input="\n".join(all_files).encode(),
-                capture_output=True,
+                "\n".join(all_files),
+                return_process=True,
             )
 
             if fzf_process.returncode == 130:
@@ -121,7 +123,7 @@ class InteractiveEditor:
             if fzf_process.returncode not in [0, 1]:
                 return None
 
-            output = fzf_process.stdout.decode().strip().split("\n")
+            output = fzf_process.stdout.strip().split("\n")
 
             if not output or not output[0]:
                 return None

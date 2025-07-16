@@ -66,7 +66,9 @@ def backtrack_history(chat_history):
         history_items = history_items[::-1]
 
         try:
-            fzf_process = subprocess.run(
+            from cha import utils
+
+            selected_output = utils.run_fzf_ssh_safe(
                 [
                     "fzf",
                     "--reverse",
@@ -75,11 +77,8 @@ def backtrack_history(chat_history):
                     "--multi",
                     "--prompt=TAB to multi-select chats to remove, ENTER to confirm: ",
                 ],
-                input="\n".join(history_items).encode(),
-                capture_output=True,
-                check=True,
+                "\n".join(history_items),
             )
-            selected_output = fzf_process.stdout.decode().strip()
             if not selected_output:
                 return None
 
@@ -171,7 +170,9 @@ def interactive_help(selected_model):
     help_options = get_help_options()
 
     try:
-        fzf_process = subprocess.run(
+        from cha import utils
+
+        selected_output = utils.run_fzf_ssh_safe(
             [
                 "fzf",
                 "--reverse",
@@ -182,11 +183,8 @@ def interactive_help(selected_model):
                 "--header",
                 f"Chatting On {config.CHA_CURRENT_PLATFORM_NAME.upper()} With {selected_model}",
             ],
-            input="\n".join(help_options).encode(),
-            capture_output=True,
-            check=True,
+            "\n".join(help_options),
         )
-        selected_output = fzf_process.stdout.decode().strip()
         if selected_output:
             selected_items = selected_output.split("\n")
             if len(selected_items) == 1 and config.HELP_ALL_ALIAS in selected_items[0]:
@@ -220,6 +218,8 @@ def title_print(selected_model):
 
 
 def list_models():
+    from cha import utils
+
     if config.CHA_CURRENT_PLATFORM_NAME == "openai":
         response = get_current_chat_client().models.list()
         if not response.data:
@@ -257,13 +257,10 @@ def list_models():
 
     fzf_prompt = f"Select a {config.CHA_CURRENT_PLATFORM_NAME.upper()} model: "
     try:
-        fzf_process = subprocess.run(
+        selected_model = utils.run_fzf_ssh_safe(
             ["fzf", "--reverse", "--height=40%", "--border", f"--prompt={fzf_prompt}"],
-            input="\n".join(provided_models).encode(),
-            capture_output=True,
-            check=True,
+            "\n".join(provided_models),
         )
-        selected_model = fzf_process.stdout.decode().strip()
         return selected_model if selected_model else None
     except (subprocess.CalledProcessError, subprocess.SubprocessError):
         return None

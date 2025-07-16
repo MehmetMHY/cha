@@ -83,6 +83,8 @@ def get_all_files_with_ignore(dir_path):
 
 
 def interactive_selection(root_path, files_dict, include_mode=False):
+    from cha import utils
+
     selected = set()
 
     if include_mode:
@@ -128,20 +130,18 @@ def interactive_selection(root_path, files_dict, include_mode=False):
             fzf_input = "\n".join(items_to_select)
 
             try:
-                fzf_process = subprocess.run(
+                selected_output = utils.run_fzf_ssh_safe(
                     [
                         "fzf",
                         "-m",
                         "--header",
                         "Use TAB to select multiple files/directories to include, ENTER to confirm.",
                     ],
-                    input=fzf_input,
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                    encoding="utf-8",
+                    fzf_input,
                 )
-                selected_display_items = fzf_process.stdout.strip().split("\n")
+                selected_display_items = (
+                    selected_output.split("\n") if selected_output else []
+                )
                 if (
                     selected_display_items
                     and selected_display_items[0]
@@ -190,20 +190,18 @@ def interactive_selection(root_path, files_dict, include_mode=False):
             fzf_input = "\n".join(dir_display_list)
 
             try:
-                fzf_process = subprocess.run(
+                selected_output = utils.run_fzf_ssh_safe(
                     [
                         "fzf",
                         "-m",
                         "--header",
                         "Use TAB to select multiple directories to exclude, ENTER to confirm.",
                     ],
-                    input=fzf_input,
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                    encoding="utf-8",
+                    fzf_input,
                 )
-                selected_display_dirs = fzf_process.stdout.strip().split("\n")
+                selected_display_dirs = (
+                    selected_output.split("\n") if selected_output else []
+                )
                 if (
                     selected_display_dirs
                     and selected_display_dirs[0]
@@ -235,20 +233,18 @@ def interactive_selection(root_path, files_dict, include_mode=False):
             fzf_input = "\n".join(file_display_list)
 
             try:
-                fzf_process = subprocess.run(
+                selected_output = utils.run_fzf_ssh_safe(
                     [
                         "fzf",
                         "-m",
                         "--header",
                         "Use TAB to select multiple files to exclude, ENTER to confirm.",
                     ],
-                    input=fzf_input,
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                    encoding="utf-8",
+                    fzf_input,
                 )
-                selected_display_files = fzf_process.stdout.strip().split("\n")
+                selected_display_files = (
+                    selected_output.split("\n") if selected_output else []
+                )
                 if (
                     selected_display_files
                     and selected_display_files[0]

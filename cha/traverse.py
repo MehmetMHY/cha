@@ -63,15 +63,9 @@ def run_fzf(items, prompt="", multi_select=False, header=""):
         fzf_args.extend(["--header", header])
 
     try:
-        fzf_process = subprocess.run(
-            fzf_args,
-            input=fzf_input,
-            capture_output=True,
-            text=True,
-            check=True,
-            encoding="utf-8",
-        )
-        result = fzf_process.stdout.strip()
+        from cha import utils
+
+        result = utils.run_fzf_ssh_safe(fzf_args, fzf_input)
         if result:
             return result.split("\n")
         return []

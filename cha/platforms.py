@@ -51,7 +51,9 @@ def auto_select_a_platform(platform_key=None, model_name=None):
     if platform_key is None or platform_key not in config.THIRD_PARTY_PLATFORMS.keys():
         try:
             platforms = list(config.THIRD_PARTY_PLATFORMS.keys())
-            fzf_process = subprocess.run(
+            from cha import utils
+
+            platform_key = utils.run_fzf_ssh_safe(
                 [
                     "fzf",
                     "--reverse",
@@ -59,11 +61,8 @@ def auto_select_a_platform(platform_key=None, model_name=None):
                     "--border",
                     "--prompt=Select a platform: ",
                 ],
-                input="\n".join(platforms).encode(),
-                capture_output=True,
-                check=True,
+                "\n".join(platforms),
             )
-            platform_key = fzf_process.stdout.decode().strip()
             if not platform_key:
                 print(colors.red("No platform selected"))
                 return None
@@ -101,7 +100,9 @@ def auto_select_a_platform(platform_key=None, model_name=None):
             return None
 
         try:
-            fzf_process = subprocess.run(
+            from cha import utils
+
+            final_model = utils.run_fzf_ssh_safe(
                 [
                     "fzf",
                     "--reverse",
@@ -109,11 +110,8 @@ def auto_select_a_platform(platform_key=None, model_name=None):
                     "--border",
                     "--prompt=Select a model: ",
                 ],
-                input="\n".join(models_list).encode(),
-                capture_output=True,
-                check=True,
+                "\n".join(models_list),
             )
-            final_model = fzf_process.stdout.decode().strip()
             if not final_model:
                 print(colors.red("No model selected"))
                 return None

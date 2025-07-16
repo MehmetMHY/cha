@@ -42,7 +42,9 @@ def fzf_directory_navigation(target_dir=None):
                 entries_with_exit = entries + [config.EXIT_SELECTION_TAG]
 
                 # run fzf to select directory
-                fzf_process = subprocess.run(
+                from cha import utils
+
+                selected_dir = utils.run_fzf_ssh_safe(
                     [
                         "fzf",
                         "--reverse",
@@ -52,12 +54,8 @@ def fzf_directory_navigation(target_dir=None):
                         "--header",
                         f"current: {current_dir}",
                     ],
-                    input="\n".join(entries_with_exit).encode(),
-                    capture_output=True,
-                    check=True,
+                    "\n".join(entries_with_exit),
                 )
-
-                selected_dir = fzf_process.stdout.decode().strip()
                 if not selected_dir or selected_dir == config.EXIT_SELECTION_TAG:
                     break
 
@@ -103,7 +101,9 @@ def select_final_directory(dir_history):
         # add exit option at the bottom
         formatted_dirs.append(config.EXIT_SELECTION_TAG)
 
-        fzf_process = subprocess.run(
+        from cha import utils
+
+        selected_line = utils.run_fzf_ssh_safe(
             [
                 "fzf",
                 "--reverse",
@@ -113,12 +113,8 @@ def select_final_directory(dir_history):
                 "--header",
                 "choose where to move cha",
             ],
-            input="\n".join(formatted_dirs).encode(),
-            capture_output=True,
-            check=True,
+            "\n".join(formatted_dirs),
         )
-
-        selected_line = fzf_process.stdout.decode().strip()
         if selected_line and selected_line != config.EXIT_SELECTION_TAG:
             # extract directory path from formatted line
             selected_dir = selected_line.split(". ", 1)[1]
