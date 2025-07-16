@@ -28,7 +28,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Code Dump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
 - **Quick Web Search**: Well chatting you can ask a question/prompt and have Cha browse the web real quick before answering your question.
 - **Export Markdown Fences**: If desired, export any Markdown fence in the latest message from a model to file(s).
-- **Integrated Shell Access**: Execute shell commands directly within Cha's environment, enhancing workflow efficiency by providing immediate terminal access.
+- **Integrated Shell Access**: Execute shell commands directly within Cha's environment using `!x` (interactive shell) or `!x <command>` (run specific commands), enhancing workflow efficiency by providing immediate terminal access.
 - **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
 - **`fzf` for Selection**: Use `fzf` for interactive selection when searching chat history, traversing local files, or using the codedump feature.
 - **Streamlined File Navigation**: Two modes for file selection - simple mode (`!l`) for quick selection in current directory, and advanced mode (`!f`) with full directory traversal, direct path support (`cd dirname`, `cd ..`), clean interface, and efficient file selection using `fzf`.

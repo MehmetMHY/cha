@@ -47,8 +47,69 @@ def contains_date(s):
     return any(re.search(p, s, re.IGNORECASE) for p in patterns)
 
 
-def run_a_shell():
+def run_a_shell(command=None):
     try:
+        current_dir = os.getcwd()
+
+        # if command is provided, execute it directly
+        if command:
+            # check if command is blocked (very dangerous commands only)
+            cmd_parts = command.split()
+            if cmd_parts and cmd_parts[0] in config.BLOCKED_SHELL_COMMANDS:
+                print(
+                    colors.red(
+                        f"Command '{cmd_parts[0]}' is blocked for security reasons"
+                    )
+                )
+                return
+
+            # execute the command with proper interrupt handling
+            try:
+                # use popen for better control over process
+                process = subprocess.Popen(
+                    command,
+                    shell=True,
+                    cwd=current_dir,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+
+                try:
+                    # wait for process with timeout
+                    stdout, stderr = process.communicate(timeout=30)
+
+                    # print output in white (no colors)
+                    if stdout:
+                        print(stdout.rstrip())
+                    if stderr:
+                        print(stderr.rstrip())
+
+                    if process.returncode != 0:
+                        print(
+                            colors.red(f"Command exited with code {process.returncode}")
+                        )
+
+                except subprocess.TimeoutExpired:
+                    # kill the process if it times out
+                    process.kill()
+                    process.wait()
+                    print(colors.red("Command timed out after 30 seconds"))
+
+            except KeyboardInterrupt:
+                # handle ctrl+c gracefully - kill the process but don't exit cha
+                try:
+                    process.kill()
+                    process.wait()
+                except:
+                    pass
+                print(colors.yellow("\nCommand interrupted by user"))
+                return
+            except Exception as e:
+                print(colors.red(f"Error executing command: {e}"))
+            return
+
+        # Original interactive shell logic
         current_shell = os.environ.get("SHELL")
         chosen_name = None
 

@@ -123,7 +123,7 @@ def get_help_options():
     )
     help_options.append(f"{config.USE_CODE_DUMP} - Codedump a directory as context")
     help_options.append(
-        f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Pick and run a shell while still being in Cha"
+        f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Open shell or run command (e.g., !x ls)"
     )
     help_options.append(
         f"{config.ENABLE_OR_DISABLE_AUTO_SD} - Enable or disable auto url detection and scraping"
@@ -568,7 +568,12 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 continue
 
             if message.startswith(config.PICK_AND_RUN_A_SHELL_OPTION):
-                utils.run_a_shell()
+                # Extract command if provided
+                command = None
+                parts = message.split(maxsplit=1)
+                if len(parts) > 1:
+                    command = parts[1].strip()
+                utils.run_a_shell(command)
                 continue
 
             elif message.replace(" ", "").lower() == config.CLEAR_HISTORY_TEXT.lower():

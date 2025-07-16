@@ -57,6 +57,40 @@ CHA_DEFAULT_SHOW_PRINT_TITLE = True
 CHA_LOCAL_SAVE_ALL_CHA_CHATS = False
 CHA_SHOW_VISITED_DIRECTORIES_ON_EXIT = True
 
+# shell command security config - block only very dangerous commands
+BLOCKED_SHELL_COMMANDS = [
+    "sudo",
+    "su",
+    "rm",
+    "rmdir",
+    "dd",
+    "mkfs",
+    "fdisk",
+    "format",
+    "shutdown",
+    "reboot",
+    "halt",
+    "poweroff",
+    "init",
+    "kill",
+    "killall",
+    "pkill",
+    "passwd",
+    "chpasswd",
+    "userdel",
+    "groupdel",
+    "deluser",
+    "delgroup",
+    "iptables",
+    "ufw",
+    "firewall-cmd",
+    "pfctl",
+    "del",
+    "deltree",
+    "rd",
+    "erase",
+]
+
 # answer feature config
 DEFAULT_SEARCH_BIG_MODEL = "gpt-4.1"
 DEFAULT_SEARCH_SMALL_MODEL = "gpt-4.1-mini"
