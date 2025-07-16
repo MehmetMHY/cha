@@ -14,11 +14,10 @@ def _warm_openai_import_func():
     try:
         _openai_module_instance = importlib.import_module("openai")
     except ImportError:
-        # NOTE: if the import fails, _ensure_openai_module_is_loaded will handle it when a client is first requested.
+        # NOTE: if the import fails, _ensure_openai_module_is_loaded will handle it when a client is first requested
         pass
     except Exception:
-        # NOTE: Catch any other unexpected errors during background import, preventing the daemon thread from crashing
-        # NOTE: this type of error will only surface if/when OpenAI client is requested
+        # NOTE: catch any other unexpected errors during background import, preventing the daemon thread from crashing, and this type of error will only surface if/when OpenAI client is requested
         pass
 
 
@@ -37,7 +36,7 @@ def _ensure_openai_module_is_loaded():
             _openai_module_instance = openai_module_local
         except ImportError as e:
             error_message = (
-                f"Fatal Error: The 'openai' library is not installed or could not be imported. "
+                f"Fatal Error: The 'openai' library is not installed or could not be imported "
                 f"Please install it: pip install openai. Details: {e}"
             )
             try:

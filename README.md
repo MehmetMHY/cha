@@ -36,7 +36,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Chat History Management**: Save, load, and search through your past conversations.
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
 - **Interactive File Editor**: Edit files with AI assistance using `!v`. Select files, make AI-powered edits, view diffs, and access shell for testing.
-- **Export Responses to Files**: Export model responses to files. In interactive mode, use the export command to export the latest response. Use `all` for all responses in the history. Add the `single` argument to save the whole response as one file instead of extracting code blocks (e.g., `single` or `all single`).
+- **Export Responses to Files**: Export model responses to files. In interactive mode, use the export command to export the latest response. Use `all` for all responses in the history. Add the `single` argument to save the whole response as one file instead of extracting code blocks (e.g. `single` or `all single`).
 - **Export Chat History**: Export your entire chat conversation as JSON (default) or as a readable text file with timestamps, platform/model information, and clear user/bot formatting using the `!w` command (use `!w text` or `!w txt` for text format).
 
 ## Dependencies
@@ -274,10 +274,10 @@ The interactive editor allows you to edit files with AI assistance. You can star
 During an interactive chat session, you can switch platforms and models on the fly:
 
 - `!p` - Interactive platform selection (uses fzf for platform and model selection)
-- `!p <platform_name>` - Switch to a specific platform (e.g., `!p anthropic`)
-- `!p <platform_name>|<model_name>` - Switch to specific platform and model (e.g., `!p groq|llama-3.1-8b`)
+- `!p <platform_name>` - Switch to a specific platform (e.g. `!p anthropic`)
+- `!p <platform_name>|<model_name>` - Switch to specific platform and model (e.g. `!p groq|llama-3.1-8b`)
 - `!m` - Interactive model selection within current platform
-- `!m <model_name>` - Switch to a specific model (e.g., `!m gpt-4`)
+- `!m <model_name>` - Switch to a specific model (e.g. `!m gpt-4`)
 
 **Examples:**
 

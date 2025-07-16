@@ -122,7 +122,7 @@ def get_help_options():
     )
     help_options.append(f"{config.USE_CODE_DUMP} - Codedump a directory as context")
     help_options.append(
-        f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Open shell or run command (e.g., !x ls)"
+        f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Open shell or run command (e.g. !x ls)"
     )
     help_options.append(
         f"{config.ENABLE_OR_DISABLE_AUTO_SD} - Enable or disable auto url detection and scraping"
@@ -252,7 +252,7 @@ def list_models():
         )
 
     if not provided_models:
-        print(colors.red("No models available to select."))
+        print(colors.red("No models available to select"))
         return None
 
     fzf_prompt = f"Select a {config.CHA_CURRENT_PLATFORM_NAME.upper()} model: "
@@ -285,7 +285,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 filepath = os.path.join(os.getcwd(), filepath)
 
             if not os.path.exists(filepath):
-                print(colors.red(f"The following file does not exist: {filepath}"))
+                print(colors.red(f"File does not exist {filepath}"))
                 return
 
             print(
@@ -336,7 +336,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if message.strip() == config.BACKTRACK_HISTORY_KEY:
                 if len(CURRENT_CHAT_HISTORY) <= 1:
-                    print(colors.yellow("No chat history to backtrack through."))
+                    print(colors.yellow("No chat history to backtrack through"))
                     continue
 
                 selected_indices = backtrack_history(CURRENT_CHAT_HISTORY)
@@ -395,7 +395,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                                 VISITED_DIRECTORIES.append(new_dir)
                     # don't print error message if user simply cancelled/exited
                 except Exception as e:
-                    print(colors.red(f"error changing directory: {e}"))
+                    print(colors.red(f"Error changing directory: {e}"))
                 continue
 
             if message.strip().startswith(config.RUN_EDITOR_ALIAS):
@@ -579,7 +579,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     if reasoning_model
                     else [{"role": "user", "content": config.INITIAL_PROMPT}]
                 )
-                print(colors.yellow("Chat history cleared."))
+                print(colors.yellow("Chat history cleared"))
                 continue
 
             if multi_line_input:
@@ -714,7 +714,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         except Exception as e:
                             print(colors.red(f"Failed to export chat history: {e}"))
                     else:
-                        print(colors.yellow("No chat history to export."))
+                        print(colors.yellow("No chat history to export"))
                 else:
                     # Default behavior: save as JSON
                     cha_filepath = f"cha_{int(time.time())}.json"
@@ -738,7 +738,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                                     history_item["bot"], force_single
                                 )
                     else:
-                        print(colors.yellow("No history to export."))
+                        print(colors.yellow("No history to export"))
                 else:
                     if len(CURRENT_CHAT_HISTORY) > 1:
                         last_bot_message = CURRENT_CHAT_HISTORY[-1].get("bot")
@@ -746,10 +746,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             utils.export_file_logic(last_bot_message, force_single)
                         else:
                             print(
-                                colors.yellow("Last message has no content to export.")
+                                colors.yellow("Last message has no content to export")
                             )
                     else:
-                        print(colors.yellow("No message to export."))
+                        print(colors.yellow("No message to export"))
                 continue
 
             # prompt user to load files (simple mode)
@@ -1211,7 +1211,7 @@ def cli():
             if new_selected_model:
                 selected_model = new_selected_model
             else:
-                print(colors.red("No model selected, exiting"))
+                print(colors.red("No model selected"))
                 return
 
         if args.token_count:
@@ -1232,7 +1232,7 @@ def cli():
             if text is None:
                 print(
                     colors.red(
-                        "Please provide input text, a filepath, or pipe in content for token counting."
+                        "Please provide input text, a filepath, or pipe in content for token counting"
                     )
                 )
                 return
@@ -1301,7 +1301,7 @@ def cli():
             if CURRENT_CHAT_HISTORY and len(CURRENT_CHAT_HISTORY) > 1:
                 utils.export_file_logic(CURRENT_CHAT_HISTORY[-1]["bot"])
             else:
-                print(colors.yellow("No chat response found to export files from."))
+                print(colors.yellow("No chat response found to export files from"))
 
     except (KeyboardInterrupt, EOFError):
         print()

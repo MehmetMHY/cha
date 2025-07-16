@@ -1,6 +1,5 @@
 import subprocess
 import os
-from pathlib import Path
 
 from cha import colors, config
 
@@ -67,14 +66,14 @@ def fzf_directory_navigation(target_dir=None):
                     if current_dir not in dir_history:
                         dir_history.append(current_dir)
                 else:
-                    print(colors.red(f"directory not found: {selected_dir}"))
+                    print(colors.red(f"Directory not found: {selected_dir}"))
                     break
 
             except subprocess.CalledProcessError:
                 # user cancelled (esc, ctrl-c, ctrl-d) - exit immediately
                 return None
             except Exception as e:
-                print(colors.red(f"error: {e}"))
+                print(colors.red(f"{e}"))
                 break
 
     except KeyboardInterrupt:
@@ -124,7 +123,7 @@ def select_final_directory(dir_history):
         # user cancelled - return None
         return None
     except Exception as e:
-        print(colors.red(f"error selecting final directory: {e}"))
+        print(colors.red(f"Error selecting final directory: {e}"))
 
     # return None to indicate no directory was selected
     return None

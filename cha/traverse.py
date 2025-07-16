@@ -70,7 +70,7 @@ def run_fzf(items, prompt="", multi_select=False, header=""):
             return result.split("\n")
         return []
     except FileNotFoundError:
-        print(colors.red("fzf not found. Please install fzf to use this feature!"))
+        print(colors.red("Please install fzf!"))
         return []
     except subprocess.CalledProcessError:
         return []
@@ -218,7 +218,7 @@ def select_command(current_dir, selected_files, target_name=None):
                     selected_files.add(file_path)
                 return selected_files
             else:
-                print(colors.red(f"File or directory '{target_name}' not found"))
+                print(colors.red(f"Could not find {target_name}"))
                 return selected_files
 
         # create full paths for formatting
@@ -278,7 +278,7 @@ def unselect_command(selected_files, target_name=None):
                     selected_files.remove(full_path)
                     return selected_files
                 else:
-                    print(colors.red(f"Path '{target_name}' not found in selection"))
+                    print(colors.red(f"Could not find path: {target_name}"))
                     return selected_files
             else:
                 matching_files = [
@@ -289,7 +289,7 @@ def unselect_command(selected_files, target_name=None):
                         selected_files.remove(file_path)
                     return selected_files
                 else:
-                    print(colors.red(f"File '{target_name}' not found in selection"))
+                    print(colors.red(f"Failed to find {target_name}"))
                     return selected_files
 
         # format paths for better fzf display
@@ -422,7 +422,7 @@ def traverse_and_select_files():
                         ):
                             current_dir = target_dir
                         else:
-                            print(colors.yellow(f"Directory '{dir_name}' is ignored"))
+                            print(colors.yellow(f"Ignoring directory {dir_name}"))
             elif user_input_lower in {"cd", "c"}:
                 current_dir = cd_command(current_dir, root_dir)
             elif user_input_lower.startswith("select ") or user_input_lower.startswith(
@@ -458,7 +458,7 @@ def traverse_and_select_files():
             print()
             break
         except Exception as e:
-            print(colors.red(f"Error: {e}"))
+            print(colors.red(f"{e}"))
 
     return sorted(list(selected_files))
 

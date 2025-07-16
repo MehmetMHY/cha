@@ -364,7 +364,7 @@ def code_dump(save_file_to_current_dir=False, dir_full_path=None):
         dir_path = os.getcwd()
         if dir_full_path != None:
             if not os.path.isdir(dir_full_path):
-                print(colors.red(f"'{dir_full_path}' is not a directory!"))
+                print(colors.red(f"Directory {dir_full_path} does not exist!"))
                 return None
             dir_path = dir_full_path
 
@@ -385,7 +385,7 @@ def code_dump(save_file_to_current_dir=False, dir_full_path=None):
             file_name = f"code_dump_{int(time.time())}.txt"
             with open(file_name, "w") as file:
                 file.write(content)
-            print(colors.green(f"Saved codedump to: {file_name}"))
+            print(colors.green(f"Exported to {file_name}"))
             return
 
         add_or_not = (
@@ -405,5 +405,5 @@ def code_dump(save_file_to_current_dir=False, dir_full_path=None):
             fast_mode=True,
         )
     except Exception as e:
-        print(colors.red(f"Codedump failed due to: {e}"))
+        print(colors.red(f"{e}"))
         return None

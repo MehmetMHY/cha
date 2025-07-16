@@ -6,9 +6,6 @@ import os
 
 from cha import colors, utils, loading, config
 
-import os
-import sys
-
 
 def is_fzf_available():
     try:
@@ -38,7 +35,7 @@ class InteractiveEditor:
                 self.file_path = self._select_file()
 
             if not self.file_path:
-                print(colors.yellow("no file selected, exiting"))
+                print(colors.yellow("No file selected"))
                 return
 
             self._load_file()
@@ -47,10 +44,10 @@ class InteractiveEditor:
 
             self._setup_readline()
 
-            print(colors.cyan(f"editing: {self.file_path}"))
+            print(colors.cyan(f"Editing: {self.file_path}"))
             print(
                 colors.yellow(
-                    "type your edit request or a command: diff, save, undo, view, quit"
+                    "Type edit request or a command: diff, save, undo, view, quit"
                 )
             )
 
@@ -137,7 +134,7 @@ class InteractiveEditor:
 
     def _load_file(self):
         if os.path.isdir(self.file_path):
-            print(colors.red(f"error: {self.file_path} is a directory"))
+            print(colors.red(f"Path {self.file_path} is a directory"))
             self.file_path = None
             return
 
@@ -146,9 +143,9 @@ class InteractiveEditor:
                 os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
                 with open(self.file_path, "w", encoding="utf-8") as f:
                     f.write("")
-                print(colors.green(f"created: {self.file_path}"))
+                print(colors.green(f"Created: {self.file_path}"))
             except IOError as e:
-                print(colors.red(f"failed to create file: {e}"))
+                print(colors.red(f"Failed to create file {e}"))
                 self.file_path = None
                 return
 
@@ -157,7 +154,7 @@ class InteractiveEditor:
                 self.original_content = f.read()
             self.current_content = self.original_content
         except (IOError, UnicodeDecodeError) as e:
-            print(colors.red(f"failed to read file: {e}"))
+            print(colors.red(f"Failed to read file: {e}"))
             self.file_path = None
 
     def _setup_readline(self):
@@ -214,15 +211,15 @@ class InteractiveEditor:
                 self.current_content = new_content
                 self._show_diff()
             else:
-                print(colors.yellow("no changes were generated"))
+                print(colors.yellow("No changes were generated"))
 
         except Exception as e:
             loading.stop_loading()
-            print(colors.red(f"an error occurred: {e}"))
+            print(colors.red(f"{e}"))
 
     def _show_diff(self):
         if self.original_content == self.current_content:
-            print(colors.yellow("no changes to show"))
+            print(colors.yellow("No changes to show"))
             return
 
         diff = difflib.unified_diff(
@@ -246,28 +243,28 @@ class InteractiveEditor:
                 print(line, end="")
 
         if not has_diff:
-            print(colors.yellow("no changes to show"))
+            print(colors.yellow("No changes to show"))
         print()
 
     def _save_changes(self):
         if self.original_content == self.current_content:
-            print(colors.yellow("no changes to save"))
+            print(colors.yellow("No changes to save"))
             return
         try:
             with open(self.file_path, "w", encoding="utf-8") as f:
                 f.write(self.current_content)
             self.original_content = self.current_content
             self.undo_stack.clear()
-            print(colors.green(f"file saved: {self.file_path}"))
+            print(colors.green(f"Saved: {self.file_path}"))
         except IOError as e:
-            print(colors.red(f"error saving file: {e}"))
+            print(colors.red(f"Error saving file: {e}"))
 
     def _undo_change(self):
         if not self.undo_stack:
-            print(colors.yellow("no changes to undo"))
+            print(colors.yellow("No changes to undo"))
             return
         self.current_content = self.undo_stack.pop()
-        print(colors.green("last change undone"))
+        print(colors.green("Last change undone"))
         self._show_diff()
 
     def _view_content(self):
@@ -282,7 +279,7 @@ class InteractiveEditor:
                 return
 
         if not utils.open_file_in_editor(self.file_path):
-            print(colors.red("could not open any terminal editor"))
+            print(colors.red("Failed to open a terminal editor"))
             return
 
         try:
@@ -290,10 +287,10 @@ class InteractiveEditor:
                 new_content = f.read()
             if new_content != self.current_content:
                 self.current_content = new_content
-                print(colors.yellow("reloaded file from disk"))
+                print(colors.yellow("Reloaded file from disk"))
                 self._show_diff()
         except (IOError, UnicodeDecodeError) as e:
-            print(colors.red(f"failed to reload file: {e}"))
+            print(colors.red(f"Failed to reload file: {e}"))
 
     def _quit(self):
         if self.original_content != self.current_content:

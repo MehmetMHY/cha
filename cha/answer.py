@@ -31,7 +31,7 @@ def create_mega_prompt(search_results, prompt):
         Instructions:
         1. Integrate your own knowledge with the context provided.
         2. Reference relevant information from the context above where appropriate.
-        3. Include inline citations using square brackets, e.g., [1], in IEEE format for any referenced content. Do not include anything else (url, title, description, etc).
+        3. Include inline citations using square brackets, e.g. [1], in IEEE format for any referenced content. Do not include anything else (url, title, description, etc).
         4. Make sure there is a space between a word and the referenced content. Meaning, "word[1]" is NOT ok, rather it should be "word [1]"
         5. Ensure all citations contain a URL and are formatted correctly.
         6. Present your final answer in markdown format.
@@ -114,11 +114,7 @@ def generate_search_queries(
         random.shuffle(output)
 
         if len(output) == 0:
-            print(
-                colors.red(
-                    "Failed to generate search queries just using user's original prompt"
-                )
-            )
+            print(colors.red("Failed to generate search queries"))
             return [user_prompt]
 
         return output[:min_results]
@@ -158,7 +154,6 @@ def search_engine(
                     )
                 return content[:count]
             except Exception as e:
-                # print(colors.yellow(f"SearXNG failed, switching to DuckDuckGo"))
                 pass
 
         from ddgs import DDGS
@@ -235,7 +230,7 @@ def quick_search(user_input, min_search_result=3):
             Instructions:
             1. Use your own knowledge and the context provided above to answer the question.
             2. Reference relevant information from the context above where appropriate.
-            3. Include inline citations using square brackets, e.g., [1], formatted in IEEE style for any referenced content.
+            3. Include inline citations using square brackets, e.g. [1], formatted in IEEE style for any referenced content.
             4. Ensure all citations contain a URL and are formatted correctly.
             5. Present your final answer as plain text, without using Markdown-specific tags or formatting.
 
@@ -269,7 +264,7 @@ def answer_search(
                     print(colors.blue(">"), line)
                 prompt = editor_content
     else:
-        print(colors.red(colors.underline("Question Prompt:")))
+        print(colors.red(colors.underline("Question:")))
         print(prompt)
 
     loading.start_loading("Crafting Queries", "circles")
@@ -311,7 +306,7 @@ def answer_search(
     ]
     if len(not_video_urls) == 0:
         # TODO: this solution really sucks, we need to build a better solution for this edge case
-        print(colors.red(f"zero non-video based urls were founded"))
+        print(colors.red(f"Zero non-video based urls were founded"))
         return ""
 
     print(colors.red(colors.underline(f"Search Query Results ({len(urls)} Total):")))
@@ -333,7 +328,7 @@ def answer_search(
         for entry in search_results:
             if url == entry["url"]:
                 entry["content"] = scrapped_data[url]
-    print(colors.yellow(f"Scraped {len(scrapped_data)}/{len(urls)} of the urls"))
+    print(colors.yellow(f"Scraped {len(scrapped_data)}/{len(urls)} urls"))
 
     # TODO: this solution sucks, but it works and prevents us from exceeding the prompt limit
     mega_prompt = create_mega_prompt(search_results, prompt)
@@ -364,7 +359,7 @@ def answer_search(
 
     final_output = ""
     try:
-        print(colors.red(colors.underline("Response:")))
+        print(colors.red(colors.underline("Final Answer:")))
 
         loading.start_loading("Crafting", "circles")
 

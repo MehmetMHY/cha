@@ -151,7 +151,7 @@ def run_a_shell(command=None):
                     process.wait()
                 except:
                     pass
-                print(colors.yellow("\nCommand interrupted by user"))
+                print(colors.yellow("Command interrupted by user"))
                 return
             except Exception as e:
                 print(colors.red(f"Error executing command: {e}"))
