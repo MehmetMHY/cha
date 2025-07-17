@@ -1039,12 +1039,14 @@ def cli():
             help="Initialize cha config directory",
         )
         parser.add_argument(
+            "-P",
             "--private",
             action="store_true",
             dest="private",
             help="Enable private mode (no history saved)",
         )
         parser.add_argument(
+            "-V",
             "--version",
             action="store_true",
             dest="version",

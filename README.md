@@ -348,7 +348,7 @@ Cha also supports and accepts additional parameters. Here is the help page for r
 ```txt
 usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]]
            [-e] [-x SHELL_COMMAND] [-r] [-v [EDITOR]] [--select-model]
-           [--tokens] [--ocr OCR] [-i] [--private] [--version]
+           [--tokens] [--ocr OCR] [-i] [-P] [-V]
            [string ...]
 
 Chat with an OpenAI GPT model.
@@ -378,8 +378,8 @@ options:
   --tokens              Count tokens for the input
   --ocr OCR             Extract text from a file using OCR
   -i, --init            Initialize cha config directory
-  --private             Enable private mode (no history saved)
-  --version             Show version information
+  -P, --private         Enable private mode (no history saved)
+  -V, --version         Show version information
 ```
 
 ## Development
@@ -445,7 +445,7 @@ For more details, check out the documentation in [docs](./assets/local/README.md
 If you have enabled the **save chat history locally** feature after configuring the local setup, but want to start a chat session that is not saved, you can use the following argument:
 
 ```bash
-cha --private
+cha --private (-P)
 ```
 
 Using this option will ensure your chat session is NOT saved locally. Think of it like Google Chrome's Incognito Mode but for Cha!
