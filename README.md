@@ -35,7 +35,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Dynamic Directory Navigation**: Navigate and change Cha's current directory mid-chat using `!n`. Supports direct path navigation (`!n /path/to/directory`) or interactive fzf-based navigation starting from your home directory. Track directory history and select final destination from visited directories.
 - **Chat History Management**: Save, load, and search through your past conversations.
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
-- **Interactive File Editor**: Edit files with AI assistance using `!v`. Select files, make AI-powered edits, view diffs, and access shell for testing.
+- **Interactive File Editor**: Edit files with AI assistance using `!v`. Select files, make AI-powered edits, view diffs, and access a shell for testing. Inside the editor, use `help` or `h` to see a full list of commands, including `diff` (`d`), `save` (`s`), `undo` (`u`), running shell commands (`!x`), and using your terminal editor for long prompts (`!t`).
 - **Export Responses to Files**: Export model responses to files. In interactive mode, use the export command to export the latest response. Use `all` for all responses in the history. Add the `single` argument to save the whole response as one file instead of extracting code blocks (e.g. `single` or `all single`).
 - **Export Chat History**: Export your entire chat conversation as JSON (default) or as a readable text file with timestamps, platform/model information, and clear user/bot formatting using the `!w` command (use `!w text` or `!w txt` for text format).
 

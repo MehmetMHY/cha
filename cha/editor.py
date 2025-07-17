@@ -46,9 +46,7 @@ class InteractiveEditor:
 
             print(colors.cyan(f"Editing: {self.file_path}"))
             print(
-                colors.yellow(
-                    "Type edit request or a command: diff, save, undo, view, quit"
-                )
+                colors.yellow("Type an edit request or 'help' for a list of commands.")
             )
 
             while True:
@@ -165,23 +163,87 @@ class InteractiveEditor:
     def _save_readline_history(self):
         readline.write_history_file(self.history_file)
 
+    def _show_help(self):
+        help_options = [
+            f"{config.HELP_ALL_ALIAS} = Show all help options",
+            "h, help - Show this help message",
+            "d, diff - Show differences between original and modified file",
+            "s, save - Save the changes to the file",
+            "u, undo - Undo the last change",
+            "v, view - View the current file content in your default editor",
+            "q, quit, exit - Exit the editor",
+            f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Run a shell command",
+            f"{config.TEXT_EDITOR_INPUT_MODE} - Open editor for a long prompt",
+        ]
+
+        if FZF_AVAILABLE:
+            try:
+                from cha import utils
+
+                selected_output = utils.run_fzf_ssh_safe(
+                    [
+                        "fzf",
+                        "--reverse",
+                        "--height=40%",
+                        "--border",
+                        "--prompt=Select a command to see details, ENTER to confirm, & Esc to cancel: ",
+                        "--header",
+                        f"Editing: {os.path.basename(self.file_path)}",
+                    ],
+                    "\n".join(help_options),
+                )
+                if selected_output:
+                    selected_item = selected_output.strip()
+                    if config.HELP_ALL_ALIAS in selected_item:
+                        print(colors.yellow(f"Editing: {self.file_path}"))
+                        for help_item in help_options:
+                            if config.HELP_ALL_ALIAS not in help_item:
+                                print(colors.yellow(help_item))
+                    else:
+                        print(colors.yellow(selected_item))
+            except (subprocess.CalledProcessError, subprocess.SubprocessError):
+                pass
+        else:
+            print(colors.yellow("Available commands:"))
+            for option in help_options:
+                if config.HELP_ALL_ALIAS not in option:
+                    print(colors.yellow(f"  {option}"))
+
     def _process_command(self, user_input):
         command = user_input.lower()
 
         command_map = {
+            "s": self._save_changes,
             "save": self._save_changes,
+            "d": self._show_diff,
             "diff": self._show_diff,
+            "u": self._undo_change,
             "undo": self._undo_change,
+            "v": self._view_content,
             "view": self._view_content,
+            "q": self._quit,
             "quit": self._quit,
             "exit": self._quit,
+            "h": self._show_help,
+            "help": self._show_help,
         }
 
         action = command_map.get(command)
         if action:
             action()
-            if command in ["quit", "exit"]:
+            if command in ["q", "quit", "exit"]:
                 return False
+        elif command.startswith(config.PICK_AND_RUN_A_SHELL_OPTION):
+            shell_command = user_input[
+                len(config.PICK_AND_RUN_A_SHELL_OPTION) :
+            ].strip()
+            utils.run_a_shell(shell_command if shell_command else None)
+        elif command == config.TEXT_EDITOR_INPUT_MODE:
+            editor_content = utils.check_terminal_editors_and_edit()
+            if editor_content:
+                self._make_edit_request(editor_content)
+            else:
+                print(colors.yellow("No input received from editor."))
         else:
             self._make_edit_request(user_input)
         return True
