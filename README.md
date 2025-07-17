@@ -187,25 +187,25 @@ The codedump feature uses `fzf` for an improved file selection experience:
   cha -a "what is the goal of life"
   ```
 
-#### File Input with -f
+#### File Input with -l
 
-- `cha -f <FILE>`
+- `cha -l <FILE>`
 - Example:
   ```bash
-  cha -f index.js
+  cha -l index.js
   ```
 
-#### Local Text Editor (IDE) Input with -ide
+#### Local Text Editor (IDE) Input with -t
 
-- `cha -ide`
+- `cha -t`
 
-#### Interactive Editor with --editor
+#### Interactive Editor with -v / --editor
 
-- `cha --editor`
+- `cha -v`
 - `cha --editor <FILE_PATH>`
 - Example:
   ```bash
-  cha --editor
+  cha -v
   # or
   cha --editor ./src/main.py
   ```
@@ -266,7 +266,7 @@ The interactive editor allows you to edit files with AI assistance. You can star
 
 #### History Search and Management
 
-- `cha -hs` - Search and display previous chat histories
+- `cha -r` - Search and display previous chat histories
 - `cha` then type `!r` during interactive mode to load a previous chat
 
 #### Interactive Platform and Model Switching
@@ -300,17 +300,17 @@ cha
 
 All chat history is preserved when switching platforms, and exported chat history (`!w text`) includes platform/model information for each message.
 
-#### Model Autoselection (-sm)
+#### Model Autoselection (--select-model)
 
-- `cha -sm`
-- `cha -sm <MODEL_NAME>`
+- `cha --select-model`
+- `cha --select-model <MODEL_NAME>`
 
-#### Token Counting (-t) with a File
+#### Token Counting (--tokens) with a File
 
-- `cha -t -f <FILE>`
+- `cha --tokens -l <FILE>`
 - Example:
   ```bash
-  cha -t -f README.md
+  cha --tokens -l README.md
   ```
 
 #### Direct "How to" / "Make me" / "Craft me" Questions
@@ -346,7 +346,9 @@ When you run the example command above, it will answer your question in one shot
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 
 ```txt
-usage: cha [-h] [-m MODEL] [-sm] [-f FILE] [-t] [-ocr OCR] [-p [PLATFORM]] [-d [CODE_DUMP]] [-a] [-e] [-ide] [-i] [-hs] [-x] [--editor [EDITOR]] [-v]
+usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]]
+           [-e] [-x SHELL_COMMAND] [-r] [-v [EDITOR]] [--select-model]
+           [--tokens] [--ocr OCR] [-i] [--private] [--version]
            [string ...]
 
 Chat with an OpenAI GPT model.
@@ -355,29 +357,29 @@ positional arguments:
   string                Non-interactive mode, feed a string into the model
 
 options:
-  -h, --help            show this help message and exit
+  -h, --help            Show this help message and exit.
+  -l FILE, --load FILE  Load a file to send to the model (interactive: !l)
+  -a, --answer          Run answer search (interactive: !a)
+  -t, --ide             Use a terminal text editor for input (interactive: !t)
   -m MODEL, --model MODEL
-                        Model to use for chatting
-  -sm, --select_model   Select one model from OpenAI's supported models
-  -f FILE, --file FILE  Filepath to file that will be sent to the model (text only)
-  -t, --token_count     Count tokens for the input file or string
-  -ocr OCR, --ocr OCR   Given a file path, print the content of that file as text though Cha's main file loading logic
+                        Switch model (interactive: !m)
   -p [PLATFORM], --platform [PLATFORM]
-                        Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag with "-p" for True
-  -d [CODE_DUMP], --code_dump [CODE_DUMP]
-                        Do a full codedump into one file in your current directory
-  -a, -as, --answer_search
-                        Run answer search
-  -e, --export_parsed_text
-                        Extract code blocks from the final output and save them as files
-  -ide, --integrated_dev_env
-                        Input a one-short query using your default terminal text editor (IDE)
-  -i, --init            (Optional) Initialize local directory and files in your home directory for configuring Cha
-  -hs, --history_search
-                        Search and display a previous chat history without starting a new session
-  -x, --private         Enable private mode, no chat history will be saved locally
-  --editor [EDITOR]     Run the interactive editor. Optionally provide a file path.
-  -v, --version         Show version information
+                        Switch platform (interactive: !p)
+  -d [CODE_DUMP], --codedump [CODE_DUMP]
+                        Codedump a directory (interactive: !d)
+  -e, --export          Export code blocks from the last response (interactive:
+                        !e)
+  -x SHELL_COMMAND, --shell SHELL_COMMAND
+                        Execute a shell command (interactive: !x)
+  -r, --history         Search and load previous chats (interactive: !r)
+  -v [EDITOR], --editor [EDITOR]
+                        Run the interactive editor (interactive: !v)
+  --select-model        Select a model from a list
+  --tokens              Count tokens for the input
+  --ocr OCR             Extract text from a file using OCR
+  -i, --init            Initialize cha config directory
+  --private             Enable private mode (no history saved)
+  --version             Show version information
 ```
 
 ## Development
@@ -440,15 +442,13 @@ cha -i
 
 For more details, check out the documentation in [docs](./assets/local/README.md) and the example files in [assets/local/](./assets/local/).
 
-If you have enabled the **save chat history locally** feature after configuring the local setup, but want to start a chat session that is not saved, you can use one of the following arguments:
+If you have enabled the **save chat history locally** feature after configuring the local setup, but want to start a chat session that is not saved, you can use the following argument:
 
 ```bash
-cha -x
-# or
 cha --private
 ```
 
-Using either of these options will ensure your chat session is NOT saved locally. Think of it like Google Chrome's Incognito Mode but for Cha!
+Using this option will ensure your chat session is NOT saved locally. Think of it like Google Chrome's Incognito Mode but for Cha!
 
 ### SearXNG Search Engine Integration (Optional)
 

@@ -936,105 +936,131 @@ def cli():
     args = None
 
     try:
-        parser = argparse.ArgumentParser(description="Chat with an OpenAI GPT model.")
-        parser.add_argument(
-            "-m",
-            "--model",
-            help="Model to use for chatting",
-            default=config.CHA_DEFAULT_MODEL,
+        parser = argparse.ArgumentParser(
+            description="Chat with an OpenAI GPT model.", add_help=False
         )
         parser.add_argument(
-            "-sm",
-            "--select_model",
-            help="Select one model from OpenAI's supported models",
+            "-h",
+            "--help",
+            action="help",
+            default=argparse.SUPPRESS,
+            help="Show this help message and exit.",
+        )
+        parser.add_argument(
+            "-l",
+            "--load",
+            dest="file",
+            help="Load a file to send to the model (interactive: !l)",
+        )
+        parser.add_argument(
+            "-a",
+            "--answer",
+            dest="answer_search",
             action="store_true",
-        )
-        parser.add_argument(
-            "-f",
-            "--file",
-            help="Filepath to file that will be sent to the model (text only)",
-        )
-        parser.add_argument(
-            "string",
-            nargs="*",
-            help="Non-interactive mode, feed a string into the model",
+            help="Run answer search (interactive: !a)",
         )
         parser.add_argument(
             "-t",
-            "--token_count",
-            help="Count tokens for the input file or string",
+            "--ide",
+            dest="integrated_dev_env",
             action="store_true",
+            help="Use a terminal text editor for input (interactive: !t)",
         )
         parser.add_argument(
-            "-ocr",
-            "--ocr",
-            help="Given a file path, print the content of that file as text though Cha's main file loading logic",
+            "-m",
+            "--model",
+            help="Switch model (interactive: !m)",
+            default=config.CHA_DEFAULT_MODEL,
         )
         parser.add_argument(
             "-p",
             "--platform",
             nargs="?",
             const=True,
-            help='Use a different provider, set this like this: "<base_url>|<api_key_env_name>", or use as a flag with "-p" for True',
+            help="Switch platform (interactive: !p)",
         )
         parser.add_argument(
             "-d",
-            "--code_dump",
+            "--codedump",
+            dest="code_dump",
             nargs="?",
             const=True,
-            help="Do a full codedump into one file in your current directory",
-        )
-        parser.add_argument(
-            "-a",
-            "-as",
-            "--answer_search",
-            help="Run answer search",
-            action="store_true",
+            help="Codedump a directory (interactive: !d)",
         )
         parser.add_argument(
             "-e",
-            "--export_parsed_text",
-            help="Extract code blocks from the final output and save them as files",
+            "--export",
+            dest="export_parsed_text",
             action="store_true",
+            help="Export code blocks from the last response (interactive: !e)",
         )
         parser.add_argument(
-            "-ide",
-            "--integrated_dev_env",
-            help="Input a one-short query using your default terminal text editor (IDE)",
+            "-x",
+            "--shell",
+            dest="shell_command",
+            help="Execute a shell command (interactive: !x)",
+        )
+        parser.add_argument(
+            "-r",
+            "--history",
+            dest="history_search",
             action="store_true",
+            help="Search and load previous chats (interactive: !r)",
+        )
+        parser.add_argument(
+            "-v",
+            "--editor",
+            dest="editor",
+            nargs="?",
+            const=True,
+            help="Run the interactive editor (interactive: !v)",
+        )
+        parser.add_argument(
+            "--select-model",
+            dest="select_model",
+            action="store_true",
+            help="Select a model from a list",
+        )
+        parser.add_argument(
+            "--tokens",
+            dest="token_count",
+            action="store_true",
+            help="Count tokens for the input",
+        )
+        parser.add_argument(
+            "--ocr",
+            help="Extract text from a file using OCR",
         )
         parser.add_argument(
             "-i",
             "--init",
-            help="(Optional) Initialize local directory and files in your home directory for configuring Cha",
             action="store_true",
+            dest="init",
+            help="Initialize cha config directory",
         )
         parser.add_argument(
-            "-hs",
-            "--history_search",
-            help="Search and display a previous chat history without starting a new session",
-            action="store_true",
-        )
-        parser.add_argument(
-            "-x",
             "--private",
-            help="Enable private mode, no chat history will be saved locally",
             action="store_true",
+            dest="private",
+            help="Enable private mode (no history saved)",
         )
         parser.add_argument(
-            "--editor",
-            nargs="?",
-            const=True,
-            help="Run the interactive editor. Optionally provide a file path.",
-        )
-        parser.add_argument(
-            "-v",
             "--version",
-            help="Show version information",
             action="store_true",
+            dest="version",
+            help="Show version information",
+        )
+        parser.add_argument(
+            "string",
+            nargs="*",
+            help="Non-interactive mode, feed a string into the model",
         )
 
         args = parser.parse_args()
+
+        if args.shell_command:
+            utils.run_a_shell(args.shell_command)
+            return
 
         if args.version:
             try:
@@ -1144,68 +1170,76 @@ def cli():
         title_print_value = config.CHA_DEFAULT_SHOW_PRINT_TITLE
         selected_model = args.model
 
-        if (
-            args.platform
-            or args.platform == True
-            or config.CHA_CURRENT_PLATFORM_NAME != "openai"
-        ):
+        if args.platform or config.CHA_CURRENT_PLATFORM_NAME != "openai":
+            platform_arg = args.platform
+            if not platform_arg and config.CHA_CURRENT_PLATFORM_NAME != "openai":
+                platform_arg = config.CHA_CURRENT_PLATFORM_NAME
+
             try:
                 from cha import platforms
 
-                platform_args = args.platform
-
-                if config.CHA_CURRENT_PLATFORM_NAME != "openai":
-                    platform_args = (
-                        f"{config.CHA_CURRENT_PLATFORM_NAME}|{config.CHA_DEFAULT_MODEL}"
-                    )
-
                 API_KEY_NAME = None
                 BASE_URL_VALUE = None
+                platform_name = None
+
                 if (
-                    type(platform_args) == str
-                    and "|" in platform_args
-                    and "http" in platform_args
+                    isinstance(platform_arg, str)
+                    and "|" in platform_arg
+                    and "http" in platform_arg
                 ):
-                    platform_values = str(platform_args).split("|")
-                    API_KEY_NAME = platform_values[1]
-                    BASE_URL_VALUE = platform_values[0]
+                    parts = platform_arg.split("|", 1)
+                    BASE_URL_VALUE = parts[0]
+                    API_KEY_NAME = parts[1]
                 else:
-                    platform_name = None
                     platform_model_name = None
-                    if type(platform_args) == str:
-                        psplit = platform_args.split("|")
-                        platform_name = psplit[0]
-                        if len(psplit) == 2:
-                            platform_model_name = psplit[1]
+                    if isinstance(platform_arg, str):
+                        if "|" in platform_arg:
+                            parts = platform_arg.split("|", 1)
+                            platform_name = parts[0]
+                            platform_model_name = parts[1]
+                        else:
+                            platform_name = platform_arg
+
+                    if args.model and args.model != config.CHA_DEFAULT_MODEL:
+                        platform_model_name = args.model
 
                     platform_values = platforms.auto_select_a_platform(
                         platform_key=platform_name,
                         model_name=platform_model_name,
                     )
 
-                    API_KEY_NAME = platform_values["env_name"]
-                    BASE_URL_VALUE = platform_values["base_url"]
-                    selected_model = platform_values["picked_model"]
+                    if not platform_values:
+                        raise Exception("Could not determine platform values.")
 
-                # NOTE: (2-13-2025) this exists to account for cases like this https://ollama.com/blog/openai-compatibility
-                API_KEY_VALUE = API_KEY_NAME
-                if API_KEY_VALUE in os.environ:
-                    API_KEY_VALUE = os.environ.get(API_KEY_NAME)
+                    API_KEY_NAME = platform_values.get("env_name")
+                    BASE_URL_VALUE = platform_values.get("base_url")
+                    selected_model = platform_values.get("picked_model")
+                    platform_name = platform_values.get("platform_name")
 
+                if not API_KEY_NAME or not BASE_URL_VALUE:
+                    raise Exception(
+                        "Missing API key or base URL for the selected platform."
+                    )
+
+                API_KEY_VALUE = os.environ.get(API_KEY_NAME, API_KEY_NAME)
                 set_current_chat_client(API_KEY_VALUE, BASE_URL_VALUE)
 
-                if platform_name == None and type(platform_values) == dict:
-                    platform_name = platform_values["platform_name"]
-                elif platform_name == None:
-                    for platform in config.THIRD_PARTY_PLATFORMS:
-                        if platform.lower() in BASE_URL_VALUE.lower().replace(".", ""):
-                            platform_name = platform
+                if not platform_name:
+                    for p_name, p_data in config.THIRD_PARTY_PLATFORMS.items():
+                        if p_data["base_url"] in BASE_URL_VALUE:
+                            platform_name = p_name
                             break
 
-                config.CHA_CURRENT_PLATFORM_NAME = platform_name
+                if platform_name:
+                    config.CHA_CURRENT_PLATFORM_NAME = platform_name
 
                 if config.CHA_DEFAULT_SHOW_PRINT_TITLE:
-                    print(colors.magenta(f"Platform switched to {BASE_URL_VALUE}"))
+                    print(
+                        colors.magenta(
+                            f"Platform switched to {platform_name or BASE_URL_VALUE}"
+                        )
+                    )
+
             except Exception as e:
                 save_chat_state = False
                 raise Exception(f"Failed to switch platform due to {e}")
