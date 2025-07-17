@@ -136,6 +136,7 @@ def get_help_options():
     help_options.append(
         f"{config.CHANGE_DIRECTORY_ALIAS} - Navigate and change cha's current directory"
     )
+    help_options.append(f"{config.SKIP_SEND_TEXT} - Skip sending current input")
     help_options.append(f"{config.HELP_PRINT_OPTIONS_KEY} - List all options")
 
     bracket_options.append(
@@ -873,6 +874,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     auto_scrape_detection_mode = False
                 continue
 
+            if message.strip().endswith(config.SKIP_SEND_TEXT):
+                continue
+
             # add user's message
             messages.append({"role": "user", "content": message})
 
@@ -927,7 +931,13 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     sys.stdout.write("\n")
                     sys.stdout.flush()
 
+        except (KeyboardInterrupt, EOFError):
+            loading.stop_loading()
+            if messages and messages[-1]["role"] == "user":
+                messages.pop()
+            continue
         except Exception as e:
+            loading.stop_loading()
             print(colors.red(f"Error during chat: {e}"))
             break
 
@@ -1316,7 +1326,7 @@ def cli():
             if args.string:
                 # combine piped content and command-line string args
                 processed_input_for_chatbot = (
-                    f"{piped_content}\\n\\n---\\n\\n{' '.join(args.string)}"
+                    f"{piped_content}\n\n---\n\n{' '.join(args.string)}"
                 )
                 input_mode = "pipe_with_args"
             else:
