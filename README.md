@@ -266,8 +266,8 @@ The interactive editor allows you to edit files with AI assistance. You can star
 
 #### History Search and Management
 
-- `cha -r` - Search and display previous chat histories
-- `cha` then type `!r` during interactive mode to load a previous chat
+- `cha -r [exact]` - Search and load previous chats. Fuzzy search is the default.
+- `cha` then type `!r [exact]` during interactive mode to load a previous chat. Fuzzy search is the default.
 
 #### Interactive Platform and Model Switching
 
@@ -347,11 +347,11 @@ Cha also supports and accepts additional parameters. Here is the help page for r
 
 ```txt
 usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]]
-           [-e] [-x SHELL_COMMAND] [-r] [-v [EDITOR]] [--select-model]
-           [--tokens] [--ocr OCR] [-i] [-P] [-V]
+           [-e] [-x SHELL_COMMAND] [-r [{fuzzy,exact}]] [-v [EDITOR]] [-sm]
+           [-ct] [-ocr OCR] [-i] [-P] [-V]
            [string ...]
 
-Chat with an OpenAI GPT model.
+A command-line tool for interacting with AI models from multiple providers.
 
 positional arguments:
   string                Non-interactive mode, feed a string into the model
@@ -371,12 +371,13 @@ options:
                         !e)
   -x SHELL_COMMAND, --shell SHELL_COMMAND
                         Execute a shell command (interactive: !x)
-  -r, --history         Search and load previous chats (interactive: !r)
+  -r [{fuzzy,exact}], --history [{fuzzy,exact}]
+                        Search history. 'fuzzy' (default), 'exact' for exact.
   -v [EDITOR], --editor [EDITOR]
                         Run the interactive editor (interactive: !v)
-  --select-model        Select a model from a list
-  --tokens              Count tokens for the input
-  --ocr OCR             Extract text from a file using OCR
+  -sm, --select-model   Select a model from a list
+  -ct, --tokens         Count tokens for the input
+  -ocr OCR, --ocr OCR   Extract text from a file using OCR
   -i, --init            Initialize cha config directory
   -P, --private         Enable private mode (no history saved)
   -V, --version         Show version information

@@ -151,7 +151,7 @@ def get_help_options():
 
     if os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR):
         help_options.append(
-            f"{config.LOAD_HISTORY_TRIGGER} - Search and load previous chats"
+            f"{config.LOAD_HISTORY_TRIGGER} [exact] - Search history (fuzzy by default)"
         )
 
     help_options.extend(bracket_options)
@@ -531,7 +531,15 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 from cha import local
 
                 try:
-                    hs_output = local.browse_and_select_history_file()
+                    parts = (
+                        message.strip().lower().split(config.LOAD_HISTORY_TRIGGER, 1)
+                    )
+                    search_mode_arg = parts[1].strip() if len(parts) > 1 else "fuzzy"
+                    exact_mode = search_mode_arg == "exact"
+
+                    hs_output = local.browse_and_select_history_file(
+                        exact_mode=exact_mode
+                    )
                     if not hs_output or not isinstance(hs_output, dict):
                         continue
 
@@ -937,7 +945,8 @@ def cli():
 
     try:
         parser = argparse.ArgumentParser(
-            description="Chat with an OpenAI GPT model.", add_help=False
+            description="A command-line tool for interacting with AI models from multiple providers.",
+            add_help=False,
         )
         parser.add_argument(
             "-h",
@@ -1004,8 +1013,10 @@ def cli():
             "-r",
             "--history",
             dest="history_search",
-            action="store_true",
-            help="Search and load previous chats (interactive: !r)",
+            nargs="?",
+            const="fuzzy",
+            choices=["fuzzy", "exact"],
+            help="Search history. 'fuzzy' (default), 'exact' for exact.",
         )
         parser.add_argument(
             "-v",
@@ -1016,18 +1027,21 @@ def cli():
             help="Run the interactive editor (interactive: !v)",
         )
         parser.add_argument(
+            "-sm",
             "--select-model",
             dest="select_model",
             action="store_true",
             help="Select a model from a list",
         )
         parser.add_argument(
+            "-ct",
             "--tokens",
             dest="token_count",
             action="store_true",
             help="Count tokens for the input",
         )
         parser.add_argument(
+            "-ocr",
             "--ocr",
             help="Extract text from a file using OCR",
         )
@@ -1093,7 +1107,9 @@ def cli():
             try:
                 from cha import local
 
-                hs_output = local.browse_and_select_history_file()
+                hs_output = local.browse_and_select_history_file(
+                    exact_mode=(args.history_search == "exact")
+                )
                 if hs_output and isinstance(hs_output, dict):
                     selected_path = hs_output.get("path")
                     chat_msgs = hs_output.get("chat")

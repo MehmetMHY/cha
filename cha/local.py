@@ -102,7 +102,6 @@ def validate_tools(tools):
                     f"{expected_types}, got {type(val)}"
                 )
 
-        # check for duplicate 'name' value
         name = getattr(tool, "name", None)
         if name is not None:
             if name in seen_names:
@@ -180,15 +179,15 @@ def read_json(path):
     return content
 
 
-def browse_and_select_history_file():
-    history_dir = os.path.join(os.environ["HOME"], ".cha", "history")
+def browse_and_select_history_file(exact_mode=False):
+    from cha import utils
 
+    history_dir = os.path.join(os.environ["HOME"], ".cha", "history")
     if not os.path.isdir(history_dir):
         return None
 
     selected_path = None
     try:
-        # use ripgrep with fzf to search through all JSON files
         rg_command = [
             "rg",
             "--line-number",
@@ -199,6 +198,9 @@ def browse_and_select_history_file():
             history_dir,
         ]
 
+        header_text = "{} | [Shift↑/↓] [ESC] [ENTER]".format(
+            "EXACT (use 'query' for literal)" if exact_mode else "FUZZY"
+        )
         fzf_command = [
             "fzf",
             "--ansi",
@@ -208,26 +210,21 @@ def browse_and_select_history_file():
             "bat --style=numbers --color=always --highlight-line {2} --wrap auto {1}",
             "--preview-window=right,50%,wrap",
             "--header",
-            "[Shift↑/↓] [ESC] [ENTER]",
+            header_text,
         ]
+        if exact_mode:
+            fzf_command.append("--exact")
 
-        # run ripgrep and pipe to fzf through temp file for SSH compatibility
         rg_process = subprocess.run(
             rg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
-
-        if rg_process.returncode != 0:
-            return []
-
-        # use our ssh-safe fzf helper with ripgrep output
-        from cha import utils
+        if rg_process.returncode != 0 and rg_process.returncode != 1:
+            return None
 
         fzf_result = utils.run_fzf_ssh_safe(fzf_command, rg_process.stdout)
-
         if not fzf_result:
-            return []
+            return None
 
-        # extract filename from the output (everything before the first colon)
         selected_line = fzf_result.strip()
         if selected_line:
             selected_path = selected_line.split(":", 1)[0]
@@ -245,14 +242,12 @@ def browse_and_select_history_file():
         chat_content = file_content
         if file_content.get("chat") != None:
             chat_content = file_content.get("chat")
-
         return {"path": selected_path, "content": file_content, "chat": chat_content}
     except Exception:
         return None
 
 
 def print_history_browse_and_select_history_file(chat, include_timestamp=True):
-    # NOTE: make sure to send the entire chat history, ALL of it!
     for msg in chat[1:]:
         timestamp = msg.get("time")
         user = msg.get("user")
