@@ -530,19 +530,17 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             ) and message.strip().lower().startswith(config.LOAD_HISTORY_TRIGGER):
                 from cha import local
 
-                hs_output = None
                 try:
                     hs_output = local.browse_and_select_history_file()
-                    if hs_output:
-                        selected_path = hs_output["path"]
-                        content = hs_output["content"]
-                        chat_msgs = hs_output["chat"]
-                except (KeyboardInterrupt, EOFError):
-                    print()
-                    continue
-                except Exception as e:
-                    pass
-                if hs_output != None:
+                    if not hs_output or not isinstance(hs_output, dict):
+                        continue
+
+                    selected_path = hs_output.get("path")
+                    chat_msgs = hs_output.get("chat")
+
+                    if not selected_path or not chat_msgs:
+                        continue
+
                     print(colors.magenta(selected_path))
                     local.print_history_browse_and_select_history_file(chat_msgs)
 
@@ -562,6 +560,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             messages.append(
                                 {"role": "assistant", "content": item["bot"]}
                             )
+                except (KeyboardInterrupt, EOFError):
+                    print()
+                except Exception as e:
+                    if config.CHA_DEBUG_MODE:
+                        print(colors.red(f"Error loading history: {e}"))
                 continue
 
             if message.startswith(config.PICK_AND_RUN_A_SHELL_OPTION):
@@ -1063,11 +1066,12 @@ def cli():
                 from cha import local
 
                 hs_output = local.browse_and_select_history_file()
-                if hs_output:
-                    selected_path = hs_output["path"]
-                    chat_msgs = hs_output["chat"]
-                    print(colors.magenta(selected_path))
-                    local.print_history_browse_and_select_history_file(chat_msgs)
+                if hs_output and isinstance(hs_output, dict):
+                    selected_path = hs_output.get("path")
+                    chat_msgs = hs_output.get("chat")
+                    if selected_path and chat_msgs:
+                        print(colors.magenta(selected_path))
+                        local.print_history_browse_and_select_history_file(chat_msgs)
             except (KeyboardInterrupt, EOFError):
                 print()
             except Exception as e:
