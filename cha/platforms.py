@@ -64,7 +64,6 @@ def auto_select_a_platform(platform_key=None, model_name=None):
                 "\n".join(platforms),
             )
             if not platform_key:
-                print(colors.red("No platform selected"))
                 return None
         except (subprocess.CalledProcessError, subprocess.SubprocessError):
             return None
@@ -113,7 +112,6 @@ def auto_select_a_platform(platform_key=None, model_name=None):
                 "\n".join(models_list),
             )
             if not final_model:
-                print(colors.red("No model selected"))
                 return None
         except (subprocess.CalledProcessError, subprocess.SubprocessError):
             return None

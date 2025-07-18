@@ -181,6 +181,7 @@ def interactive_help(selected_model):
                 "--border",
                 "--prompt=TAB to multi-select, ENTER to confirm, & Esc to cancel: ",
                 "--multi",
+                "--exact",
                 "--header",
                 f"Chatting On {config.CHA_CURRENT_PLATFORM_NAME.upper()} With {selected_model}",
             ],
@@ -188,22 +189,56 @@ def interactive_help(selected_model):
         )
         if selected_output:
             selected_items = selected_output.split("\n")
-            if len(selected_items) == 1 and config.HELP_ALL_ALIAS in selected_items[0]:
-                print(
-                    colors.yellow(
-                        f"Chatting On {config.CHA_CURRENT_PLATFORM_NAME.upper()} With {selected_model}"
+
+            # handle single selection - check if it's a parameter-less alias
+            if len(selected_items) == 1:
+                item = selected_items[0]
+
+                # show all help if [ALL] is selected
+                if config.HELP_ALL_ALIAS in item:
+                    print(
+                        colors.yellow(
+                            f"Chatting On {config.CHA_CURRENT_PLATFORM_NAME.upper()} With {selected_model}"
+                        )
                     )
-                )
-                for help_item in help_options:
-                    if config.HELP_ALL_ALIAS not in help_item:
-                        print(colors.yellow(help_item))
+                    for help_item in help_options:
+                        if config.HELP_ALL_ALIAS not in help_item:
+                            print(colors.yellow(help_item))
+                    return None
+
+                # check if this is a parameter-less alias that can be executed
+                alias = item.split(" - ")[0] if " - " in item else ""
+
+                # get parameter-less aliases from config
+                parameter_less_aliases = config.PARAMETER_LESS_ALIASES.copy()
+
+                # add external tool aliases that don't require parameters
+                external_tools = config.get_external_tools_execute()
+                for tool in external_tools:
+                    if not tool.get(
+                        "pipe_input", False
+                    ):  # tools that don't require input parameters
+                        parameter_less_aliases.append(tool["alias"])
+
+                # check if this alias can be executed directly
+                if alias in parameter_less_aliases:
+                    return alias
+
+                # if it's not a parameter-less alias, just print it
+                print(colors.yellow(item))
+                return None
+
+            # handle multiple selections - just print them
             else:
                 for item in selected_items:
                     if config.HELP_ALL_ALIAS not in item:
                         print(colors.yellow(item))
+                return None
 
     except (subprocess.CalledProcessError, subprocess.SubprocessError):
         pass
+
+    return None
 
 
 def title_print(selected_model):
@@ -351,6 +386,16 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 user_input_string = colors.yellow("[S] ") + colors.blue("User: ")
 
             message = utils.safe_input(user_input_string).rstrip("\n")
+
+            # print help - handle this first so selected aliases can be processed by other handlers
+            if message.strip().lower() == config.HELP_PRINT_OPTIONS_KEY.lower():
+                selected_alias = interactive_help(selected_model)
+                if selected_alias:
+                    # execute the selected alias by treating it as a new message
+                    message = selected_alias
+                    # continue processing with the selected alias
+                else:
+                    continue
 
             if message.strip() == config.BACKTRACK_HISTORY_KEY:
                 if len(CURRENT_CHAT_HISTORY) <= 1:
@@ -548,9 +593,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             elif message.replace(" ", "").lower() == config.EXIT_STRING_KEY.lower():
                 break
 
-            elif os.path.isdir(
-                config.LOCAL_CHA_CONFIG_HISTORY_DIR
-            ) and message.strip().lower().startswith(config.LOAD_HISTORY_TRIGGER):
+            elif os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR) and (
+                message.strip().lower() == config.LOAD_HISTORY_TRIGGER
+                or message.strip().lower().startswith(config.LOAD_HISTORY_TRIGGER + " ")
+            ):
                 from cha import local
 
                 try:
@@ -679,11 +725,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     break
 
             if exist_early_due_to_tool_calling_config:
-                continue
-
-            # print help
-            if message.strip().lower() == config.HELP_PRINT_OPTIONS_KEY.lower():
-                interactive_help(selected_model)
                 continue
 
             if message.strip().startswith(config.ENABLE_OR_DISABLE_AUTO_SD):
@@ -1325,7 +1366,8 @@ def cli():
                     )
 
                     if not platform_values:
-                        raise Exception("Could not determine platform values.")
+                        # user cancelled platform selection - exit silently
+                        return
 
                     API_KEY_NAME = platform_values.get("env_name")
                     BASE_URL_VALUE = platform_values.get("base_url")
@@ -1365,7 +1407,7 @@ def cli():
             if new_selected_model:
                 selected_model = new_selected_model
             else:
-                print(colors.red("No model selected"))
+                # user cancelled model selection - exit silently
                 return
 
         if args.token_count:
