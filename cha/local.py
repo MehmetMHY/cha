@@ -255,7 +255,11 @@ def print_history_browse_and_select_history_file(chat, include_timestamp=True):
 
         timestamp_str = ""
         if include_timestamp and timestamp:
-            timestamp_str = f"[{int(timestamp)}] "
+            try:
+                dt_object = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+                timestamp_str = f"[{dt_object.strftime('%Y-%m-%d %H:%M:%S %Z')}] "
+            except (TypeError, ValueError):
+                timestamp_str = f"[{timestamp}] "
 
         if user:
             print(
