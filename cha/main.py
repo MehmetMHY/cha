@@ -275,9 +275,26 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
     auto_scrape_detection_mode = False
 
     # o1 models don't accept system prompts
-    messages = (
-        [] if reasoning_model else [{"role": "user", "content": config.INITIAL_PROMPT}]
-    )
+    if len(CURRENT_CHAT_HISTORY) > 1:
+        messages = []
+        if not reasoning_model:
+            # The first item is the initial prompt.
+            if CURRENT_CHAT_HISTORY and CURRENT_CHAT_HISTORY[0].get("user"):
+                messages.append(
+                    {"role": "user", "content": CURRENT_CHAT_HISTORY[0]["user"]}
+                )
+
+        for item in CURRENT_CHAT_HISTORY[1:]:
+            if item.get("user"):
+                messages.append({"role": "user", "content": item["user"]})
+            if item.get("bot"):
+                messages.append({"role": "assistant", "content": item["bot"]})
+    else:
+        messages = (
+            []
+            if reasoning_model
+            else [{"role": "user", "content": config.INITIAL_PROMPT}]
+        )
     multi_line_input = False
 
     if filepath or content_string:
@@ -349,11 +366,16 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         if 1 <= index < len(CURRENT_CHAT_HISTORY):
                             CURRENT_CHAT_HISTORY.pop(index)
 
-                    messages = (
-                        []
-                        if reasoning_model
-                        else [{"role": "user", "content": config.INITIAL_PROMPT}]
-                    )
+                    messages.clear()
+                    if not reasoning_model:
+                        if CURRENT_CHAT_HISTORY and CURRENT_CHAT_HISTORY[0].get("user"):
+                            messages.append(
+                                {
+                                    "role": "user",
+                                    "content": CURRENT_CHAT_HISTORY[0]["user"],
+                                }
+                            )
+
                     for item in CURRENT_CHAT_HISTORY[1:]:
                         if item.get("user"):
                             messages.append({"role": "user", "content": item["user"]})
@@ -1077,12 +1099,78 @@ def cli():
             help="Show version information",
         )
         parser.add_argument(
+            "-rl",
+            "--load-history",
+            dest="load_history_file",
+            help="Load a chat history from a file.",
+        )
+        parser.add_argument(
             "string",
             nargs="*",
             help="Non-interactive mode, feed a string into the model",
         )
 
         args = parser.parse_args()
+
+        if args.load_history_file:
+            history_file_path = args.load_history_file
+            if not os.path.isabs(history_file_path) and os.path.isdir(
+                config.LOCAL_CHA_CONFIG_HISTORY_DIR
+            ):
+                history_file_path = os.path.join(
+                    config.LOCAL_CHA_CONFIG_HISTORY_DIR, history_file_path
+                )
+
+            if not os.path.exists(history_file_path):
+                print(colors.red(f"History file not found"))
+                return
+
+            try:
+                with open(history_file_path, "r", encoding="utf-8") as f:
+                    history_data = json.load(f)
+
+                chat_history = None
+                if isinstance(history_data, dict) and "chat" in history_data:
+                    chat_history = history_data["chat"]
+                elif isinstance(history_data, list):
+                    chat_history = history_data
+
+                if chat_history is not None and isinstance(chat_history, list):
+                    if chat_history and not all(
+                        isinstance(item, dict) for item in chat_history
+                    ):
+                        raise ValueError(
+                            "Invalid history format: must be a list of objects."
+                        )
+
+                    CURRENT_CHAT_HISTORY.clear()
+                    CURRENT_CHAT_HISTORY.extend(chat_history)
+                    if not CURRENT_CHAT_HISTORY:
+                        CURRENT_CHAT_HISTORY.append(
+                            {
+                                "time": time.time(),
+                                "user": config.INITIAL_PROMPT,
+                                "bot": "",
+                                "platform": config.CHA_CURRENT_PLATFORM_NAME,
+                                "model": config.CHA_DEFAULT_MODEL,
+                            }
+                        )
+
+                    from cha import local
+
+                    print(colors.magenta(history_file_path))
+                    local.print_history_browse_and_select_history_file(
+                        CURRENT_CHAT_HISTORY
+                    )
+                else:
+                    raise ValueError("Invalid history format.")
+            except (json.JSONDecodeError, ValueError) as e:
+                print(
+                    colors.red(
+                        f"Error loading history file '{args.load_history_file}': {e}"
+                    )
+                )
+                return
 
         if args.shell_command:
             utils.run_a_shell(args.shell_command)

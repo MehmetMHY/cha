@@ -252,22 +252,14 @@ def print_history_browse_and_select_history_file(chat, include_timestamp=True):
         timestamp = msg.get("time")
         user = msg.get("user")
         bot = msg.get("bot")
-        platform = msg.get("platform", "unknown")
-        model = msg.get("model", "unknown")
 
         timestamp_str = ""
-        platform_str = ""
         if include_timestamp and timestamp:
             timestamp_str = f"[{int(timestamp)}] "
-        if platform and model:
-            platform_str = f"[{platform}:{model}] "
 
         if user:
             print(
-                colors.red(timestamp_str)
-                + colors.yellow(platform_str)
-                + colors.blue("User: ")
-                + colors.white(user)
+                colors.red(timestamp_str) + colors.blue("User: ") + colors.white(user)
             )
 
         if bot:

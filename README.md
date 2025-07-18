@@ -268,6 +268,7 @@ The interactive editor allows you to edit files with AI assistance. You can star
 #### History Search and Management
 
 - `cha -r [exact]` - Search and load previous chats. Fuzzy search is the default.
+- `cha --load-history <file_path>` or `cha -rl <file_path>` - Load a specific chat history file.
 - `cha` then type `!r [exact]` during interactive mode to load a previous chat. Fuzzy search is the default.
 
 #### Interactive Platform and Model Switching
@@ -349,7 +350,7 @@ Cha also supports and accepts additional parameters. Here is the help page for r
 ```txt
 usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]]
            [-e] [-x SHELL_COMMAND] [-r [{fuzzy,exact}]] [-v [EDITOR]] [-sm]
-           [-ct] [-ocr OCR] [-i] [-P] [-V]
+           [-ct] [-ocr OCR] [-i] [-P] [-V] [-rl LOAD_HISTORY_FILE]
            [string ...]
 
 A command-line tool for interacting with AI models from multiple providers.
@@ -382,6 +383,8 @@ options:
   -i, --init            Initialize cha config directory
   -P, --private         Enable private mode (no history saved)
   -V, --version         Show version information
+  -rl LOAD_HISTORY_FILE, --load-history LOAD_HISTORY_FILE
+                        Load a chat history from a file.
 ```
 
 ## Development
