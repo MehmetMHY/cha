@@ -19,7 +19,8 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI. Type `\` to toggle multi-line mode, then `\` again to send.
 - **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done though an argument or in interactive mode.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
-- **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution. Use `!a` for deep search or `!a <query>` for quick search.
+- **Voice Recording**: Record voice prompts and have them automatically transcribed to text. Use `!r` in interactive mode or `cha -r` from command line.
+- **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution. Use `!s` for deep search or `!s <query>` for quick search.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
@@ -180,6 +181,15 @@ The codedump feature uses `fzf` for an improved file selection experience:
 - Type `help` to see all available commands
 - Clean interface that only shows directory path when it changes or selection count changes
 
+#### Voice Recording
+
+- `cha -r`
+- Example:
+  ```bash
+  cha -r
+  # Records voice, transcribes to text, and sends to AI model
+  ```
+
 #### Answer Search
 
 - `cha -a`
@@ -268,9 +278,9 @@ The interactive editor allows you to edit files with AI assistance. You can star
 
 #### History Search and Management
 
-- `cha -r [exact]` - Search and load previous chats. Fuzzy search is the default.
-- `cha --load-history <file_path>` or `cha -rl <file_path>` - Load a specific chat history file.
-- `cha` then type `!r [exact]` during interactive mode to load a previous chat. Fuzzy search is the default.
+- `cha -hs [exact]` - Search and load previous chats. Fuzzy search is the default.
+- `cha --load-history <file_path>` or `cha -lh <file_path>` - Load a specific chat history file.
+- `cha` then type `!hs [exact]` during interactive mode to load a previous chat. Fuzzy search is the default.
 
 #### Interactive Platform and Model Switching
 
@@ -350,8 +360,8 @@ Cha also supports and accepts additional parameters. Here is the help page for r
 
 ```txt
 usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]]
-           [-e] [-x SHELL_COMMAND] [-r [{fuzzy,exact}]] [-v [EDITOR]] [-sm]
-           [-ct] [-ocr OCR] [-i] [-P] [-V] [-rl LOAD_HISTORY_FILE]
+           [-e] [-x SHELL_COMMAND] [-hs [{fuzzy,exact}]] [-r] [-v [EDITOR]] [-sm]
+           [-ct] [-ocr OCR] [-i] [-P] [-V] [-lh LOAD_HISTORY_FILE]
            [string ...]
 
 A command-line tool for interacting with AI models from multiple providers.
@@ -362,7 +372,7 @@ positional arguments:
 options:
   -h, --help            Show this help message and exit.
   -l FILE, --load FILE  Load a file to send to the model (interactive: !l)
-  -a, --answer          Run answer search (interactive: !a)
+  -a, --answer          Run answer search (interactive: !s)
   -t, --ide             Use a terminal text editor for input (interactive: !t)
   -m MODEL, --model MODEL
                         Switch model (interactive: !m)
@@ -374,8 +384,9 @@ options:
                         !e)
   -x SHELL_COMMAND, --shell SHELL_COMMAND
                         Execute a shell command (interactive: !x)
-  -r [{fuzzy,exact}], --history [{fuzzy,exact}]
-                        Search history. 'fuzzy' (default), 'exact' for exact.
+  -hs [{fuzzy,exact}], --history [{fuzzy,exact}]
+                        Search history. 'fuzzy' (default), 'exact' for exact. (interactive: !hs)
+  -r, --record          Record voice prompt (interactive: !r)
   -v [EDITOR], --editor [EDITOR]
                         Run the interactive editor (interactive: !v)
   -sm, --select-model   Select a model from a list
@@ -384,7 +395,7 @@ options:
   -i, --init            Initialize cha config directory
   -P, --private         Enable private mode (no history saved)
   -V, --version         Show version information
-  -rl LOAD_HISTORY_FILE, --load-history LOAD_HISTORY_FILE
+  -lh LOAD_HISTORY_FILE, --load-history LOAD_HISTORY_FILE
                         Load a chat history from a file.
 ```
 

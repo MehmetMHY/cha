@@ -15,17 +15,15 @@ class LoadingAnimation:
         self.cursor_position = 0
 
     def _clear_current_line(self):
-        # move cursor to start of line and clear it
-        sys.stdout.write("\r" + " " * (len(self.last_message) + 20) + "\r")
+        # move cursor to start of line and clear it completely
+        sys.stdout.write("\r" + " " * 100 + "\r")
         sys.stdout.flush()
 
     def _update_display(self, text, spinner_char):
         with self.message_lock:
-            # clear the current line first
-            self._clear_current_line()
-            # write the new message
+            # move cursor to start of line and clear it
             message = f"{text} {spinner_char}"
-            sys.stdout.write(colors.green(message))
+            sys.stdout.write(f"\r{colors.green(message)}")
             sys.stdout.flush()
             self.last_message = message
 
@@ -45,8 +43,9 @@ class LoadingAnimation:
             while self.active:
                 self._update_display(text, next(spinner))
                 time.sleep(0.1)
-            # clear line without moving to the next line
-            self._clear_current_line()
+            # completely clear the line and reset cursor
+            sys.stdout.write("\r\033[K")
+            sys.stdout.flush()
         finally:
             # always show cursor before exiting
             sys.stdout.write(config.SHOW_CURSOR)

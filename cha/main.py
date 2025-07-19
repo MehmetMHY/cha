@@ -111,8 +111,9 @@ def get_help_options():
         f"{config.LOAD_MESSAGE_CONTENT_ADVANCED} - Load files (advanced mode)"
     )
     help_options.append(
-        f"{config.RUN_ANSWER_FEATURE} - Answer search or '{config.RUN_ANSWER_FEATURE} <query>' for quick search"
+        f"{config.RUN_ANSWER_FEATURE} - Web search or '{config.RUN_ANSWER_FEATURE} <query>' for quick search"
     )
+    help_options.append(f"{config.RECORD_AUDIO_ALIAS} - Record voice prompt")
     help_options.append(f"{config.TEXT_EDITOR_INPUT_MODE} - Text-editor input mode")
     help_options.append(
         f"{config.SWITCH_MODEL_TEXT} - Switch between models during a session"
@@ -593,6 +594,21 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             elif message.replace(" ", "").lower() == config.EXIT_STRING_KEY.lower():
                 break
 
+            elif message.strip() == config.RECORD_AUDIO_ALIAS:
+                try:
+                    from cha import recording
+
+                    recorded_text = recording.record_get_text()
+                    if recorded_text:
+                        print(colors.blue("User:"), colors.white(recorded_text))
+                        message = recorded_text
+                        messages.append({"role": "user", "content": message})
+                    else:
+                        continue
+                except Exception as e:
+                    print(colors.red(f"Recording failed: {e}"))
+                    continue
+
             elif os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR) and (
                 message.strip().lower() == config.LOAD_HISTORY_TRIGGER
                 or message.strip().lower().startswith(config.LOAD_HISTORY_TRIGGER + " ")
@@ -1039,7 +1055,7 @@ def cli():
             "--answer",
             dest="answer_search",
             action="store_true",
-            help="Run answer search (interactive: !a)",
+            help="Run answer search (interactive: !s)",
         )
         parser.add_argument(
             "-t",
@@ -1083,13 +1099,20 @@ def cli():
             help="Execute a shell command (interactive: !x)",
         )
         parser.add_argument(
-            "-r",
+            "-hs",
             "--history",
             dest="history_search",
             nargs="?",
             const="fuzzy",
             choices=["fuzzy", "exact"],
-            help="Search history. 'fuzzy' (default), 'exact' for exact.",
+            help="Search history. 'fuzzy' (default), 'exact' for exact. (interactive: !hs)",
+        )
+        parser.add_argument(
+            "-r",
+            "--record",
+            dest="record_voice",
+            action="store_true",
+            help="Record voice prompt (interactive: !r)",
         )
         parser.add_argument(
             "-v",
@@ -1140,7 +1163,7 @@ def cli():
             help="Show version information",
         )
         parser.add_argument(
-            "-rl",
+            "-lh",
             "--load-history",
             dest="load_history_file",
             help="Load a chat history from a file.",
@@ -1326,6 +1349,22 @@ def cli():
 
         title_print_value = config.CHA_DEFAULT_SHOW_PRINT_TITLE
         selected_model = args.model
+
+        if args.record_voice:
+            try:
+                from cha import recording
+
+                recorded_text = recording.record_get_text()
+                if recorded_text:
+                    print(colors.blue("User:"), colors.white(recorded_text))
+                    chatbot(
+                        selected_model, title_print_value, content_string=recorded_text
+                    )
+                else:
+                    print(colors.red("No audio recorded"))
+            except Exception as e:
+                print(colors.red(f"Recording failed: {e}"))
+            return
 
         if args.platform or config.CHA_CURRENT_PLATFORM_NAME != "openai":
             platform_arg = args.platform
