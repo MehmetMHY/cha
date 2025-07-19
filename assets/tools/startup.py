@@ -77,7 +77,6 @@ def main(command_path, debug_mode=False, total_runs=15):
 
 
 if __name__ == "__main__":
-    # NOTE: paramaters for test
     debug_mode = False
     total_runs = 30
     command_to_time = "cha"
