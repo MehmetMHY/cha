@@ -19,7 +19,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI. Type `\` to toggle multi-line mode, then `\` again to send.
 - **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done though an argument or in interactive mode.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
-- **Voice Recording**: Record voice prompts and have them automatically transcribed to text. Use `!r` in interactive mode or `cha -r` from command line.
+- **Voice Recording**: Record voice prompts and have them automatically transcribed to text using OpenAI's Whisper API or local whisper (set `TEXT_TO_SPEECH_MODEL = "local"` in config). Use `!r` in interactive mode or `cha -r` from command line.
 - **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution. Use `!s` for deep search or `!s <query>` for quick search.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.

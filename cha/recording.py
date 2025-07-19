@@ -19,7 +19,7 @@ def _lazy_import_recording_deps():
         return False
 
 
-def record_get_text():
+def record_get_text(client=None):
     if not _lazy_import_recording_deps():
         print(
             colors.red(
@@ -65,17 +65,37 @@ def record_get_text():
         audio = np.concatenate(frames, axis=0)
         write(filepath, sample_rate, audio)
 
-        client = OpenAI()
+        if config.TEXT_TO_SPEECH_MODEL == "local":
+            from cha import utils
 
-        with open(filepath, "rb") as f:
             loading.start_loading("Processing audio", "basic")
-            resp = client.audio.transcriptions.create(
-                model=config.TEXT_TO_SPEECH_MODEL, file=f, response_format="json"
-            )
+            text = utils.transcribe_file(filepath)
             loading.stop_loading()
+            if isinstance(text, dict):
+                print(
+                    colors.red(
+                        f"Local transcription error: {text.get('error', 'Unknown error')}"
+                    )
+                )
+                return None
+            # remove timestamps and clean up text for recording
+            import re
 
-        text = resp.text
-        return text
+            cleaned_text = re.sub(r"\[\d+\.\d+s -> \d+\.\d+s\]\s*", "", text)
+            return cleaned_text.strip()
+        else:
+            if client is None:
+                client = OpenAI()
+
+            with open(filepath, "rb") as f:
+                loading.start_loading("Processing audio", "basic")
+                resp = client.audio.transcriptions.create(
+                    model=config.TEXT_TO_SPEECH_MODEL, file=f, response_format="json"
+                )
+                loading.stop_loading()
+
+            text = resp.text
+            return text
 
     except Exception as e:
         print(colors.red(f"Recording error: {e}"))

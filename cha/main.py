@@ -598,7 +598,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 try:
                     from cha import recording
 
-                    recorded_text = recording.record_get_text()
+                    recorded_text = recording.record_get_text(get_current_chat_client())
                     if recorded_text:
                         print(colors.blue("User:"), colors.white(recorded_text))
                         message = recorded_text
@@ -1354,7 +1354,7 @@ def cli():
             try:
                 from cha import recording
 
-                recorded_text = recording.record_get_text()
+                recorded_text = recording.record_get_text(get_current_chat_client())
                 if recorded_text:
                     print(colors.blue("User:"), colors.white(recorded_text))
                     chatbot(

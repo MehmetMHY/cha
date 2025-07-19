@@ -295,6 +295,7 @@ Source: https://pypi.org/project/openai-whisper/
 """
 DEFAULT_WHISPER_MODEL_NAME = "tiny"
 
+# set to "local" to use local whisper instead of openai api
 TEXT_TO_SPEECH_MODEL = "whisper-1"
 
 # support file formats
