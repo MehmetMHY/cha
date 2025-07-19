@@ -228,6 +228,7 @@ class InteractiveEditor:
             "exit": self._quit,
             "h": self._show_help,
             "help": self._show_help,
+            config.HELP_PRINT_OPTIONS_KEY: self._show_help,
         }
 
         action = command_map.get(command)
