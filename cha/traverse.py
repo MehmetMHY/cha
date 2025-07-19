@@ -32,6 +32,77 @@ def collect_files(directory):
     return gathered
 
 
+def get_traverse_help_options():
+    help_options = []
+    help_options.append("[ALL] - show all help options")
+    help_options.append(
+        '[c] cd - navigate directories using fzf (includes ".." to go back)'
+    )
+    help_options.append(
+        "[s] select - select multiple files/dirs in current directory (use tab to multi-select)"
+    )
+    help_options.append(
+        "[u] unselect - remove files from current selection (use tab to multi-select)"
+    )
+    help_options.append(
+        "[l] ls - list all contents in current directory [-f: files | -d: dirs]"
+    )
+    help_options.append(
+        "[v] view - open a file in text editor using terminal loading logic"
+    )
+    help_options.append("[h] help - show this help message")
+    help_options.append("[e] exit - exit the file selection interface")
+    return help_options
+
+
+def interactive_traverse_help():
+    help_options = get_traverse_help_options()
+
+    try:
+        selected_output = utils.run_fzf_ssh_safe(
+            [
+                "fzf",
+                "--reverse",
+                "--height=40%",
+                "--border",
+                "--prompt=select help option, enter to confirm, esc to cancel: ",
+                "--exact",
+            ],
+            "\n".join(help_options),
+        )
+        if selected_output:
+            selected_item = selected_output.strip()
+
+            if "[ALL]" in selected_item:
+                for help_item in help_options:
+                    if "[ALL]" not in help_item:
+                        print(colors.yellow(help_item))
+                return None
+
+            # check if this is an executable command
+            if "[v] view" in selected_item:
+                return "v"
+            elif "[c] cd" in selected_item:
+                return "c"
+            elif "[s] select" in selected_item:
+                return "s"
+            elif "[u] unselect" in selected_item:
+                return "u"
+            elif "[l] ls" in selected_item:
+                return "l"
+            elif "[e] exit" in selected_item:
+                return "e"
+
+            # just print the selected item
+            print(colors.yellow(selected_item))
+            return None
+
+    except (subprocess.CalledProcessError, subprocess.SubprocessError):
+        pass
+
+    return None
+
+
 def print_help():
     return utils.rls(
         """
@@ -39,6 +110,7 @@ def print_help():
         [s] select   : Select multiple files/dirs in current directory (use TAB to multi-select)
         [u] unselect : Remove files from current selection (use TAB to multi-select)
         [l] ls       : List all contents in current directory [-f: files | -d: dirs]
+        [v] view     : Open a file in text editor using terminal loading logic
         [h] help     : Show this help message
         [e] exit     : Exit the file selection interface
         """
@@ -318,6 +390,81 @@ def unselect_command(selected_files, target_name=None):
         return selected_files
 
 
+def view_command(current_dir, target_name=None):
+    """open a file in text editor with terminal loading logic"""
+    try:
+        from cha import loading
+
+        if target_name:
+            if target_name.startswith("./"):
+                relative_path = target_name[2:]
+                file_path = os.path.join(current_dir, relative_path)
+            else:
+                file_path = os.path.join(current_dir, target_name)
+
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                success = utils.open_file_in_editor(file_path)
+                if not success:
+                    print(colors.red("no text editor available"))
+                return
+            else:
+                print(colors.red(f"file '{target_name}' not found or is not a file"))
+                return
+
+        # if no target specified, let user select from files in current directory
+        entries = []
+        for entry in os.listdir(current_dir):
+            entries.append(entry)
+
+        try:
+            import glob
+
+            hidden_items = glob.glob(os.path.join(current_dir, ".*"))
+            for hidden_path in hidden_items:
+                hidden_name = os.path.basename(hidden_path)
+                if hidden_name not in entries and hidden_name not in [".", ".."]:
+                    entries.append(hidden_name)
+        except:
+            pass
+
+        files = [
+            f
+            for f in entries
+            if os.path.isfile(os.path.join(current_dir, f))
+            and f not in config.FILES_TO_IGNORE
+        ]
+
+        if not files:
+            print(colors.yellow("no files to view in current directory"))
+            return
+
+        files.sort(key=str.lower)
+
+        # format paths for better fzf display
+        full_paths = [os.path.join(current_dir, f) for f in files]
+        formatted_paths, path_mapping = utils.format_paths_for_fzf(full_paths)
+
+        selected = run_fzf(
+            formatted_paths,
+            prompt="select file to view> ",
+            header="select a file to open in text editor",
+        )
+
+        if selected:
+            # convert back to actual path
+            actual_paths = utils.extract_paths_from_fzf_selection(
+                selected, path_mapping
+            )
+            if actual_paths:
+                file_path = actual_paths[0]
+                success = utils.open_file_in_editor(file_path)
+                if not success:
+                    print(colors.red("no text editor available"))
+
+    except Exception as e:
+        print(colors.red(f"error viewing file: {e}"))
+
+
 def ls_command(current_dir, flag=None):
     """List all contents in the current directory"""
     try:
@@ -391,13 +538,27 @@ def traverse_and_select_files():
                 prev_dir = current_dir
                 prev_selected_count = len(selected_files)
 
-            user_input = input(colors.yellow(colors.bold(">>> "))).strip()
+            user_input = input(colors.blue(colors.bold(">>> "))).strip()
             user_input_lower = user_input.lower()
 
             if not user_input or user_input_lower in {"exit", "quit", "e"}:
                 break
             elif user_input_lower in {"help", "--help", "-h", "h"}:
-                print(colors.magenta(print_help()))
+                selected_command = interactive_traverse_help()
+                if selected_command:
+                    # continue processing in the main loop without consuming this iteration
+                    if selected_command == "e":
+                        break
+                    elif selected_command == "c":
+                        current_dir = cd_command(current_dir, root_dir)
+                    elif selected_command == "s":
+                        selected_files = select_command(current_dir, selected_files)
+                    elif selected_command == "u":
+                        selected_files = unselect_command(selected_files)
+                    elif selected_command == "l":
+                        ls_command(current_dir)
+                    elif selected_command == "v":
+                        view_command(current_dir)
                 continue
             elif user_input == "cd ..":
                 parent_dir = os.path.dirname(current_dir)
@@ -451,6 +612,14 @@ def traverse_and_select_files():
                 ls_command(current_dir, flag)
             elif user_input_lower in {"ls", "l"}:
                 ls_command(current_dir)
+            elif user_input_lower.startswith("view ") or user_input_lower.startswith(
+                "v "
+            ):
+                parts = user_input.split(maxsplit=1)
+                target_name = parts[1].strip() if len(parts) > 1 else None
+                view_command(current_dir, target_name)
+            elif user_input_lower in {"view", "v"}:
+                view_command(current_dir)
             else:
                 print(colors.red("Type 'help' to see available commands"))
 
