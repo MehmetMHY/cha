@@ -200,7 +200,9 @@ class InteractiveEditor:
                             if config.HELP_ALL_ALIAS not in help_item:
                                 print(colors.yellow(help_item))
                     else:
-                        print(colors.yellow(selected_item))
+                        command_alias = selected_item.split(",")[0].split(" ")[0]
+                        if command_alias:
+                            self._process_command(command_alias)
             except (subprocess.CalledProcessError, subprocess.SubprocessError):
                 pass
         else:

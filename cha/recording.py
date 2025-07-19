@@ -19,7 +19,7 @@ def _lazy_import_recording_deps():
         return False
 
 
-def record_get_text(client=None):
+def record_get_text(client):
     if not _lazy_import_recording_deps():
         print(
             colors.red(
@@ -85,6 +85,8 @@ def record_get_text(client=None):
             return cleaned_text.strip()
         else:
             if client is None:
+                from openai import OpenAI
+
                 client = OpenAI()
 
             with open(filepath, "rb") as f:
