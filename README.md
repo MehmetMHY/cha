@@ -46,7 +46,8 @@ Cha relies on a few external command-line tools for some of its features. Please
 
 - **`fzf`**: Essential for all interactive selection features, such as history search (`!r`), file navigation (`!f`, `!n`), and the codedump (`!d`) helper. A recent version is highly recommended to ensure compatibility with all features.
 - **`ripgrep` (`rg`)**: Required for the history search feature (`!r`) to function.
-- **`bat`**: Used to provide syntax-highlighted previews within the history search feature. While optional, it greatly improves the user experience.
+- **`bat`**: Used to provide syntax-highlighted previews within the history search feature (`!r`). Essential for enhanced readability and user experience during history browsing.
+- **`netcat` (`nc`)**: Required for network connectivity checks and certain internal operations.
 
 ## Getting Started
 

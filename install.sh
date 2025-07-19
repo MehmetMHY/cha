@@ -47,12 +47,13 @@ install_dependencies() {
 
 	log "Installing system dependencies for $os"
 
-	local deps=("ffmpeg" "fzf" "bat" "ripgrep")
+	local deps=("ffmpeg" "fzf" "bat" "ripgrep" "netcat")
 	local missing_deps=()
 
 	for dep in "${deps[@]}"; do
 		local cmd="$dep"
 		[[ "$dep" == "ripgrep" ]] && cmd="rg"
+		[[ "$dep" == "netcat" ]] && cmd="nc"
 
 		if ! command -v "$cmd" >/dev/null 2>&1; then
 			missing_deps+=("$dep")

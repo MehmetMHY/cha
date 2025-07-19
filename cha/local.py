@@ -181,6 +181,7 @@ def read_json(path):
 
 def browse_and_select_history_file(exact_mode=False):
     from cha import utils
+    import glob
 
     history_dir = os.path.join(os.environ["HOME"], ".cha", "history")
     if not os.path.isdir(history_dir):
@@ -188,6 +189,10 @@ def browse_and_select_history_file(exact_mode=False):
 
     selected_path = None
     try:
+        json_files = glob.glob(os.path.join(history_dir, "*.json"))
+        if not json_files:
+            return None
+
         rg_command = [
             "rg",
             "--line-number",
@@ -207,8 +212,8 @@ def browse_and_select_history_file(exact_mode=False):
             "--delimiter",
             ":",
             "--preview",
-            "bat --style=numbers --color=always --highlight-line {2} --wrap auto {1}",
-            "--preview-window=right,50%,wrap",
+            "jq -r '.chat[] | \"User: \\(.user)\\n\\(.bot)\\n\"' {1} | bat --color=always --style=numbers --pager=never",
+            "--preview-window=right,60%,wrap",
             "--header",
             header_text,
         ]
@@ -234,7 +239,7 @@ def browse_and_select_history_file(exact_mode=False):
     except Exception:
         return None
 
-    if not selected_path:
+    if not selected_path or not os.path.exists(selected_path):
         return None
 
     try:
