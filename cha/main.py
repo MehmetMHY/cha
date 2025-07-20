@@ -433,10 +433,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     num_removed = original_length - len(CURRENT_CHAT_HISTORY)
                     if num_removed > 0:
                         chat_word = "chat" if num_removed == 1 else "chats"
-                        indices_str = ", ".join(
-                            str(i) for i in sorted(selected_indices)
+                        print(
+                            colors.red(
+                                f"Removed {num_removed} {chat_word} from history"
+                            )
                         )
-                        print(colors.red(f"Removed {chat_word}: {indices_str}"))
                 continue
 
             if message.startswith(config.CHANGE_DIRECTORY_ALIAS):
