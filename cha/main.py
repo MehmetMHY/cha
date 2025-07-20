@@ -881,6 +881,15 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         pass
                     if report != None:
                         messages.append({"role": "user", "content": report})
+                        CURRENT_CHAT_HISTORY.append(
+                            {
+                                "time": time.time(),
+                                "user": report,
+                                "bot": "",
+                                "platform": config.CHA_CURRENT_PLATFORM_NAME,
+                                "model": selected_model,
+                            }
+                        )
                     continue
                 except (KeyboardInterrupt, EOFError):
                     print()

@@ -388,14 +388,6 @@ def code_dump(save_file_to_current_dir=False, dir_full_path=None):
             print(colors.green(f"Exported to {file_name}"))
             return
 
-        add_or_not = (
-            utils.safe_input(colors.red("Add To Current History [Y/n]? "))
-            .strip()
-            .lower()
-        )
-        if add_or_not not in ["y", "yes"]:
-            return None
-
         return utils.rls(
             text=f"""
             =====[CODE-DUMP STARTS]=====
