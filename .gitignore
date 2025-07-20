@@ -134,6 +134,9 @@ cython_debug/
 
 # PyCharm
 .idea/
+.vscode/
+*.swp
+*.swo
 
 # Video
 *.mp4
@@ -194,8 +197,13 @@ cython_debug/
 *.tar.xz
 *.tar.Z
 
-# Custom
+# MacOS
 .DS_Store
+.AppleDouble
+Icon\r
+*.app
+
+# Custom
 *.jpg
 *.jpeg
 *.srt
