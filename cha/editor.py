@@ -51,7 +51,8 @@ class InteractiveEditor:
 
             while True:
                 try:
-                    user_input = input(colors.blue(">>> ")).strip()
+                    prompt = f"\001{config.TERMINAL_THEME_CODES['colors']['blue']}\002>>> \001{config.TERMINAL_THEME_CODES['reset']}\002"
+                    user_input = input(prompt).strip()
                     if not user_input:
                         continue
                     if not self._process_command(user_input):
