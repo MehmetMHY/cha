@@ -820,28 +820,24 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 export_all = "all" in args
                 force_single = "single" in args
 
-                print(colors.green(f"Created following file(s):"))
+                has_content = False
 
                 if export_all:
                     if len(CURRENT_CHAT_HISTORY) > 1:
                         for history_item in CURRENT_CHAT_HISTORY[1:]:
                             if history_item.get("bot"):
+                                if not has_content:
+                                    print(colors.green(f"Created following file(s):"))
+                                    has_content = True
                                 utils.export_file_logic(
                                     history_item["bot"], force_single
                                 )
-                    else:
-                        print(colors.yellow("No history to export"))
                 else:
                     if len(CURRENT_CHAT_HISTORY) > 1:
                         last_bot_message = CURRENT_CHAT_HISTORY[-1].get("bot")
                         if last_bot_message:
+                            print(colors.green(f"Created following file(s):"))
                             utils.export_file_logic(last_bot_message, force_single)
-                        else:
-                            print(
-                                colors.yellow("Last message has no content to export")
-                            )
-                    else:
-                        print(colors.yellow("No message to export"))
                 continue
 
             # prompt user to load files (simple mode)
