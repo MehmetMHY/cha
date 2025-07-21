@@ -265,14 +265,14 @@ class InteractiveEditor:
     def _make_edit_request(self, request):
         loading.start_loading("processing request")
         try:
-            # Build context with execution history if available
+            # build context with execution history if available
             context_info = f"file path: {self.file_path}\n\noriginal content:\n```\n{self.current_content}\n```"
 
             if hasattr(self, "execution_history") and self.execution_history:
                 context_info += f"\n\nrecent execution history:\n"
                 for i, execution in enumerate(
                     self.execution_history[-3:], 1
-                ):  # Last 3 executions
+                ):  # last 3 executions
                     context_info += (
                         f"{i}. {execution['timestamp']}: {execution['context']}\n"
                     )
@@ -388,7 +388,7 @@ class InteractiveEditor:
 
         loading.start_loading("Generating run command")
         try:
-            # Generate execution command using LLM
+            # generate execution command using LLM
             messages = [
                 {
                     "role": "system",
@@ -412,7 +412,7 @@ class InteractiveEditor:
 
             print(colors.cyan(f"Generated command: {generated_command}"))
 
-            # Ask for confirmation or allow editing
+            # ask for confirmation or allow editing
             try:
                 action = (
                     input(colors.blue("Execute (Y), edit (e), or cancel (n)? "))
@@ -421,7 +421,7 @@ class InteractiveEditor:
                 )
 
                 if action == "e":
-                    # Allow user to edit the command using text editor
+                    # allow user to edit the command using text editor
                     import tempfile
 
                     with tempfile.NamedTemporaryFile(
@@ -456,7 +456,7 @@ class InteractiveEditor:
                         os.unlink(tmp_file_path)
                         return
 
-                    # Ask for final confirmation after editing
+                    # ask for final confirmation after editing
                     final_action = (
                         input(colors.blue("Execute edited command (Y/n)? "))
                         .strip()
@@ -470,7 +470,7 @@ class InteractiveEditor:
                     print(colors.yellow("Execution cancelled"))
                     return
 
-                # Execute the command
+                # execute the command
                 print(colors.green("Executing..."))
                 try:
                     result = subprocess.run(
@@ -494,7 +494,7 @@ class InteractiveEditor:
                         print(
                             colors.red(f"Command exited with code {result.returncode}")
                         )
-                        # Add execution context to the conversation for debugging
+                        # add execution context to the conversation for debugging
                         error_context = f"Execution failed with command: {generated_command}\nReturn code: {result.returncode}\nStdout: {result.stdout}\nStderr: {result.stderr}"
                         print(
                             colors.yellow(
@@ -503,7 +503,7 @@ class InteractiveEditor:
                         )
                         self._add_execution_context(error_context)
                     else:
-                        # Add successful execution context without printing success message
+                        # add successful execution context without printing success message
                         success_context = f"Successfully executed: {generated_command}\nOutput: {result.stdout}"
                         self._add_execution_context(success_context)
 
@@ -521,7 +521,6 @@ class InteractiveEditor:
             print(colors.red(f"Failed to generate run command: {e}"))
 
     def _add_execution_context(self, context):
-        """Add execution context that can be referenced in future edit requests"""
         if not hasattr(self, "execution_history"):
             self.execution_history = []
         self.execution_history.append(
