@@ -144,9 +144,6 @@ def get_help_options():
         f"{config.MULTI_LINE_MODE_TEXT} - Multi-line switching (type '{config.MULTI_LINE_SEND}' to send)"
     )
     bracket_options.append(
-        f"{config.SAVE_CHAT_HISTORY} - Save current chat history as JSON file"
-    )
-    bracket_options.append(
         f"{config.EXPORT_FILES_IN_OUTPUT_KEY} - Export chat history with fzf selection (text or JSON)"
     )
 
@@ -780,21 +777,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     auto_scrape_detection_mode = not auto_scrape_detection_mode
                     continue
 
-            # save chat history to a JSON file
-            if message.strip().startswith(config.SAVE_CHAT_HISTORY):
-                cha_filepath = f"cha_{int(time.time())}.json"
-                utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
-                print(colors.red(f"Saved current chat history to {cha_filepath}"))
-                continue
-
             if message.strip().startswith(config.EXPORT_FILES_IN_OUTPUT_KEY):
-                if len(CURRENT_CHAT_HISTORY) <= 1:
+                if len(CURRENT_CHAT_HISTORY) <= 0:
                     print(colors.yellow("No chat history to export"))
                     continue
 
                 try:
                     history_items = []
-                    for i, msg in enumerate(CURRENT_CHAT_HISTORY[1:], 1):
+                    for i, msg in enumerate(CURRENT_CHAT_HISTORY, 0):
                         user_msg = msg.get("user", "").replace("\n", " ").strip()
                         user_msg = re.sub(r"\s+", " ", user_msg)
                         timestamp = time.strftime(
@@ -846,13 +836,13 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
                     if export_all:
                         # Export all chats as text
-                        if len(CURRENT_CHAT_HISTORY) > 1:
+                        if len(CURRENT_CHAT_HISTORY) > 0:
                             chat_filename = (
                                 f"cha_{str(uuid.uuid4()).replace('-', '')[:8]}.txt"
                             )
                             chat_content = ""
 
-                            for history_item in CURRENT_CHAT_HISTORY[1:]:
+                            for history_item in CURRENT_CHAT_HISTORY:
                                 timestamp = time.strftime(
                                     "%Y-%m-%d %H:%M:%S",
                                     time.localtime(history_item["time"]),
@@ -895,7 +885,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             chat_content = ""
 
                             for index in selected_indices:
-                                if 1 <= index <= len(CURRENT_CHAT_HISTORY) - 1:
+                                if 0 <= index <= len(CURRENT_CHAT_HISTORY) - 1:
                                     history_item = CURRENT_CHAT_HISTORY[index]
                                     timestamp = time.strftime(
                                         "%Y-%m-%d %H:%M:%S",

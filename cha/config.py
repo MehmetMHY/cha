@@ -26,7 +26,6 @@ You are a code editor. Modify the provided file according to the user's request.
 MULTI_LINE_SEND = "\\"
 MULTI_LINE_MODE_TEXT = "\\"
 CLEAR_HISTORY_TEXT = "!c"
-SAVE_CHAT_HISTORY = "!w"
 EXIT_STRING_KEY = "!q"
 HELP_PRINT_OPTIONS_KEY = "!h"
 LOAD_MESSAGE_CONTENT = "!l"
