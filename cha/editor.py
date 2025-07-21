@@ -38,13 +38,14 @@ class InteractiveEditor:
                 print(colors.yellow("No file selected"))
                 return
 
-            self._load_file()
+            file_was_created = self._load_file()
             if self.file_path is None:
                 return
 
             self._setup_readline()
 
-            print(colors.cyan(f"Editing: {self.file_path}"))
+            if not file_was_created:
+                print(colors.cyan(f"Editing: {self.file_path}"))
             print(
                 colors.yellow("Type an edit request or 'help' for a list of commands.")
             )
@@ -132,10 +133,12 @@ class InteractiveEditor:
             return None
 
     def _load_file(self):
+        file_was_created = False
+
         if os.path.isdir(self.file_path):
             print(colors.red(f"Path {self.file_path} is a directory"))
             self.file_path = None
-            return
+            return False
 
         if not os.path.exists(self.file_path):
             try:
@@ -143,10 +146,11 @@ class InteractiveEditor:
                 with open(self.file_path, "w", encoding="utf-8") as f:
                     f.write("")
                 print(colors.green(f"Created: {self.file_path}"))
+                file_was_created = True
             except IOError as e:
                 print(colors.red(f"Failed to create file {e}"))
                 self.file_path = None
-                return
+                return False
 
         try:
             with open(self.file_path, "r", encoding="utf-8") as f:
@@ -155,6 +159,9 @@ class InteractiveEditor:
         except (IOError, UnicodeDecodeError) as e:
             print(colors.red(f"Failed to read file: {e}"))
             self.file_path = None
+            return False
+
+        return file_was_created
 
     def _setup_readline(self):
         if os.path.exists(self.history_file):
@@ -172,6 +179,7 @@ class InteractiveEditor:
             "s, save - Save the changes to the file",
             "u, undo - Undo the last change",
             "v, view - View the current file content in your default editor",
+            "r, run - Execute the current file with LLM-generated command",
             "q, quit, exit - Exit the editor",
             f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Run a shell command",
             f"{config.TEXT_EDITOR_INPUT_MODE} - Open editor for a long prompt",
@@ -224,6 +232,8 @@ class InteractiveEditor:
             "undo": self._undo_change,
             "v": self._view_content,
             "view": self._view_content,
+            "r": self._run_script,
+            "run": self._run_script,
             "q": self._quit,
             "quit": self._quit,
             "exit": self._quit,
@@ -255,11 +265,25 @@ class InteractiveEditor:
     def _make_edit_request(self, request):
         loading.start_loading("processing request")
         try:
+            # Build context with execution history if available
+            context_info = f"file path: {self.file_path}\n\noriginal content:\n```\n{self.current_content}\n```"
+
+            if hasattr(self, "execution_history") and self.execution_history:
+                context_info += f"\n\nrecent execution history:\n"
+                for i, execution in enumerate(
+                    self.execution_history[-3:], 1
+                ):  # Last 3 executions
+                    context_info += (
+                        f"{i}. {execution['timestamp']}: {execution['context']}\n"
+                    )
+
+            context_info += f"\n\nedit request: {request}"
+
             messages = [
                 {"role": "system", "content": config.EDITOR_SYSTEM_PROMPT},
                 {
                     "role": "user",
-                    "content": f"file path: {self.file_path}\n\noriginal content:\n```\n{self.current_content}\n```\n\nedit request: {request}",
+                    "content": context_info,
                 },
             ]
             response = self.client.chat.completions.create(
@@ -357,6 +381,157 @@ class InteractiveEditor:
                 self._show_diff()
         except (IOError, UnicodeDecodeError) as e:
             print(colors.red(f"Failed to reload file: {e}"))
+
+    def _run_script(self):
+        if self.original_content != self.current_content:
+            self._save_changes()
+
+        loading.start_loading("Generating run command")
+        try:
+            # Generate execution command using LLM
+            messages = [
+                {
+                    "role": "system",
+                    "content": "You are a script execution assistant. Given a file path and its content, generate the appropriate command to execute it. Consider the file extension, shebang lines, and content to determine the best execution method. Return ONLY the command without any explanation or markdown formatting.",
+                },
+                {
+                    "role": "user",
+                    "content": f"File path: {self.file_path}\n\nFile content:\n```\n{self.current_content}\n```\n\nGenerate the command to execute this file:",
+                },
+            ]
+
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=messages,
+                temperature=0.1,
+                max_tokens=100,
+            )
+
+            generated_command = response.choices[0].message.content.strip()
+            loading.stop_loading()
+
+            print(colors.cyan(f"Generated command: {generated_command}"))
+
+            # Ask for confirmation or allow editing
+            try:
+                action = (
+                    input(colors.blue("Execute (Y), edit (e), or cancel (n)? "))
+                    .strip()
+                    .lower()
+                )
+
+                if action == "e":
+                    # Allow user to edit the command using text editor
+                    import tempfile
+
+                    with tempfile.NamedTemporaryFile(
+                        mode="w+", suffix=".sh", delete=False
+                    ) as tmp_file:
+                        tmp_file.write(generated_command)
+                        tmp_file_path = tmp_file.name
+
+                    if utils.open_file_in_editor(tmp_file_path):
+                        try:
+                            with open(tmp_file_path, "r") as f:
+                                edited_command = f.read().strip()
+                            os.unlink(tmp_file_path)
+                            if edited_command:
+                                generated_command = edited_command
+                                print(
+                                    colors.cyan(f"Updated command: {generated_command}")
+                                )
+                            else:
+                                print(
+                                    colors.yellow(
+                                        "No command provided, cancelling execution"
+                                    )
+                                )
+                                return
+                        except (IOError, UnicodeDecodeError) as e:
+                            print(colors.red(f"Failed to read edited command: {e}"))
+                            os.unlink(tmp_file_path)
+                            return
+                    else:
+                        print(colors.red("Failed to open text editor"))
+                        os.unlink(tmp_file_path)
+                        return
+
+                    # Ask for final confirmation after editing
+                    final_action = (
+                        input(colors.blue("Execute edited command (Y/n)? "))
+                        .strip()
+                        .lower()
+                    )
+                    if final_action and final_action != "y":
+                        print(colors.yellow("Execution cancelled"))
+                        return
+
+                elif action and action != "y":
+                    print(colors.yellow("Execution cancelled"))
+                    return
+
+                # Execute the command
+                print(colors.green("Executing..."))
+                try:
+                    result = subprocess.run(
+                        generated_command,
+                        shell=True,
+                        capture_output=True,
+                        text=True,
+                        timeout=300,
+                        cwd=os.path.dirname(self.file_path),
+                    )
+
+                    if result.stdout:
+                        print(colors.white("Output:"))
+                        print(result.stdout.rstrip())
+
+                    if result.stderr:
+                        print(colors.red("Errors:"))
+                        print(result.stderr.rstrip())
+
+                    if result.returncode != 0:
+                        print(
+                            colors.red(f"Command exited with code {result.returncode}")
+                        )
+                        # Add execution context to the conversation for debugging
+                        error_context = f"Execution failed with command: {generated_command}\nReturn code: {result.returncode}\nStdout: {result.stdout}\nStderr: {result.stderr}"
+                        print(
+                            colors.yellow(
+                                "Execution context added for debugging assistance"
+                            )
+                        )
+                        self._add_execution_context(error_context)
+                    else:
+                        # Add successful execution context without printing success message
+                        success_context = f"Successfully executed: {generated_command}\nOutput: {result.stdout}"
+                        self._add_execution_context(success_context)
+
+                except subprocess.TimeoutExpired:
+                    print(colors.red("Command timed out after 5 minutes"))
+                except Exception as e:
+                    print(colors.red(f"Execution failed: {e}"))
+
+            except (KeyboardInterrupt, EOFError):
+                print()
+                return
+
+        except Exception as e:
+            loading.stop_loading()
+            print(colors.red(f"Failed to generate run command: {e}"))
+
+    def _add_execution_context(self, context):
+        """Add execution context that can be referenced in future edit requests"""
+        if not hasattr(self, "execution_history"):
+            self.execution_history = []
+        self.execution_history.append(
+            {
+                "timestamp": subprocess.run(
+                    ["date"], capture_output=True, text=True
+                ).stdout.strip(),
+                "context": context,
+            }
+        )
 
     def _quit(self):
         if self.original_content != self.current_content:
