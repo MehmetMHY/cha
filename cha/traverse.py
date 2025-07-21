@@ -44,6 +44,7 @@ def get_traverse_help_options():
     help_options.append(
         "[u] unselect - remove files from current selection (use tab to multi-select)"
     )
+    help_options.append("[x] clear - clear all selected files")
     help_options.append(
         "[l] ls - list all contents in current directory [-f: files | -d: dirs]"
     )
@@ -88,6 +89,8 @@ def interactive_traverse_help():
                 return "s"
             elif "[u] unselect" in selected_item:
                 return "u"
+            elif "[x] clear" in selected_item:
+                return "x"
             elif "[l] ls" in selected_item:
                 return "l"
             elif "[e] exit" in selected_item:
@@ -109,6 +112,7 @@ def print_help():
         [c] cd       : Navigate directories using fzf (includes ".." to go back)
         [s] select   : Select multiple files/dirs in current directory (use TAB to multi-select)
         [u] unselect : Remove files from current selection (use TAB to multi-select)
+        [x] clear    : Clear all selected files
         [l] ls       : List all contents in current directory [-f: files | -d: dirs]
         [v] view     : Open a file in text editor using terminal loading logic
         [h] help     : Show this help message
@@ -555,6 +559,8 @@ def traverse_and_select_files():
                         selected_files = select_command(current_dir, selected_files)
                     elif selected_command == "u":
                         selected_files = unselect_command(selected_files)
+                    elif selected_command == "x":
+                        selected_files.clear()
                     elif selected_command == "l":
                         ls_command(current_dir)
                     elif selected_command == "v":
@@ -604,6 +610,8 @@ def traverse_and_select_files():
                 selected_files = unselect_command(selected_files, target_name)
             elif user_input_lower in {"unselect", "u"}:
                 selected_files = unselect_command(selected_files)
+            elif user_input_lower in {"clear", "x"}:
+                selected_files.clear()
             elif user_input_lower.startswith("ls ") or user_input_lower.startswith(
                 "l "
             ):
