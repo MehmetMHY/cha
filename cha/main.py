@@ -1089,7 +1089,7 @@ def cli():
             dest="code_dump",
             nargs="?",
             const=True,
-            help="Codedump a directory (interactive: !d)",
+            help="Codedump a directory (interactive: !d). Options: all, stdout, or combine with comma: all,stdout",
         )
         parser.add_argument(
             "-e",
@@ -1303,10 +1303,26 @@ def cli():
         if args.private:
             save_chat_state = False
 
-        if args.code_dump == True:
+        if args.code_dump:
             from cha import codedump
 
-            codedump.code_dump(save_file_to_current_dir=True)
+            if args.code_dump == True:
+                codedump.code_dump(save_file_to_current_dir=True)
+            else:
+                options = str(args.code_dump).split(",")
+                auto_include_all = "all" in options
+                output_to_stdout = "stdout" in options
+
+                if output_to_stdout:
+                    result = codedump.code_dump(
+                        output_to_stdout=True, auto_include_all=auto_include_all
+                    )
+                    if result:
+                        print(result)
+                else:
+                    codedump.code_dump(
+                        save_file_to_current_dir=True, auto_include_all=auto_include_all
+                    )
             return
 
         if args.ocr != None:

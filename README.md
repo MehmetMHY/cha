@@ -170,8 +170,10 @@ You can check the instructions below for more details on what Cha can do and how
 
 #### Code-Dump/Debug Flags
 
-- `cha --code_dump`
-- `cha -d`
+- `cha --codedump` or `cha -d` - Interactive mode (exclude/include selection)
+- `cha --codedump=all` or `cha -d all` - Include everything automatically (respects .gitignore)
+- `cha --codedump=stdout` or `cha -d stdout` - Print output to stdout instead of saving to file
+- `cha --codedump=all,stdout` or `cha -d all,stdout` - Include everything and print to stdout
 
 The codedump feature uses `fzf` for an improved file selection experience:
 
@@ -360,8 +362,8 @@ Cha also supports and accepts additional parameters. Here is the help page for r
 
 ```txt
 usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]]
-           [-e] [-x SHELL_COMMAND] [-hs [{fuzzy,exact}]] [-r] [-v [EDITOR]] [-sm]
-           [-ct] [-ocr OCR] [-i] [-P] [-V] [-lh LOAD_HISTORY_FILE]
+           [-e] [-x SHELL_COMMAND] [-hs [{fuzzy,exact}]] [-r] [-v [EDITOR]]
+           [-sm] [-ct] [-ocr OCR] [-i] [-P] [-V] [-lh LOAD_HISTORY_FILE]
            [string ...]
 
 A command-line tool for interacting with AI models from multiple providers.
@@ -379,13 +381,15 @@ options:
   -p [PLATFORM], --platform [PLATFORM]
                         Switch platform (interactive: !p)
   -d [CODE_DUMP], --codedump [CODE_DUMP]
-                        Codedump a directory (interactive: !d)
+                        Codedump a directory (interactive: !d). Options: all,
+                        stdout, or combine with comma: all,stdout
   -e, --export          Export code blocks from the last response (interactive:
                         !e)
   -x SHELL_COMMAND, --shell SHELL_COMMAND
                         Execute a shell command (interactive: !x)
   -hs [{fuzzy,exact}], --history [{fuzzy,exact}]
-                        Search history. 'fuzzy' (default), 'exact' for exact. (interactive: !hs)
+                        Search history. 'fuzzy' (default), 'exact' for exact.
+                        (interactive: !hs)
   -r, --record          Record voice prompt (interactive: !r)
   -v [EDITOR], --editor [EDITOR]
                         Run the interactive editor (interactive: !v)

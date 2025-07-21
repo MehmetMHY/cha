@@ -319,7 +319,7 @@ def generate_text_output(root_path, files_dict, selected_files, include_mode=Fal
     return header + "".join(body)
 
 
-def extract_code(dir_path, include_mode=False):
+def extract_code(dir_path, include_mode=False, auto_include_all=False):
     root_path = os.path.abspath(dir_path)
     if os.path.isdir(os.path.join(root_path, ".git")):
         rel_paths = get_git_tracked_and_untracked_files(root_path)
@@ -339,9 +339,12 @@ def extract_code(dir_path, include_mode=False):
         print(colors.red("No text files found!"))
         return None
 
-    selected_files = interactive_selection(root_path, files_dict, include_mode)
-    if selected_files is None:
-        return None
+    if auto_include_all:
+        selected_files = set(files_dict.keys())
+    else:
+        selected_files = interactive_selection(root_path, files_dict, include_mode)
+        if selected_files is None:
+            return None
 
     output_text = generate_text_output(
         root_path, files_dict, selected_files, include_mode
@@ -359,7 +362,12 @@ def extract_code(dir_path, include_mode=False):
     return output_text
 
 
-def code_dump(save_file_to_current_dir=False, dir_full_path=None):
+def code_dump(
+    save_file_to_current_dir=False,
+    dir_full_path=None,
+    auto_include_all=False,
+    output_to_stdout=False,
+):
     try:
         dir_path = os.getcwd()
         if dir_full_path != None:
@@ -368,18 +376,23 @@ def code_dump(save_file_to_current_dir=False, dir_full_path=None):
                 return None
             dir_path = dir_full_path
 
-        mode_str = (
-            utils.safe_input(colors.green("[E]xclude (default) / [I]nclude: "))
-            .strip()
-            .lower()
-        )
+        if auto_include_all:
+            include_mode = True
+        else:
+            mode_str = (
+                utils.safe_input(colors.green("[E]xclude (default) / [I]nclude: "))
+                .strip()
+                .lower()
+            )
+            include_mode = mode_str.startswith("i")
 
-        include_mode = mode_str.startswith("i")
-
-        content = extract_code(dir_path, include_mode)
+        content = extract_code(dir_path, include_mode, auto_include_all)
 
         if content == None:
             return None
+
+        if output_to_stdout:
+            return content
 
         if save_file_to_current_dir:
             file_name = f"code_dump_{int(time.time())}.txt"
