@@ -39,6 +39,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Interactive File Editor**: Edit files with AI assistance using `!v`. Select files, make AI-powered edits, view diffs, and access a shell for testing. Inside the editor, use `help` or `h` to see a full list of commands, including `diff` (`d`), `save` (`s`), `undo` (`u`), running shell commands (`!x`), and using your terminal editor for long prompts (`!t`).
 - **Export Responses to Files**: Export model responses to files. In interactive mode, use the export command to export the latest response. Use `all` for all responses in the history. Add the `single` argument to save the whole response as one file instead of extracting code blocks (e.g. `single` or `all single`).
 - **Export Chat History**: Export your entire chat conversation as JSON (default) or as a readable text file with timestamps, platform/model information, and clear user/bot formatting using the `!w` command (use `!w text` or `!w txt` for text format).
+- **Seamless Pipe Output**: Automatically detects when output is piped to another command and suppresses all UI elements (colors, loading animations, status messages), making Cha perfect for use in shell pipelines and automation scripts.
 - **Cancel Message**: Cancel a message before sending it by ending it with `!.`.
 
 ## Dependencies
@@ -357,6 +358,26 @@ cha -e write me python code to find the area of a circle
 ```
 
 When you run the example command above, it will answer your question in one shot, then grab the code/file the model generated and save it to a file in your current directory. The file(s) it create will be named something like this: `export_a9570f7e.py`. Cha considers file extensions, so if the content is a text file, Go code, etc., it will include that file extension as part of the file name. With this, you can run the code/file and/or edit it on your system without needing to manually create a file if needed.
+
+#### Powerful Pipeline Integration
+
+Cha automatically detects when its output is being piped to another command and suppresses all UI elements, making it perfect for shell pipelines and automation. Here's a powerful example that creates intelligent git commits:
+
+```bash
+git add --all
+
+git commit -m "$(
+    {
+        echo "here is my entire code... and here is all the changes i made... can you draft me a good git commit message for these changes with no emojis and simple and all lowercase."
+        echo
+        git diff HEAD
+        echo
+        git status --untracked-files=all
+    } | cha | cat
+)"
+```
+
+This command automatically generates intelligent commit messages by analyzing your code changes. The pipe detection ensures clean output without any UI interference, making Cha seamlessly integrate into your development workflow.
 
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 

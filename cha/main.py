@@ -306,6 +306,7 @@ def list_models():
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
     global CURRENT_CHAT_HISTORY
 
+    output_is_piped = not sys.stdout.isatty()
     reasoning_model = utils.is_slow_model(selected_model)
 
     auto_scrape_detection_mode = False
@@ -339,21 +340,24 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 filepath = os.path.join(os.getcwd(), filepath)
 
             if not os.path.exists(filepath):
-                print(colors.red(f"File does not exist {filepath}"))
+                if not output_is_piped:
+                    print(colors.red(f"File does not exist {filepath}"))
                 return
 
-            print(
-                colors.yellow(
-                    colors.underline(
-                        f"Feeding the following file content to {selected_model}:"
+            if not output_is_piped:
+                print(
+                    colors.yellow(
+                        colors.underline(
+                            f"Feeding the following file content to {selected_model}:"
+                        )
                     )
                 )
-            )
-            print(colors.yellow(f"{filepath}"))
-            print()
+                print(colors.yellow(f"{filepath}"))
+                print()
 
             try:
-                loading.start_loading("Loading", "rectangles")
+                if not output_is_piped:
+                    loading.start_loading("Loading", "rectangles")
                 content = utils.load_most_files(
                     client=get_current_chat_client(),
                     file_path=filepath,
@@ -362,7 +366,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             except:
                 raise Exception(f"Failed to load file {filepath}")
             finally:
-                loading.stop_loading()
+                if not output_is_piped:
+                    loading.stop_loading()
         else:
             content = content_string
 
@@ -371,7 +376,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
     else:
         # interactive mode
-        if print_title:
+        if print_title and not output_is_piped:
             title_print(selected_model)
         single_response = False
 
@@ -977,13 +982,18 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
         # attempt to send the user's prompt to the selected model
         try:
             if reasoning_model:
-                loading.start_loading("Thinking", "braille")
+                if not output_is_piped:
+                    loading.start_loading("Thinking", "braille")
                 response = get_current_chat_client().chat.completions.create(
                     model=selected_model, messages=messages
                 )
-                loading.stop_loading()
+                if not output_is_piped:
+                    loading.stop_loading()
                 full_response = response.choices[0].message.content
-                print(colors.green(full_response))
+                if output_is_piped:
+                    print(full_response)
+                else:
+                    print(colors.green(full_response))
                 obj_chat_history["bot"] = full_response
 
             else:
@@ -1002,7 +1012,10 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                                 break
                             pass
                         if chunk_message:
-                            sys.stdout.write(colors.green(chunk_message))
+                            if output_is_piped:
+                                sys.stdout.write(chunk_message)
+                            else:
+                                sys.stdout.write(colors.green(chunk_message))
                             full_response += chunk_message
                             obj_chat_history["bot"] += chunk_message
                             sys.stdout.flush()
@@ -1012,18 +1025,24 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             if full_response:
                 messages.append({"role": "assistant", "content": full_response})
-                if not reasoning_model and not full_response.endswith("\n"):
+                if (
+                    not reasoning_model
+                    and not full_response.endswith("\n")
+                    and not output_is_piped
+                ):
                     sys.stdout.write("\n")
                     sys.stdout.flush()
 
         except (KeyboardInterrupt, EOFError):
-            loading.stop_loading()
+            if not output_is_piped:
+                loading.stop_loading()
             if messages and messages[-1]["role"] == "user":
                 messages.pop()
             continue
         except Exception as e:
-            loading.stop_loading()
-            print(colors.red(f"Error during chat: {e}"))
+            if not output_is_piped:
+                loading.stop_loading()
+                print(colors.red(f"Error during chat: {e}"))
             break
 
         CURRENT_CHAT_HISTORY.append(obj_chat_history)
@@ -1378,14 +1397,19 @@ def cli():
 
                 recorded_text = recording.record_get_text(get_current_chat_client())
                 if recorded_text:
-                    print(colors.blue("User:"), colors.white(recorded_text))
+                    if not sys.stdout.isatty():
+                        pass
+                    else:
+                        print(colors.blue("User:"), colors.white(recorded_text))
                     chatbot(
                         selected_model, title_print_value, content_string=recorded_text
                     )
                 else:
-                    print(colors.red("No audio recorded"))
+                    if sys.stdout.isatty():
+                        print(colors.red("No audio recorded"))
             except Exception as e:
-                print(colors.red(f"Recording failed: {e}"))
+                if sys.stdout.isatty():
+                    print(colors.red(f"Recording failed: {e}"))
             return
 
         if args.platform or config.CHA_CURRENT_PLATFORM_NAME != "openai":
@@ -1452,7 +1476,7 @@ def cli():
                 if platform_name:
                     config.CHA_CURRENT_PLATFORM_NAME = platform_name
 
-                if config.CHA_DEFAULT_SHOW_PRINT_TITLE:
+                if config.CHA_DEFAULT_SHOW_PRINT_TITLE and sys.stdout.isatty():
                     print(
                         colors.magenta(
                             f"Platform switched to {platform_name or BASE_URL_VALUE}"
@@ -1487,21 +1511,25 @@ def cli():
                 text = sys.stdin.read()
 
             if text is None:
-                print(
-                    colors.red(
-                        "Please provide input text, a filepath, or pipe in content for token counting"
+                if sys.stdout.isatty():
+                    print(
+                        colors.red(
+                            "Please provide input text, a filepath, or pipe in content for token counting"
+                        )
                     )
-                )
                 return
 
             try:
                 token_count = utils.count_tokens(text, selected_model)
                 if token_count is None:
                     raise Exception("Failed to calculate token count")
-                print(colors.green("Content Type:"), content_mode)
-                print(colors.green("Selected Model:"), args.model)
-                print(colors.green("Text Length:"), len(text), "chars")
-                print(colors.green("Token Count:"), token_count, "tokens")
+                if sys.stdout.isatty():
+                    print(colors.green("Content Type:"), content_mode)
+                    print(colors.green("Selected Model:"), args.model)
+                    print(colors.green("Text Length:"), len(text), "chars")
+                    print(colors.green("Token Count:"), token_count, "tokens")
+                else:
+                    print(f"{token_count}")
                 return
             except Exception as e:
                 raise Exception(f"Error counting tokens: {e}")
@@ -1552,27 +1580,31 @@ def cli():
 
         # handle export logic only if export flag is set and it wasn't an interactive session
         if args.export_parsed_text and input_mode != "interactive":
-            print()
+            if sys.stdout.isatty():
+                print()
             # check if there's history to export from (chatbot appends even in non-interactive modes)
             # the first entry is the initial prompt, so we need at least 2 entries for a response.
             if CURRENT_CHAT_HISTORY and len(CURRENT_CHAT_HISTORY) > 1:
                 utils.export_file_logic(CURRENT_CHAT_HISTORY[-1]["bot"])
             else:
-                print(colors.yellow("No chat response found to export files from"))
+                if sys.stdout.isatty():
+                    print(colors.yellow("No chat response found to export files from"))
 
     except (KeyboardInterrupt, EOFError):
-        print()
+        if sys.stdout.isatty():
+            print()
     except Exception as err:
-        if config.CHA_DEBUG_MODE:
-            print(colors.red(str(traceback.format_exc())))
-        elif str(err):
-            err_msg = f"{err}"
-            if save_chat_state:
-                # NOTE: a newline is needed to prevent text overlap during streaming cancellation
-                err_msg = "\n" + err_msg
-            print(colors.red(err_msg))
-        else:
-            print(colors.red("Exited unexpectedly"))
+        if sys.stdout.isatty():
+            if config.CHA_DEBUG_MODE:
+                print(colors.red(str(traceback.format_exc())))
+            elif str(err):
+                err_msg = f"{err}"
+                if save_chat_state:
+                    # NOTE: a newline is needed to prevent text overlap during streaming cancellation
+                    err_msg = "\n" + err_msg
+                print(colors.red(err_msg))
+            else:
+                print(colors.red("Exited unexpectedly"))
     except SystemExit:
         # account for when main input function exists
         pass
@@ -1626,6 +1658,10 @@ def cli():
             print(colors.red(f"Unexpected error well handling local logic: {str(e)}"))
 
     # display visited directories on exit if enabled and directories were visited
-    if config.CHA_SHOW_VISITED_DIRECTORIES_ON_EXIT and VISITED_DIRECTORIES:
+    if (
+        config.CHA_SHOW_VISITED_DIRECTORIES_ON_EXIT
+        and VISITED_DIRECTORIES
+        and sys.stdout.isatty()
+    ):
         formatted_dirs = format_visited_directories(VISITED_DIRECTORIES)
         print(colors.cyan(f"Visited: {formatted_dirs}"))
