@@ -482,12 +482,18 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 try:
                     from cha import editor
 
-                    editor.call_editor(
+                    editor.run_editor(
                         client=get_current_chat_client(),
-                        initial_prompt=editor_message,
                         model_name=selected_model,
+                        file_path=editor_message,
+                        chat_history=CURRENT_CHAT_HISTORY,
                     )
                 except (KeyboardInterrupt, EOFError):
+                    continue
+                except SystemExit:
+                    continue
+                except Exception as e:
+                    print(colors.red(f"Editor error: {e}"))
                     continue
 
                 continue
@@ -1397,6 +1403,7 @@ def cli():
                 client=get_current_chat_client(),
                 model_name=args.model,
                 file_path=args.editor if isinstance(args.editor, str) else None,
+                chat_history=CURRENT_CHAT_HISTORY,
             )
             return
 

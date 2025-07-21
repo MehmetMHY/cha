@@ -2,6 +2,9 @@ import subprocess
 import readline
 import tempfile
 import difflib
+import select
+import pty
+import sys
 import os
 
 from cha import colors, utils, loading, config
@@ -20,10 +23,11 @@ FZF_AVAILABLE = is_fzf_available()
 
 class InteractiveEditor:
 
-    def __init__(self, client, model_name, file_path=None):
+    def __init__(self, client, model_name, file_path=None, chat_history=None):
         self.client = client
         self.model_name = model_name
         self.file_path = file_path
+        self.chat_history = chat_history or []
         self.original_content = ""
         self.current_content = ""
         self.undo_stack = []
@@ -59,8 +63,9 @@ class InteractiveEditor:
                     if not self._process_command(user_input):
                         break
                 except (KeyboardInterrupt, EOFError):
-                    print()
-                    self._quit()
+                    loading.stop_loading()
+                    break
+                except SystemExit:
                     break
         finally:
             self._save_readline_history()
@@ -183,6 +188,7 @@ class InteractiveEditor:
             "q, quit, exit - Exit the editor",
             f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Run a shell command",
             f"{config.TEXT_EDITOR_INPUT_MODE} - Open editor for a long prompt",
+            f"{config.USE_CODE_DUMP} - Codedump a directory as context",
         ]
 
         if FZF_AVAILABLE:
@@ -258,6 +264,13 @@ class InteractiveEditor:
                 self._make_edit_request(editor_content)
             else:
                 print(colors.yellow("No input received from editor."))
+        elif command.startswith(config.USE_CODE_DUMP):
+            dir_path = user_input.replace(config.USE_CODE_DUMP, "").strip()
+            if not dir_path or "/" not in dir_path:
+                dir_path = None
+            self._codedump_request(dir_path)
+        elif user_input.strip().endswith(config.SKIP_SEND_TEXT):
+            pass
         else:
             self._make_edit_request(user_input)
         return True
@@ -267,6 +280,16 @@ class InteractiveEditor:
         try:
             # build context with execution history if available
             context_info = f"file path: {self.file_path}\n\noriginal content:\n```\n{self.current_content}\n```"
+
+            if self.chat_history and len(self.chat_history) > 1:
+                relevant_history = self.chat_history[1:]
+                if relevant_history:
+                    context_info += f"\n\nchat history context:\n"
+                    for i, item in enumerate(relevant_history[-5:], 1):
+                        if item.get("user"):
+                            context_info += f"User {i}: {item['user'][:200]}{'...' if len(item['user']) > 200 else ''}\n"
+                        if item.get("bot"):
+                            context_info += f"Bot {i}: {item['bot'][:200]}{'...' if len(item['bot']) > 200 else ''}\n"
 
             if hasattr(self, "execution_history") and self.execution_history:
                 context_info += f"\n\nrecent execution history:\n"
@@ -290,11 +313,10 @@ class InteractiveEditor:
                 model=self.model_name, messages=messages, temperature=0.1
             )
             new_content = response.choices[0].message.content
+            loading.stop_loading()
 
             if new_content.startswith("```") and new_content.endswith("```"):
                 new_content = "\n".join(new_content.split("\n")[1:-1])
-
-            loading.stop_loading()
 
             if self.current_content != new_content:
                 self.undo_stack.append(self.current_content)
@@ -303,9 +325,12 @@ class InteractiveEditor:
             else:
                 print(colors.yellow("No changes were generated"))
 
+        except (KeyboardInterrupt, EOFError):
+            print(colors.yellow("\nOperation cancelled"))
         except Exception as e:
-            loading.stop_loading()
             print(colors.red(f"{e}"))
+        finally:
+            loading.stop_loading()
 
     def _show_diff(self):
         if self.original_content == self.current_content:
@@ -410,53 +435,56 @@ class InteractiveEditor:
             generated_command = response.choices[0].message.content.strip()
             loading.stop_loading()
 
-            print(colors.cyan(f"Generated command: {generated_command}"))
+            print(colors.cyan(generated_command))
 
             # ask for confirmation or allow editing
+            action = ""
             try:
                 action = (
                     input(colors.blue("Execute (Y), edit (e), or cancel (n)? "))
                     .strip()
                     .lower()
                 )
+            except (KeyboardInterrupt, EOFError):
+                print(colors.yellow("\nExecution cancelled"))
+                return
 
-                if action == "e":
-                    # allow user to edit the command using text editor
-                    import tempfile
+            if action == "e":
+                # allow user to edit the command using text editor
+                import tempfile
 
-                    with tempfile.NamedTemporaryFile(
-                        mode="w+", suffix=".sh", delete=False
-                    ) as tmp_file:
-                        tmp_file.write(generated_command)
-                        tmp_file_path = tmp_file.name
+                with tempfile.NamedTemporaryFile(
+                    mode="w+", suffix=".sh", delete=False
+                ) as tmp_file:
+                    tmp_file.write(generated_command)
+                    tmp_file_path = tmp_file.name
 
-                    if utils.open_file_in_editor(tmp_file_path):
-                        try:
-                            with open(tmp_file_path, "r") as f:
-                                edited_command = f.read().strip()
-                            os.unlink(tmp_file_path)
-                            if edited_command:
-                                generated_command = edited_command
-                                print(
-                                    colors.cyan(f"Updated command: {generated_command}")
+                if utils.open_file_in_editor(tmp_file_path):
+                    try:
+                        with open(tmp_file_path, "r") as f:
+                            edited_command = f.read().strip()
+                        os.unlink(tmp_file_path)
+                        if edited_command:
+                            generated_command = edited_command
+                            print(colors.cyan(f"Updated command: {generated_command}"))
+                        else:
+                            print(
+                                colors.yellow(
+                                    "No command provided, cancelling execution"
                                 )
-                            else:
-                                print(
-                                    colors.yellow(
-                                        "No command provided, cancelling execution"
-                                    )
-                                )
-                                return
-                        except (IOError, UnicodeDecodeError) as e:
-                            print(colors.red(f"Failed to read edited command: {e}"))
-                            os.unlink(tmp_file_path)
+                            )
                             return
-                    else:
-                        print(colors.red("Failed to open text editor"))
+                    except (IOError, UnicodeDecodeError) as e:
+                        print(colors.red(f"Failed to read edited command: {e}"))
                         os.unlink(tmp_file_path)
                         return
+                else:
+                    print(colors.red("Failed to open text editor"))
+                    os.unlink(tmp_file_path)
+                    return
 
-                    # ask for final confirmation after editing
+                # ask for final confirmation after editing
+                try:
                     final_action = (
                         input(colors.blue("Execute edited command (Y/n)? "))
                         .strip()
@@ -465,60 +493,105 @@ class InteractiveEditor:
                     if final_action and final_action != "y":
                         print(colors.yellow("Execution cancelled"))
                         return
-
-                elif action and action != "y":
-                    print(colors.yellow("Execution cancelled"))
+                except (KeyboardInterrupt, EOFError):
+                    print(colors.yellow("\nExecution cancelled"))
                     return
 
-                # execute the command
-                print(colors.green("Executing..."))
-                try:
-                    result = subprocess.run(
-                        generated_command,
-                        shell=True,
-                        capture_output=True,
-                        text=True,
-                        timeout=300,
-                        cwd=os.path.dirname(self.file_path),
-                    )
-
-                    if result.stdout:
-                        print(colors.white("Output:"))
-                        print(result.stdout.rstrip())
-
-                    if result.stderr:
-                        print(colors.red("Errors:"))
-                        print(result.stderr.rstrip())
-
-                    if result.returncode != 0:
-                        print(
-                            colors.red(f"Command exited with code {result.returncode}")
-                        )
-                        # add execution context to the conversation for debugging
-                        error_context = f"Execution failed with command: {generated_command}\nReturn code: {result.returncode}\nStdout: {result.stdout}\nStderr: {result.stderr}"
-                        print(
-                            colors.yellow(
-                                "Execution context added for debugging assistance"
-                            )
-                        )
-                        self._add_execution_context(error_context)
-                    else:
-                        # add successful execution context without printing success message
-                        success_context = f"Successfully executed: {generated_command}\nOutput: {result.stdout}"
-                        self._add_execution_context(success_context)
-
-                except subprocess.TimeoutExpired:
-                    print(colors.red("Command timed out after 5 minutes"))
-                except Exception as e:
-                    print(colors.red(f"Execution failed: {e}"))
-
-            except (KeyboardInterrupt, EOFError):
-                print()
+            elif action and action != "y":
+                print(colors.yellow("Execution cancelled"))
                 return
 
+            # execute the command
+            print(colors.green("Executing..."))
+            process = None
+            master_fd = None
+            try:
+                master_fd, slave_fd = pty.openpty()
+
+                process = subprocess.Popen(
+                    generated_command,
+                    shell=True,
+                    stdin=slave_fd,
+                    stdout=slave_fd,
+                    stderr=slave_fd,
+                    cwd=os.path.dirname(self.file_path),
+                    preexec_fn=os.setsid,
+                )
+                os.close(slave_fd)
+
+                output_lines = []
+                while process.poll() is None:
+                    try:
+                        r, _, _ = select.select([master_fd], [], [], 0.1)
+                        if r:
+                            output = os.read(master_fd, 1024).decode()
+                            if output:
+                                sys.stdout.write(output)
+                                sys.stdout.flush()
+                                output_lines.append(output)
+                            else:  # EOF
+                                break
+                    except OSError:
+                        break  # EIO error means slave PTY has been closed
+
+                retcode = process.wait()
+                output = "".join(output_lines)
+
+                if retcode != 0:
+                    print(colors.red(f"Command exited with code {retcode}"))
+                    error_context = f"Execution failed with command: {generated_command}\nReturn code: {retcode}\nOutput:\n{output}"
+                    print(
+                        colors.yellow(
+                            "Execution context added for debugging assistance"
+                        )
+                    )
+                    self._add_execution_context(error_context)
+                else:
+                    success_context = (
+                        f"Successfully executed: {generated_command}\nOutput:\n{output}"
+                    )
+                    self._add_execution_context(success_context)
+
+            except KeyboardInterrupt:
+                if process and process.poll() is None:
+                    os.killpg(
+                        os.getpgid(process.pid), 9
+                    )  # Kill the whole process group
+                    process.wait()
+                    print(colors.red("Process terminated"))
+            except Exception as e:
+                print(colors.red(f"Execution failed: {e}"))
+            finally:
+                if master_fd:
+                    os.close(master_fd)
+
+        except (KeyboardInterrupt, EOFError):
+            print(colors.yellow("\nCommand generation cancelled"))
         except Exception as e:
-            loading.stop_loading()
             print(colors.red(f"Failed to generate run command: {e}"))
+        finally:
+            loading.stop_loading()
+
+    def _codedump_request(self, dir_path=None):
+        try:
+            from cha import codedump
+
+            loading.start_loading("Generating codedump")
+
+            report = codedump.code_dump(
+                dir_full_path=dir_path, output_to_stdout=True, auto_include_all=False
+            )
+
+            if report:
+                self._make_edit_request(f"Here's the codebase context:\n\n{report}")
+            else:
+                print(colors.yellow("No codedump content generated"))
+        except (KeyboardInterrupt, EOFError):
+            print(colors.yellow("\nCodedump cancelled"))
+        except Exception as e:
+            print(colors.red(f"Codedump failed: {e}"))
+        finally:
+            loading.stop_loading()
 
     def _add_execution_context(self, context):
         if not hasattr(self, "execution_history"):
@@ -540,15 +613,19 @@ class InteractiveEditor:
                 if save_changes == "y":
                     self._save_changes()
             except (KeyboardInterrupt, EOFError):
-                print()
+                print(colors.yellow("\nQuitting without save..."))
                 pass
 
 
-def run_editor(client, model_name, file_path=None):
-    editor = InteractiveEditor(client, model_name, file_path=file_path)
+def run_editor(client, model_name, file_path=None, chat_history=None):
+    editor = InteractiveEditor(
+        client, model_name, file_path=file_path, chat_history=chat_history
+    )
     editor.run()
 
 
-def call_editor(client, initial_prompt, model_name):
-    editor = InteractiveEditor(client, model_name, file_path=initial_prompt)
+def call_editor(client, initial_prompt, model_name, chat_history=None):
+    editor = InteractiveEditor(
+        client, model_name, file_path=initial_prompt, chat_history=chat_history
+    )
     editor.run()
