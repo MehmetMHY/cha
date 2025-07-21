@@ -225,7 +225,7 @@ def interactive_help(selected_model):
                 print(colors.yellow(item))
                 return None
 
-            # handle multiple selections - just print them
+            # handle multiple selections, then just print them
             else:
                 for item in selected_items:
                     if config.HELP_ALL_ALIAS not in item:
@@ -307,11 +307,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
     auto_scrape_detection_mode = False
 
-    # o1 models don't accept system prompts
+    # openai's o-models don't accept system prompts
     if len(CURRENT_CHAT_HISTORY) > 1:
         messages = []
         if not reasoning_model:
-            # The first item is the initial prompt.
+            # the first item is the initial prompt.
             if CURRENT_CHAT_HISTORY and CURRENT_CHAT_HISTORY[0].get("user"):
                 messages.append(
                     {"role": "user", "content": CURRENT_CHAT_HISTORY[0]["user"]}
@@ -389,7 +389,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
             message = utils.safe_input(user_input_string).rstrip("\n")
 
-            # print help - handle this first so selected aliases can be processed by other handlers
+            # print help
             if message.strip().lower() == config.HELP_PRINT_OPTIONS_KEY.lower():
                 selected_alias = interactive_help(selected_model)
                 if selected_alias:
@@ -516,7 +516,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         reasoning_model = utils.is_slow_model(selected_model)
 
                 else:
-                    # note: unsafe but faster direct model switching
+                    # NOTE: unsafe but faster direct model switching
                     selected_model = parts[1].strip()
                     print(colors.magenta(f"Switched to model: {selected_model}"))
                     reasoning_model = utils.is_slow_model(selected_model)
@@ -669,7 +669,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 continue
 
             if message.startswith(config.PICK_AND_RUN_A_SHELL_OPTION):
-                # Extract command if provided
+                # extract command if provided
                 command = None
                 parts = message.split(maxsplit=1)
                 if len(parts) > 1:
@@ -794,7 +794,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
                     history_items = history_items[::-1]
 
-                    # Add special options - [ALL] at top, [ALL JSON] at bottom
+                    # add special options of [ALL] at top, [ALL JSON] at bottom
                     fzf_options = (
                         [config.HELP_ALL_ALIAS]
                         + history_items
@@ -818,7 +818,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
                     selected_items = selected_output.split("\n")
 
-                    # Handle [ALL JSON] option
+                    # handle all json option
                     if any(
                         config.EXPORT_ALL_JSON_ALIAS in item for item in selected_items
                     ):
@@ -829,13 +829,13 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         )
                         continue
 
-                    # Handle [ALL] option or specific selections
+                    # handle all option or specific selections
                     export_all = any(
                         config.HELP_ALL_ALIAS in item for item in selected_items
                     )
 
                     if export_all:
-                        # Export all chats as text
+                        # export all chats as text
                         if len(CURRENT_CHAT_HISTORY) > 0:
                             chat_filename = (
                                 f"cha_{str(uuid.uuid4()).replace('-', '')[:8]}.txt"
@@ -870,7 +870,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         else:
                             print(colors.yellow("No chat history to export"))
                     else:
-                        # Export selected chats as text
+                        # export selected chats as text
                         selected_indices = []
                         for line in selected_items:
                             if line.strip():
@@ -1185,7 +1185,7 @@ def cli():
             dest="code_dump",
             nargs="?",
             const=True,
-            help="Codedump a directory (interactive: !d). Options: all, stdout, or combine with comma: all,stdout",
+            help="Codedump a directory (interactive: !d). Options: all, stdout, include:path1,path2 or combine: include:src/,stdout",
         )
         parser.add_argument(
             "-e",
@@ -1406,19 +1406,81 @@ def cli():
             if args.code_dump == True:
                 codedump.code_dump(save_file_to_current_dir=True)
             else:
-                options = str(args.code_dump).split(",")
-                auto_include_all = "all" in options
-                output_to_stdout = "stdout" in options
+                arg_str = str(args.code_dump)
+                auto_include_all = False
+                output_to_stdout = False
+                specific_includes = None
+
+                # parse include: syntax first
+                if "include:" in arg_str:
+                    # find the include: part
+                    parts = arg_str.split("include:", 1)
+                    if len(parts) == 2:
+                        # split the include paths and other options
+                        include_and_rest = parts[1]
+
+                        # check if there are other options after include paths
+                        # we'll look for standalone options like ",stdout" or ",all"
+                        remaining_options = []
+                        include_paths_str = include_and_rest
+
+                        # extract standalone options from the end
+                        if include_and_rest.endswith(",stdout"):
+                            output_to_stdout = True
+                            include_paths_str = include_and_rest[
+                                :-7
+                            ]  # remove ",stdout"
+                        elif include_and_rest.endswith(",all"):
+                            auto_include_all = True
+                            include_paths_str = include_and_rest[:-4]  # remove ",all"
+                        elif include_and_rest.endswith(
+                            ",stdout,all"
+                        ) or include_and_rest.endswith(",all,stdout"):
+                            output_to_stdout = True
+                            auto_include_all = True
+                            if include_and_rest.endswith(",stdout,all"):
+                                include_paths_str = include_and_rest[:-11]
+                            else:
+                                include_paths_str = include_and_rest[:-11]
+
+                        if include_paths_str:
+                            specific_includes = [
+                                p.strip()
+                                for p in include_paths_str.split(",")
+                                if p.strip()
+                            ]
+
+                        # also check the part before "include:"
+                        prefix_options = (
+                            parts[0].rstrip(",").split(",")
+                            if parts[0].rstrip(",")
+                            else []
+                        )
+                        for opt in prefix_options:
+                            opt = opt.strip()
+                            if opt == "all":
+                                auto_include_all = True
+                            elif opt == "stdout":
+                                output_to_stdout = True
+                else:
+                    # original parsing for backward compatibility
+                    options = arg_str.split(",")
+                    auto_include_all = "all" in options
+                    output_to_stdout = "stdout" in options
 
                 if output_to_stdout:
                     result = codedump.code_dump(
-                        output_to_stdout=True, auto_include_all=auto_include_all
+                        output_to_stdout=True,
+                        auto_include_all=auto_include_all,
+                        specific_includes=specific_includes,
                     )
                     if result:
                         print(result)
                 else:
                     codedump.code_dump(
-                        save_file_to_current_dir=True, auto_include_all=auto_include_all
+                        save_file_to_current_dir=True,
+                        auto_include_all=auto_include_all,
+                        specific_includes=specific_includes,
                     )
             return
 

@@ -1,5 +1,6 @@
 from datetime import datetime
 import subprocess
+import fnmatch
 import time
 import os
 
@@ -80,6 +81,46 @@ def get_all_files_with_ignore(dir_path):
                 continue
             all_paths.append(rel_path)
     return all_paths
+
+
+def matches_specific_includes(file_path, root_path, specific_includes):
+    if not specific_includes:
+        return False
+
+    rel_path = os.path.relpath(file_path, root_path)
+
+    for include_pattern in specific_includes:
+        include_pattern = include_pattern.strip()
+        if not include_pattern:
+            continue
+
+        # handle directory includes (add trailing slash if needed)
+        if os.path.isdir(os.path.join(root_path, include_pattern)):
+            if not include_pattern.endswith("/"):
+                include_pattern += "/"
+
+        # check exact match
+        if rel_path == include_pattern or rel_path == include_pattern.rstrip("/"):
+            return True
+
+        # check if file is under a directory pattern
+        if include_pattern.endswith("/") and rel_path.startswith(include_pattern):
+            return True
+
+        # check glob pattern match
+        if fnmatch.fnmatch(rel_path, include_pattern):
+            return True
+
+        # check if any parent directory matches the pattern
+        parent_path = os.path.dirname(rel_path)
+        while parent_path:
+            if fnmatch.fnmatch(
+                parent_path, include_pattern
+            ) or parent_path == include_pattern.rstrip("/"):
+                return True
+            parent_path = os.path.dirname(parent_path)
+
+    return False
 
 
 def interactive_selection(root_path, files_dict, include_mode=False):
@@ -166,7 +207,7 @@ def interactive_selection(root_path, files_dict, include_mode=False):
             except (subprocess.CalledProcessError, FileNotFoundError):
                 return None
     else:
-        # original exclude mode logic - two-phase selection
+        # original exclude mode logic with the two-phase selection
         all_dirs = set()
         for f in files_dict:
             d = os.path.dirname(f)
@@ -319,7 +360,9 @@ def generate_text_output(root_path, files_dict, selected_files, include_mode=Fal
     return header + "".join(body)
 
 
-def extract_code(dir_path, include_mode=False, auto_include_all=False):
+def extract_code(
+    dir_path, include_mode=False, auto_include_all=False, specific_includes=None
+):
     root_path = os.path.abspath(dir_path)
     if os.path.isdir(os.path.join(root_path, ".git")):
         rel_paths = get_git_tracked_and_untracked_files(root_path)
@@ -339,7 +382,17 @@ def extract_code(dir_path, include_mode=False, auto_include_all=False):
         print(colors.red("No text files found!"))
         return None
 
-    if auto_include_all:
+    if specific_includes:
+        # use specific includes mode
+        selected_files = set()
+        for file_path in files_dict.keys():
+            if matches_specific_includes(file_path, root_path, specific_includes):
+                selected_files.add(file_path)
+
+        if not selected_files:
+            print(colors.red("No files matched the specified include patterns!"))
+            return None
+    elif auto_include_all:
         selected_files = set(files_dict.keys())
     else:
         selected_files = interactive_selection(root_path, files_dict, include_mode)
@@ -367,6 +420,7 @@ def code_dump(
     dir_full_path=None,
     auto_include_all=False,
     output_to_stdout=False,
+    specific_includes=None,
 ):
     try:
         dir_path = os.getcwd()
@@ -376,7 +430,9 @@ def code_dump(
                 return None
             dir_path = dir_full_path
 
-        if auto_include_all:
+        if specific_includes:
+            include_mode = True  # specific includes implies include mode
+        elif auto_include_all:
             include_mode = True
         else:
             mode_str = (
@@ -386,7 +442,9 @@ def code_dump(
             )
             include_mode = mode_str.startswith("i")
 
-        content = extract_code(dir_path, include_mode, auto_include_all)
+        content = extract_code(
+            dir_path, include_mode, auto_include_all, specific_includes
+        )
 
         if content == None:
             return None

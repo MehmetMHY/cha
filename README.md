@@ -170,18 +170,102 @@ You can check the instructions below for more details on what Cha can do and how
 
 #### Code-Dump/Debug Flags
 
-- `cha --codedump` or `cha -d` - Interactive mode (exclude/include selection)
+The codedump feature allows you to package your codebase or specific files/directories into a single text file for AI analysis or documentation purposes. It supports multiple modes for maximum flexibility.
+
+##### Basic Usage
+
+- `cha --codedump` or `cha -d` - Interactive mode (exclude/include selection using fzf)
 - `cha --codedump=all` or `cha -d all` - Include everything automatically (respects .gitignore)
 - `cha --codedump=stdout` or `cha -d stdout` - Print output to stdout instead of saving to file
 - `cha --codedump=all,stdout` or `cha -d all,stdout` - Include everything and print to stdout
 
-The codedump feature uses `fzf` for an improved file selection experience:
+##### Specific Includes
+
+The codedump feature supports specifying exactly which files and directories to include, perfect for developers who need precise control over what gets packaged.
+
+**Basic Specific Includes:**
+
+```bash
+# Include specific files
+cha -d "include:src/main.py,config.py"
+
+# Include entire directories
+cha -d "include:src/,tests/"
+
+# Mix files and directories
+cha -d "include:src/core.py,tests/,docs/README.md"
+```
+
+**Advanced Patterns:**
+
+```bash
+# Include with glob patterns
+cha -d "include:src/**/*.py,*.md"
+
+# Include all JavaScript and TypeScript files
+cha -d "include:*.js,*.ts,src/**/*.jsx"
+
+# Include specific subdirectories
+cha -d "include:src/components/,src/utils/,tests/unit/"
+```
+
+**Combining with Output Options:**
+
+```bash
+# Include specific files and output to stdout
+cha -d "include:src/main.py,config.py,stdout"
+
+# Include directory with stdout output
+cha -d "include:src/,stdout"
+
+# Include patterns and save to file (default)
+cha -d "include:src/**/*.py,*.md"
+```
+
+**Complex Real-World Examples:**
+
+```bash
+# Frontend project: Include React components and styles
+cha -d "include:src/components/,src/styles/,public/index.html,package.json"
+
+# Backend API: Include core logic and configs
+cha -d "include:src/controllers/,src/models/,src/routes/,config/,*.json,stdout"
+
+# Python project: Include source and tests
+cha -d "include:src/,tests/,*.py,requirements.txt,README.md"
+
+# Documentation and config files only
+cha -d "include:*.md,*.yml,*.json,docs/,stdout"
+```
+
+**Pattern Matching Rules:**
+
+1. **Exact matches**: `config.py` matches exactly `config.py`
+2. **Directory includes**: `src/` includes all files under the `src/` directory
+3. **Glob patterns**: `*.py` matches all Python files in the current directory
+4. **Recursive patterns**: `src/**/*.py` matches all Python files in `src/` and its subdirectories
+5. **Mixed patterns**: You can combine exact files, directories, and glob patterns in one command
+
+**Interactive Mode (Original):**
+
+The codedump feature uses `fzf` for an improved file selection experience when using interactive mode:
 
 - Navigate directories with `cd` (supports direct paths like `cd dirname` and `cd ..`)
 - Select files with `select` command
 - Remove files from selection with `unselect` command
 - Type `help` to see all available commands
 - Clean interface that only shows directory path when it changes or selection count changes
+
+**Multiple Modes Available:**
+
+The codedump feature offers several modes to suit different workflows:
+
+- `cha -d` (interactive exclude/include selection)
+- `cha -d all` (include all files)
+- `cha -d stdout` (interactive with stdout output)
+- `cha -d all,stdout` (include all with stdout output)
+
+The `include:` syntax provides precise control when you know exactly what you want to include, while the interactive mode remains available for exploration and discovery.
 
 #### Voice Recording
 
@@ -402,7 +486,7 @@ options:
                         Switch platform (interactive: !p)
   -d [CODE_DUMP], --codedump [CODE_DUMP]
                         Codedump a directory (interactive: !d). Options: all,
-                        stdout, or combine with comma: all,stdout
+                        stdout, include:path1,path2 or combine: include:src/,stdout
   -e, --export          Export code blocks from the last response (interactive:
                         !e)
   -x SHELL_COMMAND, --shell SHELL_COMMAND
