@@ -51,7 +51,7 @@ class InteractiveEditor:
             if not file_was_created:
                 print(colors.cyan(f"Editing: {self.file_path}"))
             print(
-                colors.yellow("Type an edit request or 'help' for a list of commands.")
+                colors.yellow("Type an edit request or 'help' for a list of commands")
             )
 
             while True:
@@ -64,6 +64,7 @@ class InteractiveEditor:
                         break
                 except (KeyboardInterrupt, EOFError):
                     loading.stop_loading()
+                    print()
                     break
                 except SystemExit:
                     break
@@ -263,7 +264,7 @@ class InteractiveEditor:
             if editor_content:
                 self._make_edit_request(editor_content)
             else:
-                print(colors.yellow("No input received from editor."))
+                print(colors.yellow("No input received from editor"))
         elif command.startswith(config.USE_CODE_DUMP):
             dir_path = user_input.replace(config.USE_CODE_DUMP, "").strip()
             if not dir_path or "/" not in dir_path:
