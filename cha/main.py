@@ -143,12 +143,11 @@ def get_help_options():
     bracket_options.append(
         f"{config.MULTI_LINE_MODE_TEXT} - Multi-line switching (type '{config.MULTI_LINE_SEND}' to send)"
     )
-    bracket_options.append(f"{config.SAVE_CHAT_HISTORY} - Save chat history")
     bracket_options.append(
-        f"{config.EXPORT_FILES_IN_OUTPUT_KEY} [all/single] - Export files from response(s)"
+        f"{config.SAVE_CHAT_HISTORY} - Save current chat history as JSON file"
     )
     bracket_options.append(
-        f"{config.SAVE_CHAT_HISTORY} [text/txt] - Save chat history as JSON (default) or text file"
+        f"{config.EXPORT_FILES_IN_OUTPUT_KEY} - Export chat history with fzf selection (text or JSON)"
     )
 
     if os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR):
@@ -676,12 +675,15 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 continue
 
             elif message.replace(" ", "").lower() == config.CLEAR_HISTORY_TEXT.lower():
-                messages = (
-                    []
-                    if reasoning_model
-                    else [{"role": "user", "content": config.INITIAL_PROMPT}]
-                )
-                print(colors.yellow("Chat history cleared"))
+                confirmation = input(colors.yellow("Clear History [y/N]? "))
+                if confirmation.lower() == "y":
+                    messages = (
+                        []
+                        if reasoning_model
+                        else [{"role": "user", "content": config.INITIAL_PROMPT}]
+                    )
+                else:
+                    print(colors.red("Canceled clearing chat history"))
                 continue
 
             if multi_line_input:
@@ -772,77 +774,156 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     auto_scrape_detection_mode = not auto_scrape_detection_mode
                     continue
 
-            # save chat history to a JSON file or text file
+            # save chat history to a JSON file
             if message.strip().startswith(config.SAVE_CHAT_HISTORY):
-                args = message.strip().lower().split()
-
-                # Check if user wants text export
-                if len(args) > 1 and args[1] in ["text", "txt"]:
-                    # Export as text file (like old !ew command)
-                    if len(CURRENT_CHAT_HISTORY) > 1:
-                        chat_filename = (
-                            f"cha_{str(uuid.uuid4()).replace('-', '')[:8]}.txt"
-                        )
-                        chat_content = ""
-
-                        for history_item in CURRENT_CHAT_HISTORY[1:]:
-                            timestamp = time.strftime(
-                                "%Y-%m-%d %H:%M:%S",
-                                time.localtime(history_item["time"]),
-                            )
-                            platform = history_item.get("platform", "unknown")
-                            model = history_item.get("model", "unknown")
-                            platform_info = f"[{platform}:{model}]"
-
-                            if history_item.get("user"):
-                                chat_content += f"[{timestamp}] {platform_info} User:\n{history_item['user']}\n\n"
-
-                            if history_item.get("bot"):
-                                chat_content += f"[{timestamp}] {platform_info} Bot:\n{history_item['bot']}\n\n"
-
-                        try:
-                            with open(chat_filename, "w", encoding="utf-8") as f:
-                                f.write(chat_content.strip())
-                            print(
-                                colors.green(
-                                    f"Chat history exported to {chat_filename}"
-                                )
-                            )
-                        except Exception as e:
-                            print(colors.red(f"Failed to export chat history: {e}"))
-                    else:
-                        print(colors.yellow("No chat history to export"))
-                else:
-                    # Default behavior: save as JSON
-                    cha_filepath = f"cha_{int(time.time())}.json"
-                    utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
-                    print(colors.red(f"Saved current chat history to {cha_filepath}"))
+                cha_filepath = f"cha_{int(time.time())}.json"
+                utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
+                print(colors.red(f"Saved current chat history to {cha_filepath}"))
                 continue
 
             if message.strip().startswith(config.EXPORT_FILES_IN_OUTPUT_KEY):
-                args = message.strip().lower().split()
+                if len(CURRENT_CHAT_HISTORY) <= 1:
+                    print(colors.yellow("No chat history to export"))
+                    continue
 
-                export_all = "all" in args
-                force_single = "single" in args
+                try:
+                    history_items = []
+                    for i, msg in enumerate(CURRENT_CHAT_HISTORY[1:], 1):
+                        user_msg = msg.get("user", "").replace("\n", " ").strip()
+                        user_msg = re.sub(r"\s+", " ", user_msg)
+                        timestamp = time.strftime(
+                            "%H:%M:%S", time.localtime(msg["time"])
+                        )
+                        history_items.append(f"[{i}] ({timestamp}) {user_msg}")
 
-                has_content = False
+                    history_items = history_items[::-1]
 
-                if export_all:
-                    if len(CURRENT_CHAT_HISTORY) > 1:
-                        for history_item in CURRENT_CHAT_HISTORY[1:]:
-                            if history_item.get("bot"):
-                                if not has_content:
-                                    print(colors.green(f"Created following file(s):"))
-                                    has_content = True
-                                utils.export_file_logic(
-                                    history_item["bot"], force_single
+                    # Add special options - [ALL] at top, [ALL JSON] at bottom
+                    fzf_options = (
+                        [config.HELP_ALL_ALIAS]
+                        + history_items
+                        + [config.EXPORT_ALL_JSON_ALIAS]
+                    )
+
+                    selected_output = utils.run_fzf_ssh_safe(
+                        [
+                            "fzf",
+                            "--reverse",
+                            "--height=40%",
+                            "--border",
+                            "--prompt=Select chats to export as text (TAB for multi-select): ",
+                            "--multi",
+                        ],
+                        "\n".join(fzf_options),
+                    )
+
+                    if not selected_output:
+                        continue
+
+                    selected_items = selected_output.split("\n")
+
+                    # Handle [ALL JSON] option
+                    if any(
+                        config.EXPORT_ALL_JSON_ALIAS in item for item in selected_items
+                    ):
+                        cha_filepath = f"cha_{int(time.time())}.json"
+                        utils.write_json(cha_filepath, CURRENT_CHAT_HISTORY)
+                        print(
+                            colors.green(f"Exported all chat history to {cha_filepath}")
+                        )
+                        continue
+
+                    # Handle [ALL] option or specific selections
+                    export_all = any(
+                        config.HELP_ALL_ALIAS in item for item in selected_items
+                    )
+
+                    if export_all:
+                        # Export all chats as text
+                        if len(CURRENT_CHAT_HISTORY) > 1:
+                            chat_filename = (
+                                f"cha_{str(uuid.uuid4()).replace('-', '')[:8]}.txt"
+                            )
+                            chat_content = ""
+
+                            for history_item in CURRENT_CHAT_HISTORY[1:]:
+                                timestamp = time.strftime(
+                                    "%Y-%m-%d %H:%M:%S",
+                                    time.localtime(history_item["time"]),
                                 )
-                else:
-                    if len(CURRENT_CHAT_HISTORY) > 1:
-                        last_bot_message = CURRENT_CHAT_HISTORY[-1].get("bot")
-                        if last_bot_message:
-                            print(colors.green(f"Created following file(s):"))
-                            utils.export_file_logic(last_bot_message, force_single)
+                                platform = history_item.get("platform", "unknown")
+                                model = history_item.get("model", "unknown")
+                                platform_info = f"[{platform}:{model}]"
+
+                                if history_item.get("user"):
+                                    chat_content += f"[{timestamp}] {platform_info} User:\n{history_item['user']}\n\n"
+
+                                if history_item.get("bot"):
+                                    chat_content += f"[{timestamp}] {platform_info} Bot:\n{history_item['bot']}\n\n"
+
+                            try:
+                                with open(chat_filename, "w", encoding="utf-8") as f:
+                                    f.write(chat_content.strip())
+                                print(
+                                    colors.green(
+                                        f"Exported all chat history to {chat_filename}"
+                                    )
+                                )
+                            except Exception as e:
+                                print(colors.red(f"Failed to export chat history: {e}"))
+                        else:
+                            print(colors.yellow("No chat history to export"))
+                    else:
+                        # Export selected chats as text
+                        selected_indices = []
+                        for line in selected_items:
+                            if line.strip():
+                                index_match = re.match(r"\[(\d+)\]", line)
+                                if index_match:
+                                    selected_indices.append(int(index_match.group(1)))
+
+                        if selected_indices:
+                            chat_filename = (
+                                f"cha_{str(uuid.uuid4()).replace('-', '')[:8]}.txt"
+                            )
+                            chat_content = ""
+
+                            for index in selected_indices:
+                                if 1 <= index <= len(CURRENT_CHAT_HISTORY) - 1:
+                                    history_item = CURRENT_CHAT_HISTORY[index]
+                                    timestamp = time.strftime(
+                                        "%Y-%m-%d %H:%M:%S",
+                                        time.localtime(history_item["time"]),
+                                    )
+                                    platform = history_item.get("platform", "unknown")
+                                    model = history_item.get("model", "unknown")
+                                    platform_info = f"[{platform}:{model}]"
+
+                                    if history_item.get("user"):
+                                        chat_content += f"[{timestamp}] {platform_info} User:\n{history_item['user']}\n\n"
+
+                                    if history_item.get("bot"):
+                                        chat_content += f"[{timestamp}] {platform_info} Bot:\n{history_item['bot']}\n\n"
+
+                            try:
+                                with open(chat_filename, "w", encoding="utf-8") as f:
+                                    f.write(chat_content.strip())
+                                print(
+                                    colors.green(
+                                        f"Exported selected chats to {chat_filename}"
+                                    )
+                                )
+                            except Exception as e:
+                                print(
+                                    colors.red(f"Failed to export selected chats: {e}")
+                                )
+                        else:
+                            print(colors.yellow("No valid selections found"))
+
+                except (subprocess.CalledProcessError, subprocess.SubprocessError):
+                    print(colors.yellow("Export cancelled"))
+                except Exception as e:
+                    print(colors.red(f"Error during export: {e}"))
                 continue
 
             # prompt user to load files (simple mode)
