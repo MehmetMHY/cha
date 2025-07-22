@@ -146,7 +146,7 @@ uv pip install "git+https://github.com/MehmetMHY/cha.git"
 After installing and configuring everything, the final step is to run the checkup script to ensure everything is set up/installed correctly. You can ignore optional checkups/tests here, as those are not necessary for the core of Cha to function. Knowing this, to run these checkups/tests, use the following command:
 
 ```bash
-python3 ./assets/checkup.py
+python3 ./assets/utils/checkup.py
 ```
 
 If the checkups/tests look good, or you're okay with it, then start using Cha!

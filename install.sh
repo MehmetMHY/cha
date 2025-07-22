@@ -130,7 +130,7 @@ run_checkup() {
 	log "Running dependency check"
 	echo
 	cd "$SCRIPT_DIR"
-	python assets/checkup.py
+	python3 assets/utils/checkup.py
 }
 
 print_success() {
