@@ -523,6 +523,15 @@ For those interested in contributing or experimenting with Cha:
 
 4. **(Optional) Run code formatter if changes are made to Cha's codebase**: To keep the code clean and organized, make sure to run the Cha's code formatter which is **[fm](https://github.com/MehmetMHY/fm)**.
 
+## Assets Overview
+
+The `assets/` directory contains supplementary materials, tools, and examples to enhance Cha's functionality. Here's a quick rundown:
+
+- **`assets/local/`**: Resources for setting up local configurations and custom external tools. It includes an example `weather` tool to demonstrate how you can extend Cha's capabilities.
+- **`assets/macos/`**: A simple setup to create a macOS `.app` launcher for Cha using AppleScript, designed to open Cha in a Kitty terminal session.
+- **`assets/sxng/`**: Scripts and documentation for integrating SearXNG, a self-hostable meta-search engine, as an alternative to DuckDuckGo for web-related features.
+- **`assets/utils/`**: A collection of utility scripts for development and maintenance, including a `checkup.py` script to verify your setup, `quantify.py` to analyze usage stats and costs, and `update.py` to help manage package versions.
+
 ## Other Platform(s) Compatibility
 
 Cha now supports switching between AI platforms using the `--platform` argument, enabling interoperability with OpenAI-compatible APIs.
