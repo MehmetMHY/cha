@@ -262,6 +262,8 @@ class InteractiveEditor:
         elif command == config.TEXT_EDITOR_INPUT_MODE:
             editor_content = utils.check_terminal_editors_and_edit()
             if editor_content:
+                for line in editor_content.rstrip("\n").split("\n"):
+                    print(colors.blue(">"), line)
                 self._make_edit_request(editor_content)
             else:
                 print(colors.yellow("No input received from editor"))
