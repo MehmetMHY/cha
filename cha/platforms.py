@@ -2,6 +2,54 @@ import subprocess
 import copy
 
 from cha import utils, config, colors, loading
+from cha.client import get_current_chat_client
+
+
+def list_models():
+    if config.CHA_CURRENT_PLATFORM_NAME == "openai":
+        response = get_current_chat_client().models.list()
+        if not response.data:
+            raise ValueError("No models available")
+
+        models = []
+        for model in response.data:
+            if (
+                any(substr in model.id for substr in config.OPENAI_MODELS_TO_KEEP)
+                and not any(
+                    substr in model.id for substr in config.OPENAI_MODELS_TO_IGNORE
+                )
+                and (
+                    not getattr(config, "OPENAI_IGNORE_DATED_MODEL_NAMES", False)
+                    or not utils.contains_date(model.id)
+                )
+            ):
+                models.append([model.id, model.created])
+
+        models = sorted(models, key=lambda x: x[1])
+        provided_models = []
+        for model in models:
+            provided_models.append(model[0])
+    else:
+        platform_config = config.THIRD_PARTY_PLATFORMS[config.CHA_CURRENT_PLATFORM_NAME]
+        provided_models = get_platform_model_list(
+            url=platform_config["models"]["url"],
+            headers=platform_config["models"]["headers"],
+            models_info=platform_config["models"],
+        )
+
+    if not provided_models:
+        print(colors.red("No models available to select"))
+        return None
+
+    fzf_prompt = f"Select a {config.CHA_CURRENT_PLATFORM_NAME.upper()} model: "
+    try:
+        selected_model = utils.run_fzf_ssh_safe(
+            ["fzf", "--reverse", "--height=40%", "--border", f"--prompt={fzf_prompt}"],
+            "\n".join(provided_models),
+        )
+        return selected_model if selected_model else None
+    except (subprocess.CalledProcessError, subprocess.SubprocessError):
+        return None
 
 
 def get_platform_model_list(url, headers, models_info):
@@ -48,9 +96,9 @@ def get_platform_model_list(url, headers, models_info):
 
 
 def auto_select_a_platform(platform_key=None, model_name=None):
-    if platform_key is None or platform_key not in config.THIRD_PARTY_PLATFORMS.keys():
+    all_platforms = ["openai"] + list(config.THIRD_PARTY_PLATFORMS.keys())
+    if platform_key is None or platform_key not in all_platforms:
         try:
-            platforms = list(config.THIRD_PARTY_PLATFORMS.keys())
             from cha import utils
 
             platform_key = utils.run_fzf_ssh_safe(
@@ -61,13 +109,34 @@ def auto_select_a_platform(platform_key=None, model_name=None):
                     "--border",
                     "--prompt=Select a platform: ",
                 ],
-                "\n".join(platforms),
+                "\n".join(all_platforms),
             )
             if not platform_key:
                 return None
         except (subprocess.CalledProcessError, subprocess.SubprocessError):
             return None
 
+    if platform_key == "openai":
+        from cha.client import set_current_chat_client
+
+        config.CHA_CURRENT_PLATFORM_NAME = "openai"
+        set_current_chat_client(api_key=None, base_url=None)
+
+        final_model = model_name
+        if final_model is None:
+            final_model = list_models()
+
+        if not final_model:
+            return None
+
+        return {
+            "env_name": "OPENAI_API_KEY",
+            "base_url": None,
+            "picked_model": final_model,
+            "platform_name": "openai",
+        }
+
+    config.CHA_CURRENT_PLATFORM_NAME = platform_key
     selected_platform = config.THIRD_PARTY_PLATFORMS[platform_key]
 
     models_list = []

@@ -249,55 +249,6 @@ def title_print(selected_model):
             print(colors.yellow(f"- {option}"))
 
 
-def list_models():
-    from cha import utils
-
-    if config.CHA_CURRENT_PLATFORM_NAME == "openai":
-        response = get_current_chat_client().models.list()
-        if not response.data:
-            raise ValueError("No models available")
-
-        models = []
-        for model in response.data:
-            if (
-                any(substr in model.id for substr in config.OPENAI_MODELS_TO_KEEP)
-                and not any(
-                    substr in model.id for substr in config.OPENAI_MODELS_TO_IGNORE
-                )
-                and (
-                    not getattr(config, "OPENAI_IGNORE_DATED_MODEL_NAMES", False)
-                    or not utils.contains_date(model.id)
-                )
-            ):
-                models.append([model.id, model.created])
-
-        models = sorted(models, key=lambda x: x[1])
-        provided_models = []
-        for model in models:
-            provided_models.append(model[0])
-    else:
-        platform_config = config.THIRD_PARTY_PLATFORMS[config.CHA_CURRENT_PLATFORM_NAME]
-        provided_models = platforms.get_platform_model_list(
-            url=platform_config["models"]["url"],
-            headers=platform_config["models"]["headers"],
-            models_info=platform_config["models"],
-        )
-
-    if not provided_models:
-        print(colors.red("No models available to select"))
-        return None
-
-    fzf_prompt = f"Select a {config.CHA_CURRENT_PLATFORM_NAME.upper()} model: "
-    try:
-        selected_model = utils.run_fzf_ssh_safe(
-            ["fzf", "--reverse", "--height=40%", "--border", f"--prompt={fzf_prompt}"],
-            "\n".join(provided_models),
-        )
-        return selected_model if selected_model else None
-    except (subprocess.CalledProcessError, subprocess.SubprocessError):
-        return None
-
-
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
     global CURRENT_CHAT_HISTORY
 
@@ -510,7 +461,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if message.startswith(config.SWITCH_MODEL_TEXT):
                 parts = message.strip().split(maxsplit=1)
                 if len(parts) == 1:
-                    new_selected_model = list_models()
+                    new_selected_model = platforms.list_models()
                     if new_selected_model:
                         selected_model = new_selected_model
                         print(colors.magenta(f"Switched to model: {selected_model}"))
@@ -1645,7 +1596,7 @@ def cli():
                 raise Exception(f"Failed to switch platform due to {e}")
 
         if args.select_model:
-            new_selected_model = list_models()
+            new_selected_model = platforms.list_models()
             if new_selected_model:
                 selected_model = new_selected_model
             else:
