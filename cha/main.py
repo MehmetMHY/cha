@@ -487,7 +487,9 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 except (KeyboardInterrupt, EOFError):
                     continue
                 except SystemExit:
-                    continue
+                    sys.exit(0)
+                except editor.InteractiveEditor.ChaAbortException:
+                    sys.exit(0)
                 except Exception as e:
                     print(colors.red(f"Editor error: {e}"))
                     continue
@@ -677,15 +679,18 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 continue
 
             elif message.replace(" ", "").lower() == config.CLEAR_HISTORY_TEXT.lower():
-                confirmation = input(colors.yellow("Clear History [y/N]? "))
-                if confirmation.lower() == "y":
-                    messages = (
-                        []
-                        if reasoning_model
-                        else [{"role": "user", "content": config.INITIAL_PROMPT}]
-                    )
-                else:
-                    print(colors.red("Canceled clearing chat history"))
+                try:
+                    confirmation = input(colors.yellow("Clear History [y/N]? "))
+                    if confirmation.lower() == "y":
+                        messages = (
+                            []
+                            if reasoning_model
+                            else [{"role": "user", "content": config.INITIAL_PROMPT}]
+                        )
+                    else:
+                        print(colors.red("Canceled clearing chat history"))
+                except (KeyboardInterrupt, EOFError):
+                    print()
                 continue
 
             if multi_line_input:
@@ -1398,12 +1403,15 @@ def cli():
         if args.editor:
             from cha import editor
 
-            editor.run_editor(
-                client=get_current_chat_client(),
-                model_name=args.model,
-                file_path=args.editor if isinstance(args.editor, str) else None,
-                chat_history=CURRENT_CHAT_HISTORY,
-            )
+            try:
+                editor.run_editor(
+                    client=get_current_chat_client(),
+                    model_name=args.model,
+                    file_path=args.editor if isinstance(args.editor, str) else None,
+                    chat_history=CURRENT_CHAT_HISTORY,
+                )
+            except editor.InteractiveEditor.ChaAbortException:
+                sys.exit(0)
             return
 
         if args.private:

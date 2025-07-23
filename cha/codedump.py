@@ -2,6 +2,7 @@ from datetime import datetime
 import subprocess
 import fnmatch
 import time
+import sys
 import os
 
 from cha import colors, utils, config
@@ -170,42 +171,41 @@ def interactive_selection(root_path, files_dict, include_mode=False):
             items_to_select.sort()
             fzf_input = "\n".join(items_to_select)
 
-            try:
-                selected_output = utils.run_fzf_ssh_safe(
-                    [
-                        "fzf",
-                        "-m",
-                        "--header",
-                        "Use TAB to select multiple files/directories to include, ENTER to confirm.",
-                    ],
-                    fzf_input,
+            selected_output = utils.run_fzf_ssh_safe(
+                [
+                    "fzf",
+                    "-m",
+                    "--header",
+                    "Use TAB to select multiple files/directories to include, ENTER to confirm.",
+                ],
+                fzf_input,
+            )
+            if selected_output is None:
+                sys.exit(0)
+            selected_display_items = (
+                selected_output.split("\n") if selected_output else []
+            )
+            if (
+                selected_display_items
+                and selected_display_items[0]
+                and config.NOTHING_SELECTED_TAG not in selected_display_items
+            ):
+                # convert back to actual paths
+                actual_paths = utils.extract_paths_from_fzf_selection(
+                    selected_display_items, path_mapping
                 )
-                selected_display_items = (
-                    selected_output.split("\n") if selected_output else []
-                )
-                if (
-                    selected_display_items
-                    and selected_display_items[0]
-                    and config.NOTHING_SELECTED_TAG not in selected_display_items
-                ):
-                    # convert back to actual paths
-                    actual_paths = utils.extract_paths_from_fzf_selection(
-                        selected_display_items, path_mapping
-                    )
 
-                    for item_path in actual_paths:
-                        if item_path in item_map:
-                            item_type, actual_item_path = item_map[item_path]
-                            if item_type == "dir":
-                                # add all files in this directory
-                                for f in files_dict.keys():
-                                    if f.startswith(actual_item_path):
-                                        selected.add(f)
-                            else:
-                                # add the specific file
-                                selected.add(actual_item_path)
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                return None
+                for item_path in actual_paths:
+                    if item_path in item_map:
+                        item_type, actual_item_path = item_map[item_path]
+                        if item_type == "dir":
+                            # add all files in this directory
+                            for f in files_dict.keys():
+                                if f.startswith(actual_item_path):
+                                    selected.add(f)
+                        else:
+                            # add the specific file
+                            selected.add(actual_item_path)
     else:
         # original exclude mode logic with the two-phase selection
         all_dirs = set()
@@ -230,35 +230,34 @@ def interactive_selection(root_path, files_dict, include_mode=False):
             dir_display_list = [config.NOTHING_SELECTED_TAG] + formatted_dirs
             fzf_input = "\n".join(dir_display_list)
 
-            try:
-                selected_output = utils.run_fzf_ssh_safe(
-                    [
-                        "fzf",
-                        "-m",
-                        "--header",
-                        "Use TAB to select multiple directories to exclude, ENTER to confirm.",
-                    ],
-                    fzf_input,
+            selected_output = utils.run_fzf_ssh_safe(
+                [
+                    "fzf",
+                    "-m",
+                    "--header",
+                    "Use TAB to select multiple directories to exclude, ENTER to confirm.",
+                ],
+                fzf_input,
+            )
+            if selected_output is None:
+                sys.exit(0)
+            selected_display_dirs = (
+                selected_output.split("\n") if selected_output else []
+            )
+            if (
+                selected_display_dirs
+                and selected_display_dirs[0]
+                and config.NOTHING_SELECTED_TAG not in selected_display_dirs
+            ):
+                # convert back to actual paths
+                actual_dirs = utils.extract_paths_from_fzf_selection(
+                    selected_display_dirs, dir_mapping
                 )
-                selected_display_dirs = (
-                    selected_output.split("\n") if selected_output else []
-                )
-                if (
-                    selected_display_dirs
-                    and selected_display_dirs[0]
-                    and config.NOTHING_SELECTED_TAG not in selected_display_dirs
-                ):
-                    # convert back to actual paths
-                    actual_dirs = utils.extract_paths_from_fzf_selection(
-                        selected_display_dirs, dir_mapping
-                    )
-                    selected_dirs = set(actual_dirs)
+                selected_dirs = set(actual_dirs)
 
-                    for f in list(files_dict.keys()):
-                        if any(f.startswith(d) for d in selected_dirs):
-                            selected.add(f)
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                return None
+                for f in list(files_dict.keys()):
+                    if any(f.startswith(d) for d in selected_dirs):
+                        selected.add(f)
 
         # handle file selection with fzf
         remaining_files = [f for f in files_dict.keys() if f not in selected]
@@ -273,33 +272,32 @@ def interactive_selection(root_path, files_dict, include_mode=False):
             file_display_list = [config.NOTHING_SELECTED_TAG] + formatted_files
             fzf_input = "\n".join(file_display_list)
 
-            try:
-                selected_output = utils.run_fzf_ssh_safe(
-                    [
-                        "fzf",
-                        "-m",
-                        "--header",
-                        "Use TAB to select multiple files to exclude, ENTER to confirm.",
-                    ],
-                    fzf_input,
+            selected_output = utils.run_fzf_ssh_safe(
+                [
+                    "fzf",
+                    "-m",
+                    "--header",
+                    "Use TAB to select multiple files to exclude, ENTER to confirm.",
+                ],
+                fzf_input,
+            )
+            if selected_output is None:
+                sys.exit(0)
+            selected_display_files = (
+                selected_output.split("\n") if selected_output else []
+            )
+            if (
+                selected_display_files
+                and selected_display_files[0]
+                and config.NOTHING_SELECTED_TAG not in selected_display_files
+            ):
+                # convert back to actual paths
+                actual_files = utils.extract_paths_from_fzf_selection(
+                    selected_display_files, file_mapping
                 )
-                selected_display_files = (
-                    selected_output.split("\n") if selected_output else []
-                )
-                if (
-                    selected_display_files
-                    and selected_display_files[0]
-                    and config.NOTHING_SELECTED_TAG not in selected_display_files
-                ):
-                    # convert back to actual paths
-                    actual_files = utils.extract_paths_from_fzf_selection(
-                        selected_display_files, file_mapping
-                    )
-                    for full_path in actual_files:
-                        if full_path:
-                            selected.add(full_path)
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                return None
+                for full_path in actual_files:
+                    if full_path:
+                        selected.add(full_path)
 
     return selected
 
@@ -435,12 +433,21 @@ def code_dump(
         elif auto_include_all:
             include_mode = True
         else:
-            mode_str = (
-                utils.safe_input(colors.green("[E]xclude (default) / [I]nclude: "))
-                .strip()
-                .lower()
+            mode_options = ["Exclude", "Include"]
+            fzf_input = "\n".join(mode_options)
+
+            selected_mode = utils.run_fzf_ssh_safe(
+                [
+                    "fzf",
+                    "--no-clear",
+                    "--header",
+                    "Select mode:",
+                ],
+                fzf_input,
             )
-            include_mode = mode_str.startswith("i")
+            if selected_mode is None:
+                sys.exit(0)
+            include_mode = selected_mode == "Include"
 
         content = extract_code(
             dir_path, include_mode, auto_include_all, specific_includes

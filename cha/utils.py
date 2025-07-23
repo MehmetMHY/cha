@@ -373,7 +373,6 @@ def write_json(path, data):
 
 
 def open_file_in_editor(file_path):
-    """opens the given file path in a preferred terminal editor."""
     terminals = copy.deepcopy(config.SUPPORTED_TERMINAL_IDES)
     if config.PREFERRED_TERMINAL_IDE:
         terminals.insert(0, config.PREFERRED_TERMINAL_IDE)
@@ -732,36 +731,66 @@ def normalize_whitespace(text: str, tab_size: int = 4) -> str:
     return leading + middle + trailing
 
 
+def get_path_size(path):
+    """
+    get the size of a file or directory in bytes.
+    """
+    try:
+        if os.path.isfile(path):
+            return os.path.getsize(path)
+        elif os.path.isdir(path):
+            total_size = 0
+            for dirpath, dirnames, filenames in os.walk(path):
+                for filename in filenames:
+                    filepath = os.path.join(dirpath, filename)
+                    try:
+                        total_size += os.path.getsize(filepath)
+                    except (OSError, IOError):
+                        continue
+            return total_size
+    except (OSError, IOError):
+        pass
+    return 0
+
+
+def format_size(size_bytes):
+    """
+    format size in bytes to human readable format with 1 decimal place.
+    """
+    if size_bytes >= 1024 * 1024:
+        return f"{size_bytes / (1024 * 1024):.1f}^MB"
+    elif size_bytes >= 1024:
+        return f"{size_bytes / 1024:.1f}^KB"
+    else:
+        return f"{size_bytes:.1f}^B"
+
+
 def format_path_for_fzf(path):
     """
     format a file/directory path for better fzf display.
-    returns: filename/:full_path for directories, filename:full_path for files
+    returns: filename/:size_str:full_path for directories, filename:size_str:full_path for files
     """
+    size = get_path_size(path)
+    size_str = format_size(size)
+
     if os.path.isdir(path):
         dirname = os.path.basename(path) or os.path.basename(os.path.dirname(path))
-        return f"{dirname}/:{path}"
+        return f"{dirname}/:{size_str}:{path}"
     else:
         filename = os.path.basename(path)
-        return f"{filename}:{path}"
+        return f"{filename}:{size_str}:{path}"
 
 
 def extract_path_from_fzf_format(formatted_line):
     """
     extract the actual path from a formatted fzf line.
-    input: "filename/:full_path" or "filename:full_path"
+    input: "filename/:size_str:full_path" or "filename:size_str:full_path"
     returns: full_path
     """
-    if ":/" in formatted_line:
-        # handle directory format "dirname/:full_path"
-        return "/" + formatted_line.split(":/", 1)[1]
-    elif ":" in formatted_line:
-        # handle file format "filename:full_path"
-        path_part = formatted_line.split(":", 1)[1]
-        # if it doesn't start with /, add it back
-        if not path_part.startswith("/"):
-            path_part = "/" + path_part
-        return path_part
-    return formatted_line  # fallback if format is unexpected
+    parts = formatted_line.split(":")
+    if len(parts) >= 3:
+        return ":".join(parts[2:])
+    return formatted_line
 
 
 def format_paths_for_fzf(paths):

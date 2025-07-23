@@ -22,6 +22,9 @@ FZF_AVAILABLE = is_fzf_available()
 
 
 class InteractiveEditor:
+    class ChaAbortException(Exception):
+        # custom exception to force exit from Cha entirely
+        pass
 
     def __init__(self, client, model_name, file_path=None, chat_history=None):
         self.client = client
@@ -68,6 +71,9 @@ class InteractiveEditor:
                     break
                 except SystemExit:
                     break
+                except InteractiveEditor.ChaAbortException:
+                    # Re-raise the abort exception to let it propagate to main.py
+                    raise
         finally:
             self._save_readline_history()
 
@@ -187,6 +193,7 @@ class InteractiveEditor:
             "v, view - View the current file content in your default editor",
             "r, run - Execute the current file with LLM-generated command",
             "q, quit, exit - Exit the editor",
+            "Q, abort - Exit the entire Cha instance",
             f"{config.PICK_AND_RUN_A_SHELL_OPTION} - Run a shell command",
             f"{config.TEXT_EDITOR_INPUT_MODE} - Open editor for a long prompt",
             f"{config.USE_CODE_DUMP} - Codedump a directory as context",
@@ -216,9 +223,14 @@ class InteractiveEditor:
                             if config.HELP_ALL_ALIAS not in help_item:
                                 print(colors.yellow(help_item))
                     else:
-                        command_alias = selected_item.split(",")[0].split(" ")[0]
+                        if "abort" in selected_item:
+                            command_alias = "Q"  # Use Q to trigger complete exit
+                        else:
+                            command_alias = selected_item.split(",")[0].split(" ")[0]
                         if command_alias:
-                            self._process_command(command_alias)
+                            result = self._process_command(command_alias)
+                            if not result:
+                                return False  # Signal to exit editor
             except (subprocess.CalledProcessError, subprocess.SubprocessError):
                 pass
         else:
@@ -227,7 +239,15 @@ class InteractiveEditor:
                 if config.HELP_ALL_ALIAS not in option:
                     print(colors.yellow(f"  {option}"))
 
+        return None  # Continue editor by default
+
     def _process_command(self, user_input):
+        # Handle case-sensitive commands first
+        if user_input == "Q":
+            self._complete_exit()
+            # The exception should be raised above, but if we get here something went wrong
+            return False
+
         command = user_input.lower()
 
         command_map = {
@@ -244,6 +264,7 @@ class InteractiveEditor:
             "q": self._quit,
             "quit": self._quit,
             "exit": self._quit,
+            "abort": self._complete_exit,
             "h": self._show_help,
             "help": self._show_help,
             config.HELP_PRINT_OPTIONS_KEY: self._show_help,
@@ -251,9 +272,16 @@ class InteractiveEditor:
 
         action = command_map.get(command)
         if action:
-            action()
-            if command in ["q", "quit", "exit"]:
-                return False
+            if command in ["h", "help", config.HELP_PRINT_OPTIONS_KEY]:
+                result = action()
+                if result is False:
+                    return False
+            else:
+                action()
+                if command in ["q", "quit", "exit"]:
+                    return False
+                elif command == "abort":
+                    return False
         elif command.startswith(config.PICK_AND_RUN_A_SHELL_OPTION):
             shell_command = user_input[
                 len(config.PICK_AND_RUN_A_SHELL_OPTION) :
@@ -329,7 +357,7 @@ class InteractiveEditor:
                 print(colors.yellow("No changes were generated"))
 
         except (KeyboardInterrupt, EOFError):
-            print(colors.yellow("\nOperation cancelled"))
+            print()
         except Exception as e:
             print(colors.red(f"{e}"))
         finally:
@@ -607,6 +635,9 @@ class InteractiveEditor:
                 "context": context,
             }
         )
+
+    def _complete_exit(self):
+        raise self.ChaAbortException("User requested complete exit from Cha")
 
     def _quit(self):
         if self.original_content != self.current_content:
