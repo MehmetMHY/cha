@@ -478,8 +478,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             if message.startswith(config.SWITCH_PLATFORM_TEXT):
                 parts = message.strip().split(maxsplit=1)
                 if len(parts) == 1:
-                    from cha import platforms
-
                     try:
                         platform_values = platforms.auto_select_a_platform()
                         if platform_values:
@@ -506,8 +504,6 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         print(colors.red(f"Failed to switch platform: {e}"))
                 else:
                     try:
-                        from cha import platforms
-
                         platform_args = parts[1].strip()
                         platform_values = platforms.auto_select_a_platform(
                             platform_key=(
@@ -1526,8 +1522,6 @@ def cli():
                 platform_arg = config.CHA_CURRENT_PLATFORM_NAME
 
             try:
-                from cha import platforms
-
                 API_KEY_NAME = None
                 BASE_URL_VALUE = None
                 platform_name = None
