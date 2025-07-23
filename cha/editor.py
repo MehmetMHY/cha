@@ -656,10 +656,3 @@ def run_editor(client, model_name, file_path=None, chat_history=None):
         client, model_name, file_path=file_path, chat_history=chat_history
     )
     editor.run()
-
-
-def call_editor(client, initial_prompt, model_name, chat_history=None):
-    editor = InteractiveEditor(
-        client, model_name, file_path=initial_prompt, chat_history=chat_history
-    )
-    editor.run()

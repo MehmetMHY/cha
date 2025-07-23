@@ -157,43 +157,47 @@ def run_a_shell(command=None):
                 print(colors.red(f"Error executing command: {e}"))
             return
 
-        # Original interactive shell logic
+        # original interactive shell logic
         current_shell = os.environ.get("SHELL")
         chosen_name = None
 
-        # use fish shell by default
         try:
             result = subprocess.run(
-                ["which", "fish"], capture_output=True, text=True, check=True
+                ["which", "bash"], capture_output=True, text=True, check=True
             )
-            fish_shell = result.stdout.strip()
-            if current_shell != fish_shell:
-                chosen_name = fish_shell
+            bash_shell = result.stdout.strip()
+            if bash_shell != current_shell:
+                chosen_name = bash_shell
         except subprocess.CalledProcessError:
             pass
 
-        # use random but already installed shell if the fish shell is not installed
+        if chosen_name == None:
+            try:
+                result = subprocess.run(
+                    ["which", "fish"], capture_output=True, text=True, check=True
+                )
+                fish_shell = result.stdout.strip()
+                if fish_shell != current_shell:
+                    chosen_name = fish_shell
+            except subprocess.CalledProcessError:
+                pass
+
         if chosen_name == None:
             shell_dir = "/etc/shells"
             with open(shell_dir) as f:
                 shells = [line.strip() for line in f if line.startswith("/")]
             shells = [x for x in list(set(shells)) if x != current_shell]
-            shells.sort()
             if len(shells) > 0:
                 chosen_name = random.choice(shells)
+            else:
+                chosen_name = current_shell
 
         if chosen_name == None:
             raise Exception(f"Zero shells found")
 
-        columns, _ = os.get_terminal_size()
-        padding_length = (columns - len(chosen_name) - 2) // 2
-        left_padding = "=" * padding_length
-        right_padding = "=" * (columns - len(left_padding) - len(chosen_name) - 2)
-        line_text = f"{left_padding}[{chosen_name}]{right_padding}"
-
-        print(colors.green(line_text))
+        print(colors.red(f"Using shell {chosen_name}"))
         subprocess.run(chosen_name, cwd=os.getcwd())
-        print(colors.green(line_text))
+        print(colors.red(f"Exited shell {chosen_name}"))
 
     except Exception as e:
         print(colors.red(f"Error running shell: {e}"))

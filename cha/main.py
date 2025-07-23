@@ -34,7 +34,7 @@ VISITED_DIRECTORIES = []
 
 def format_visited_directories(directories):
     """
-    format visited directories for exit display
+    Format visited directories for exit display
     """
     if not directories:
         return ""
