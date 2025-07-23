@@ -251,7 +251,7 @@ def answer_search(
     token_limit=config.DEFAULT_SEARCH_MAX_TOKEN_LIMIT,
     user_input_mode=False,
 ):
-    if user_input_mode or prompt == None:
+    if prompt is None or (user_input_mode and not prompt):
         prompt = utils.safe_input(colors.blue(f"Question: "))
         if prompt == config.TEXT_EDITOR_INPUT_MODE.strip():
             editor_content = utils.check_terminal_editors_and_edit()
@@ -263,9 +263,6 @@ def answer_search(
                 for line in str(editor_content).rstrip("\n").split("\n"):
                     print(colors.blue(">"), line)
                 prompt = editor_content
-    else:
-        print(colors.red(colors.underline("Question:")))
-        print(prompt)
 
     loading.start_loading("Crafting Queries", "circles")
 

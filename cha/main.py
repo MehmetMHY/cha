@@ -110,9 +110,8 @@ def get_help_options():
     help_options.append(
         f"{config.LOAD_MESSAGE_CONTENT_ADVANCED} - Load files (advanced mode)"
     )
-    help_options.append(
-        f"{config.RUN_ANSWER_FEATURE} - Web search or '{config.RUN_ANSWER_FEATURE} <query>' for quick search"
-    )
+    help_options.append(f"{config.RUN_QUICK_SEARCH_FEATURE} - Quick web search")
+    help_options.append(f"{config.RUN_ANSWER_FEATURE} - Deep answer search")
     help_options.append(f"{config.RECORD_AUDIO_ALIAS} - Record voice prompt")
     help_options.append(f"{config.TEXT_EDITOR_INPUT_MODE} - Text-editor input mode")
     help_options.append(
@@ -144,7 +143,7 @@ def get_help_options():
         f"{config.MULTI_LINE_MODE_TEXT} - Multi-line switching (type '{config.MULTI_LINE_SEND}' to send)"
     )
     bracket_options.append(
-        f"{config.EXPORT_FILES_IN_OUTPUT_KEY} - Export chat history with fzf selection (text or JSON)"
+        f"{config.EXPORT_FILES_IN_OUTPUT_KEY} - Export chat history with fzf selection"
     )
 
     if os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR):
@@ -992,48 +991,58 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                         messages.append({"role": "user", "content": message})
                     continue
 
-            # check for an answer-search command
-            if message.startswith(config.RUN_ANSWER_FEATURE):
-                quick_browse_mode = False
-                if len(message) > len(config.RUN_ANSWER_FEATURE):
-                    answer_prompt_draft = message[
-                        len(config.RUN_ANSWER_FEATURE) :
-                    ].strip()
-                    if len(answer_prompt_draft) > 10:
-                        quick_browse_mode = True
-
+            # check for quick search command
+            if message.startswith(config.RUN_QUICK_SEARCH_FEATURE):
                 from cha import answer
 
-                if quick_browse_mode:
-                    message = message.replace(config.RUN_ANSWER_FEATURE, "").strip()
-                    new_message = answer.quick_search(user_input=message)
-                    if new_message == None:
-                        print(colors.red(f"Failed to do a quick web search"))
+                query = message.replace(config.RUN_QUICK_SEARCH_FEATURE, "").strip()
+                if not query:
+                    query = utils.safe_input(colors.blue("Query: "))
+                    if not query:
                         continue
-                    message = new_message
-                else:
-                    try:
+
+                new_message = answer.quick_search(user_input=query)
+                if new_message == None:
+                    print(colors.red(f"Failed to do a quick web search"))
+                    continue
+                message = new_message
+
+            # check for deep answer-search command
+            elif message.startswith(config.RUN_ANSWER_FEATURE):
+                from cha import answer
+
+                try:
+                    query = message.replace(config.RUN_ANSWER_FEATURE, "").strip()
+                    if query:
+                        # Query provided with command
+                        message = answer.answer_search(
+                            client=get_current_chat_client(),
+                            prompt=query,
+                            user_input_mode=False,
+                        )
+                    else:
+                        # No query provided, prompt user
                         message = answer.answer_search(
                             client=get_current_chat_client(),
                             prompt=None,
                             user_input_mode=True,
                         )
 
-                        messages.append({"role": "user", "content": message})
+                    messages.append({"role": "user", "content": message})
 
-                        CURRENT_CHAT_HISTORY.append(
-                            {
-                                "time": time.time(),
-                                "user": "",
-                                "bot": message,
-                                "platform": config.CHA_CURRENT_PLATFORM_NAME,
-                                "model": selected_model,
-                            }
-                        )
-                    except (KeyboardInterrupt, EOFError, SystemExit):
-                        pass
+                    CURRENT_CHAT_HISTORY.append(
+                        {
+                            "time": time.time(),
+                            "user": "",
+                            "bot": message,
+                            "platform": config.CHA_CURRENT_PLATFORM_NAME,
+                            "model": selected_model,
+                        }
+                    )
+                except (KeyboardInterrupt, EOFError, SystemExit):
+                    pass
 
-                    continue
+                continue
 
             # skip if user typed something blank
             if len("".join(str(message)).split()) == 0:
@@ -1157,7 +1166,7 @@ def cli():
             "--answer",
             dest="answer_search",
             action="store_true",
-            help="Run answer search (interactive: !s)",
+            help="Run deep answer search (interactive: !w)",
         )
         parser.add_argument(
             "-t",

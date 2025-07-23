@@ -12,6 +12,14 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 
 Cha is a simple, lightweight CLI tool that provides access to powerful AI models directly from the terminal. Think of it like Vim versus Emacs: Cha focuses on simplicity and versatility, delivering essential functionality without overwhelming complexity. It's designed to fit seamlessly into your workflow, helping to reduce the need for developers to leave their terminals, making AI access and general knowledge querying straightforward and efficient.
 
+## How Cha Compares to tools like Claude Code & Gemini CLI (July 2025)
+
+Cha takes a different approach from the new wave of autonomous AI coding CLIs like [Claude Code CLI](https://github.com/anthropics/claude-code), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenAI Codex CLI](https://github.com/openai/codex). While those tools often automate large parts of your workflow using smart agents, Cha gives you total control at every step. There is no background AI worker deciding things for you, no surprise edits, and you explicitly choose the context, files, provider, and timing for every interaction. Whether web or YouTube scraping, extracting from PDFs, docs, spreadsheets, audio, or video, or swapping between AI providers, you stay hands-on and in charge the whole way.
+
+This approach is not just about philosophy or style. It makes Cha dramatically cheaper to use. For most people, daily active use comes out to just $0–$20 per month, even if you use it all day. The more self-driving agentic CLIs routinely cost $50–$200 per month, especially as you let them automate more of your codebase or workflow. The flip side is that with Cha you provide the context and guide each action yourself. Cha does not try to be a fully automated coding agent and instead gives you a simple, flexible, UNIX-style toolbox that you control at every step.
+
+Use Cha when you want minimal cost, full control, and the ability to stay deeply involved as you work. Reach for the agentic tools like Claude Code CLI, Gemini CLI, or Codex CLI when you are prototyping fast, want end-to-end AI automation, or would rather let the AI take over more of the heavy lifting. You can even use both side by side—let Cha handle simpler tasks, research, or any workflow where you want to save money or remain 100% in control, then jump to the more autonomous tools when it is time to move fast or delegate to AI. Each approach brings its own value; knowing the difference helps you pick the right one for each job.
+
 ## Features
 
 - **CLI Chat Interface**: Communicate with OpenAI's models via commands `cha`.
@@ -20,7 +28,7 @@ Cha is a simple, lightweight CLI tool that provides access to powerful AI models
 - **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done though an argument or in interactive mode.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
 - **Voice Recording**: Record voice prompts and have them automatically transcribed to text using OpenAI's Whisper API or local whisper (set `TEXT_TO_SPEECH_MODEL = "local"` in config). Use `!r` in interactive mode or `cha -r` from command line.
-- **Answer Search**: Simple implementation of an Answer-Search engine similar to Perplexity AI's solution. Use `!s` for deep search or `!s <query>` for quick search.
+- **Web Search**: Quick web search (`!s`) and deep answer search (`!w`) similar to Perplexity AI's solution.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
@@ -478,7 +486,7 @@ positional arguments:
 options:
   -h, --help            Show this help message and exit.
   -l FILE, --load FILE  Load a file to send to the model (interactive: !l)
-  -a, --answer          Run answer search (interactive: !s)
+  -a, --answer          Run deep answer search (interactive: !w)
   -t, --ide             Use a terminal text editor for input (interactive: !t)
   -m MODEL, --model MODEL
                         Switch model (interactive: !m)

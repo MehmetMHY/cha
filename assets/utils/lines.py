@@ -146,7 +146,7 @@ def count_lines_by_extension(
 if __name__ == "__main__":
     dir_path = os.path.dirname(os.path.abspath(__file__))
     dir_path = "/".join(dir_path.split("/")[:-2]) + "/"
-    ext_targets = [".py", ".sh", ".md"]
+    ext_targets = [".py", ".sh", ".md", ".json"]
     count_lines_by_extension(
         directory=dir_path,
         ext_targets=ext_targets,
