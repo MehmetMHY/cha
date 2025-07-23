@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
-
 from pathlib import Path
 import subprocess
+import argparse
 import yaml
 import time
 import sys
 import os
-import argparse
 
 # NOTE: default values
 DEFAULT_PORT = "8080"

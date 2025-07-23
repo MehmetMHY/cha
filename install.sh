@@ -24,6 +24,11 @@ check_python() {
 		error "Python 3 is required but not installed"
 	fi
 
+	# check pip is available
+	if ! python3 -m pip --version >/dev/null 2>&1; then
+		error "pip is required but not available"
+	fi
+
 	local python_version
 	python_version=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
 	if ! python3 -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)"; then

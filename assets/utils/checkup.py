@@ -1,5 +1,3 @@
-# NOTE: This script acts as a checkup on your system to see which pre-requirements for Cha is installed or not installed
-
 from pathlib import Path
 import subprocess
 import requests

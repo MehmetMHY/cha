@@ -12,20 +12,16 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 
 Cha is a simple, lightweight CLI tool that provides access to powerful AI models directly from the terminal. Think of it like Vim versus Emacs: Cha focuses on simplicity and versatility, delivering essential functionality without overwhelming complexity. It's designed to fit seamlessly into your workflow, helping to reduce the need for developers to leave their terminals, making AI access and general knowledge querying straightforward and efficient.
 
-## How Cha Compares to tools like Claude Code & Gemini CLI (July 2025)
+## Cha vs CLIs like Claude Code (July 2025)
 
-Cha takes a different approach from the new wave of autonomous AI coding CLIs like [Claude Code CLI](https://github.com/anthropics/claude-code), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenAI Codex CLI](https://github.com/openai/codex). While those tools often automate large parts of your workflow using smart agents, Cha gives you total control at every step. There is no background AI worker deciding things for you, no surprise edits, and you explicitly choose the context, files, provider, and timing for every interaction. Whether web or YouTube scraping, extracting from PDFs, docs, spreadsheets, audio, or video, or swapping between AI providers, you stay hands-on and in charge the whole way.
-
-This approach is not just about philosophy or style. It makes Cha dramatically cheaper to use. For most people, daily active use comes out to just $0–$20 per month, even if you use it all day. The more self-driving agentic CLIs routinely cost $50–$200 per month, especially as you let them automate more of your codebase or workflow. The flip side is that with Cha you provide the context and guide each action yourself. Cha does not try to be a fully automated coding agent and instead gives you a simple, flexible, UNIX-style toolbox that you control at every step.
-
-Use Cha when you want minimal cost, full control, and the ability to stay deeply involved as you work. Reach for the agentic tools like Claude Code CLI, Gemini CLI, or Codex CLI when you are prototyping fast, want end-to-end AI automation, or would rather let the AI take over more of the heavy lifting. You can even use both side by side—let Cha handle simpler tasks, research, or any workflow where you want to save money or remain 100% in control, then jump to the more autonomous tools when it is time to move fast or delegate to AI. Each approach brings its own value; knowing the difference helps you pick the right one for each job.
+Cha takes a different approach from autonomous AI coding CLIs like [Claude Code CLI](https://github.com/anthropics/claude-code), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenAI Codex CLI](https://github.com/openai/codex). While those tools automate large parts of your workflow using smart agents, Cha gives you total control at every step with no background AI worker deciding things for you, no surprise edits, and explicit control over context, files, provider, and timing for every interaction. This approach makes Cha dramatically cheaper to use, with most people seeing daily active use costs of just $1 to $20 per month versus $10 to $200+ for powerful agentic CLIs like Claude Code. The tradeoff is that you provide context and guide each action yourself rather than delegating to a borderline fully automated coding agent. Use Cha when you want minimal cost, full control, and deep involvement in your work, or reach for agentic tools like Claude Code when prototyping fast or preferring more AI automation. You can even use both side by side with Cha for simpler tasks and cost control and agentic tools when speed and delegation matter more!
 
 ## Features
 
 - **CLI Chat Interface**: Communicate with OpenAI's models via commands `cha`.
 - **Interactive & Non-interactive Modes**: Interact with models via chat interface, command-line arguments, or file input.
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI. Type `\` to toggle multi-line mode, then `\` again to send.
-- **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done though an argument or in interactive mode.
+- **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done through an argument or in interactive mode.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
 - **Voice Recording**: Record voice prompts and have them automatically transcribed to text using OpenAI's Whisper API or local whisper (set `TEXT_TO_SPEECH_MODEL = "local"` in config). Use `!r` in interactive mode or `cha -r` from command line.
 - **Web Search**: Quick web search (`!s`) and deep answer search (`!w`) similar to Perplexity AI's solution.
@@ -35,7 +31,7 @@ Use Cha when you want minimal cost, full control, and the ability to stay deeply
 - **Switch Between Models**: Easily switch between models during a conversation using `!m`.
 - **Switch Between Platforms**: Switch between different AI platforms (OpenAI, Anthropic, Groq, etc.) mid-conversation using `!p`, maintaining full chat history.
 - **Codedump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
-- **Quick Web Search**: Well chatting you can ask a question/prompt and have Cha browse the web real quick before answering your question.
+- **Quick Web Search**: While chatting you can ask a question/prompt and have Cha browse the web real quick before answering your question.
 - **Export Markdown Fences**: If desired, export any Markdown fence in the latest message from a model to file(s).
 - **Integrated Shell Access**: Execute shell commands directly within Cha's environment using `!x` (interactive shell) or `!x <command>` (run specific commands), enhancing workflow efficiency by providing immediate terminal access.
 - **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
