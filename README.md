@@ -1,8 +1,27 @@
 # Cha
 
-![image](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![GitHub stars](https://img.shields.io/github/stars/MehmetMHY/cha.svg)](https://github.com/MehmetMHY/cha/stargazers)
 
-Check out the complete [demo](https://www.youtube.com/watch?v=7zG8iFZjKtM)
+[![Demo GIF](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)](https://www.youtube.com/watch?v=7zG8iFZjKtM)
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Vision](#vision)
+- [Cha vs CLIs like Claude Code](#cha-vs-clis-like-claude-code-july-2025)
+- [Features](#features)
+- [Dependencies](#dependencies)
+- [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Usage](#usage)
+- [Development](#development)
+- [Platform Compatibility](#other-platforms-compatibility)
+- [Local Config](#local-config-optional)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Overview
 
@@ -10,11 +29,37 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 
 ## Vision
 
-Cha is a simple, lightweight CLI tool that provides access to powerful AI models directly from the terminal. Think of it like Vim versus Emacs: Cha focuses on simplicity and versatility, delivering essential functionality without overwhelming complexity. It's designed to fit seamlessly into your workflow, helping to reduce the need for developers to leave their terminals, making AI access and general knowledge querying straightforward and efficient.
+Cha is a lightweight, focused CLI tool that provides direct terminal access to powerful AI models. Like Vim's philosophy of simplicity and versatility, Cha delivers essential functionality without overwhelming complexity. It integrates seamlessly into developer workflows, minimizing context switching and making AI interactions efficient and straightforward.
 
 ## Cha vs CLIs like Claude Code (July 2025)
 
-Cha takes a different approach from autonomous AI coding CLIs like [Claude Code CLI](https://github.com/anthropics/claude-code), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenAI Codex CLI](https://github.com/openai/codex). While those tools automate large parts of your workflow using smart agents, Cha gives you total control at every step with no background AI worker deciding things for you, no surprise edits, and explicit control over context, files, provider, and timing for every interaction. This approach makes Cha dramatically cheaper to use, with most people seeing daily active use costs of just $1 to $20 per month versus $10 to $200+ for powerful agentic CLIs like Claude Code. The tradeoff is that you provide context and guide each action yourself rather than delegating to a borderline fully automated coding agent. Use Cha when you want minimal cost, full control, and deep involvement in your work, or reach for agentic tools like Claude Code when prototyping fast or preferring more AI automation. You can even use both side by side with Cha for simpler tasks and cost control and agentic tools when speed and delegation matter more!
+Cha takes a fundamentally different approach from autonomous AI coding CLIs like [Claude Code CLI](https://github.com/anthropics/claude-code), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenAI Codex CLI](https://github.com/openai/codex).
+
+### Key Differences
+
+| Aspect                    | Cha                              | Agentic CLIs (Claude Code, etc.)       |
+| ------------------------- | -------------------------------- | -------------------------------------- |
+| **Control**               | Total user control at every step | Automated workflow decisions           |
+| **Background Processing** | No background AI workers         | Smart agents make autonomous decisions |
+| **Context Management**    | Explicit user-controlled context | AI-managed context and file handling   |
+| **Cost**                  | $1-20/month for daily active use | $10-200+/month for similar usage       |
+| **Editing**               | No surprise edits, user-guided   | Autonomous code modifications          |
+| **Use Case**              | Deep involvement, cost control   | Rapid prototyping, delegation          |
+
+### When to Choose Cha
+
+- **Minimal cost** with full transparency
+- **Complete control** over every interaction
+- **Deep involvement** in your development process
+- **Explicit context management** for sensitive projects
+
+### When to Choose Agentic Tools
+
+- **Rapid prototyping** and fast iteration
+- **Preference for AI automation** and delegation
+- **Speed over cost** considerations
+
+**Pro Tip**: Many developers use both tools side by side—Cha for cost-effective daily tasks and precise control, and agentic tools when speed and automation are priorities.
 
 ## Features
 
@@ -31,7 +76,7 @@ Cha takes a different approach from autonomous AI coding CLIs like [Claude Code 
 - **Switch Between Models**: Easily switch between models during a conversation using `!m`.
 - **Switch Between Platforms**: Switch between different AI platforms (OpenAI, Anthropic, Groq, etc.) mid-conversation using `!p`, maintaining full chat history.
 - **Codedump Feature**: Easily dump your entire code or a directory's content as one text file OR as context for your conversation.
-- **Quick Web Search**: While chatting you can ask a question/prompt and have Cha browse the web real quick before answering your question.
+- **Quick Web Search**: While chatting you can ask a question/prompt and have Cha browse the web real quick before answering your question using `!s` (quick search) or `!w` (deep answer search).
 - **Export Markdown Fences**: If desired, export any Markdown fence in the latest message from a model to file(s).
 - **Integrated Shell Access**: Execute shell commands directly within Cha's environment using `!x` (interactive shell) or `!x <command>` (run specific commands), enhancing workflow efficiency by providing immediate terminal access.
 - **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
@@ -47,12 +92,39 @@ Cha takes a different approach from autonomous AI coding CLIs like [Claude Code 
 
 ## Dependencies
 
-Cha relies on a few external command-line tools for some of its features. Please ensure these are installed on your system for the best experience:
+Cha relies on several external command-line tools for optimal functionality. The installation script handles most of these automatically.
 
-- **`fzf`**: Essential for all interactive selection features, such as history search (`!r`), file navigation (`!f`, `!n`), and the codedump (`!d`) helper. A recent version is highly recommended to ensure compatibility with all features.
-- **`ripgrep` (`rg`)**: Required for the history search feature (`!r`) to function.
-- **`bat`**: Used to provide syntax-highlighted previews within the history search feature (`!r`). Essential for enhanced readability and user experience during history browsing.
-- **`netcat` (`nc`)**: Required for network connectivity checks and certain internal operations.
+### Required Dependencies
+
+| Tool                 | Purpose                                            | Installation                                                     |
+| -------------------- | -------------------------------------------------- | ---------------------------------------------------------------- |
+| **`fzf`**            | Interactive selection (history, files, navigation) | `brew install fzf` (macOS)<br>`apt install fzf` (Ubuntu)         |
+| **`ripgrep` (`rg`)** | History search functionality                       | `brew install ripgrep` (macOS)<br>`apt install ripgrep` (Ubuntu) |
+| **`bat`**            | Syntax-highlighted previews                        | `brew install bat` (macOS)<br>`apt install bat` (Ubuntu)         |
+| **`netcat` (`nc`)**  | Network connectivity checks                        | Usually pre-installed                                            |
+| **`ffmpeg`**         | Voice recording and media processing               | `brew install ffmpeg` (macOS)<br>`apt install ffmpeg` (Ubuntu)   |
+
+### Quick Install Commands
+
+**macOS (Homebrew):**
+
+```bash
+brew install fzf ripgrep bat ffmpeg
+```
+
+**Ubuntu/Debian:**
+
+```bash
+sudo apt update && sudo apt install fzf ripgrep bat ffmpeg netcat-openbsd
+```
+
+**Arch Linux:**
+
+```bash
+sudo pacman -S fzf ripgrep bat ffmpeg openbsd-netcat
+```
+
+> **Note**: The `install.sh` script automatically detects and installs missing dependencies on supported systems.
 
 ## Getting Started
 
@@ -65,8 +137,8 @@ You can install Cha using one of the following methods
 Clone the repository and run the installation script:
 
 ```bash
-git clone <repository-url>
-cd <repository-directory>
+git clone https://github.com/MehmetMHY/cha.git
+cd cha
 ./install.sh
 ```
 
@@ -101,8 +173,8 @@ uv pip install "git+https://github.com/MehmetMHY/cha.git"
 1. **Clone the Repository**:
 
    ```bash
-   git clone <repository-url>
-   cd <repository-folder>
+   git clone https://github.com/MehmetMHY/cha.git
+   cd cha
    ```
 
 2. **Install the Package**:
@@ -131,35 +203,65 @@ uv pip install "git+https://github.com/MehmetMHY/cha.git"
 
 ### Configuration
 
-1. **API Key Setup**: Cha requires an OpenAI API key, which you can obtain [here](https://platform.openai.com/api-keys).
+#### 1. API Key Setup
 
-2. **Setup your .env file**: Create a `.env` file in the root directory and add your keys:
+Cha requires an OpenAI API key at minimum. You can obtain one from the [OpenAI Platform](https://platform.openai.com/api-keys).
 
-   ```bash
-   export OPENAI_API_KEY="YOUR_OPENAI_API_KEY"
-   ```
+#### 2. Environment Variables
 
-3. **Apply the environment variables**
+Create a `.env` file in your project directory or set environment variables directly:
 
-   ```bash
-   source .env
-   ```
+```bash
+# required - openai api key
+export OPENAI_API_KEY="sk-your-openai-api-key-here"
 
-### Final Steps
+# optional - additional platform keys
+export ANTHROPIC_API_KEY="your-anthropic-key"
+export GROQ_API_KEY="your-groq-key"
+export DEEPSEEK_API_KEY="your-deepseek-key"
+```
 
-After installing and configuring everything, the final step is to run the checkup script to ensure everything is set up/installed correctly. You can ignore optional checkups/tests here, as those are not necessary for the core of Cha to function. Knowing this, to run these checkups/tests, use the following command:
+#### 3. Apply Configuration
+
+**Option A: Source the .env file**
+
+```bash
+source .env
+```
+
+**Option B: Add to your shell profile**
+
+```bash
+# add to ~/.bashrc, ~/.zshrc, or ~/.profile
+echo 'export OPENAI_API_KEY="your-key-here"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### 4. Verify Setup
+
+Run the built-in checkup to verify your configuration:
 
 ```bash
 python3 ./assets/utils/checkup.py
 ```
 
-If the checkups/tests look good, or you're okay with it, then start using Cha!
+### Final Steps
+
+After installation and configuration, verify your setup with the built-in checkup script:
+
+```bash
+python3 ./assets/utils/checkup.py
+```
+
+> **Note**: Optional checkups can be ignored as they're not required for core functionality.
+
+Once verification is complete, start using Cha:
 
 ```bash
 cha
 ```
 
-You can check the instructions below for more details on what Cha can do and how you can use it!
+Refer to the [Usage](#usage) section below for detailed instructions and examples.
 
 ### Usage
 
@@ -190,55 +292,55 @@ The codedump feature supports specifying exactly which files and directories to 
 **Basic Specific Includes:**
 
 ```bash
-# Include specific files
+# include specific files
 cha -d "include:src/main.py,config.py"
 
-# Include entire directories
+# include entire directories
 cha -d "include:src/,tests/"
 
-# Mix files and directories
+# mix files and directories
 cha -d "include:src/core.py,tests/,docs/README.md"
 ```
 
 **Advanced Patterns:**
 
 ```bash
-# Include with glob patterns
+# include with glob patterns
 cha -d "include:src/**/*.py,*.md"
 
-# Include all JavaScript and TypeScript files
+# include all javascript and typescript files
 cha -d "include:*.js,*.ts,src/**/*.jsx"
 
-# Include specific subdirectories
+# include specific subdirectories
 cha -d "include:src/components/,src/utils/,tests/unit/"
 ```
 
 **Combining with Output Options:**
 
 ```bash
-# Include specific files and output to stdout
+# include specific files and output to stdout
 cha -d "include:src/main.py,config.py,stdout"
 
-# Include directory with stdout output
+# include directory with stdout output
 cha -d "include:src/,stdout"
 
-# Include patterns and save to file (default)
+# include patterns and save to file (default)
 cha -d "include:src/**/*.py,*.md"
 ```
 
 **Complex Real-World Examples:**
 
 ```bash
-# Frontend project: Include React components and styles
+# frontend project: include react components and styles
 cha -d "include:src/components/,src/styles/,public/index.html,package.json"
 
-# Backend API: Include core logic and configs
+# backend api: include core logic and configs
 cha -d "include:src/controllers/,src/models/,src/routes/,config/,*.json,stdout"
 
-# Python project: Include source and tests
+# python project: include source and tests
 cha -d "include:src/,tests/,*.py,requirements.txt,README.md"
 
-# Documentation and config files only
+# documentation and config files only
 cha -d "include:*.md,*.yml,*.json,docs/,stdout"
 ```
 
@@ -277,7 +379,7 @@ The `include:` syntax provides precise control when you know exactly what you wa
 - Example:
   ```bash
   cha -r
-  # Records voice, transcribes to text, and sends to AI model
+  # records voice, transcribes to text, and sends to ai model
   ```
 
 #### Answer Search
@@ -385,19 +487,19 @@ During an interactive chat session, you can switch platforms and models on the f
 **Examples:**
 
 ```bash
-# Start a chat
+# start a chat
 cha
 
-# During the chat, switch to Anthropic
+# during the chat, switch to anthropic
 !p anthropic
 
-# Switch to Groq with specific model
+# switch to groq with specific model
 !p groq|llama-3.1-8b
 
-# Switch back to OpenAI
+# switch back to openai
 !p openai
 
-# Switch just the model within current platform
+# switch just the model within current platform
 !m gpt-4o
 ```
 
@@ -430,8 +532,7 @@ In essence, your unique "cha" CLI usage falls into these main patterns:
 - Running "cha" with a direct query.
 - Doing codedumps or debug dumps (-code_dump, -d).
 - Performing deep answer searches (-a).
-- Perform a quick web search before answering your question/prompt (-b).
-- Feeding in file input (-f).
+- Feeding in file input (-l).
 - Specifying or switching models (-m, -sm).
 - Running OCR operations (-ocr).
 - Switching platforms (-p).
@@ -469,9 +570,8 @@ This command automatically generates intelligent commit messages by analyzing yo
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 
 ```txt
-usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]]
-           [-e] [-x SHELL_COMMAND] [-hs [{fuzzy,exact}]] [-r] [-v [EDITOR]]
-           [-sm] [-ct] [-ocr OCR] [-i] [-P] [-V] [-lh LOAD_HISTORY_FILE]
+usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]] [-e] [-x SHELL_COMMAND] [-hs [{fuzzy,exact}]] [-r] [-v [EDITOR]] [-sm] [-ct]
+           [-ocr OCR] [-i] [-P] [-V] [-lh LOAD_HISTORY_FILE]
            [string ...]
 
 A command-line tool for interacting with AI models from multiple providers.
@@ -489,15 +589,12 @@ options:
   -p [PLATFORM], --platform [PLATFORM]
                         Switch platform (interactive: !p)
   -d [CODE_DUMP], --codedump [CODE_DUMP]
-                        Codedump a directory (interactive: !d). Options: all,
-                        stdout, include:path1,path2 or combine: include:src/,stdout
-  -e, --export          Export code blocks from the last response (interactive:
-                        !e)
+                        Codedump a directory (interactive: !d). Options: all, stdout, include:path1,path2 or combine: include:src/,stdout
+  -e, --export          Export code blocks from the last response (interactive: !e)
   -x SHELL_COMMAND, --shell SHELL_COMMAND
                         Execute a shell command (interactive: !x)
   -hs [{fuzzy,exact}], --history [{fuzzy,exact}]
-                        Search history. 'fuzzy' (default), 'exact' for exact.
-                        (interactive: !hs)
+                        Search history. 'fuzzy' (default), 'exact' for exact. (interactive: !hs)
   -r, --record          Record voice prompt (interactive: !r)
   -v [EDITOR], --editor [EDITOR]
                         Run the interactive editor (interactive: !v)
@@ -547,10 +644,10 @@ cha -p
 Running `cha -p` opens a menu to select a platform. To skip the menu, provide the base URL, environment variable name, and model name directly. For example, to use the `DeepSeek-V3` model from `together.ai`:
 
 ```bash
-# Get and set the provider's API key env variable
+# get and set the provider's api key env variable
 export TOGETHER_API_KEY="..."
 
-# Run cha with a different provider/platform
+# run cha with a different provider/platform
 cha -p "https://api.together.xyz/v1|TOGETHER_API_KEY" -m "deepseek-ai/DeepSeek-V3"
 ```
 
@@ -602,7 +699,41 @@ If not enabled, Cha continues to use DuckDuckGo by default.
 
 ## Contributing
 
-Any contribution is welcomed! Please feel free to submit issues or pull requests for any bugs or features.
+Contributions are welcome and appreciated! Cha is an open-source project that benefits from community involvement.
+
+### How to Contribute
+
+1. **Report Issues**: Found a bug or have a feature request? [Open an issue](https://github.com/MehmetMHY/cha/issues)
+2. **Submit Pull Requests**: Fork the repository, make your changes, and submit a PR
+3. **Improve Documentation**: Help improve the README, add examples, or create tutorials
+4. **Share Feedback**: Let us know how you're using Cha and what could be better
+
+### Development Setup
+
+```bash
+# clone the repository
+git clone https://github.com/MehmetMHY/cha.git
+cd cha
+
+# install in development mode
+pip install -e .
+
+# run the checkup to verify your setup
+python3 assets/utils/checkup.py
+```
+
+### Code Standards
+
+- Follow existing code style and conventions
+- Run the code formatter [fm](https://github.com/MehmetMHY/fm) if making changes
+- Test your changes thoroughly before submitting
+- Update documentation as needed
+
+### Community
+
+- **Issues**: [GitHub Issues](https://github.com/MehmetMHY/cha/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/MehmetMHY/cha/discussions)
+- **Demo**: [Watch the complete demo](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
 ## License
 

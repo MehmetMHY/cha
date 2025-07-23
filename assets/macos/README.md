@@ -2,7 +2,7 @@
   <img width="250" src="./icon.png">
 </p>
 
-⚠️ **Warning:** This method of making Cha into a quote on quote "MacOS App" is quite janky and not ideal though it kind of works. If you have a better approach or method please contribute I would greatly appreciate it!
+⚠️ **Warning:** This method of making Cha into a quote unquote "MacOS App" is quite janky and not ideal though it kind of works. If you have a better approach or method please contribute I would greatly appreciate it!
 
 # Cha Launcher for MacOS
 

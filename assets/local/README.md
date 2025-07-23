@@ -120,7 +120,7 @@ Each tool must implement a single class that defines its behavior.
 | `self.timeout_sec`            | int  | 15      | Timeout in seconds before Cha cancels your tool |
 | `self.pipe_input`             | bool | False   | Whether to pass the user's raw input            |
 | `self.pipe_output`            | bool | True    | Whether the output is fed back into the chat    |
-| `self.show_loading_animation` | bool | True    | Weather or not to show loading animation        |
+| `self.show_loading_animation` | bool | True    | Whether or not to show loading animation        |
 
 ## Required Method: `execute(self, **kwargs)`
 
