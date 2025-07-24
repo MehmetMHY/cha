@@ -30,6 +30,7 @@ CURRENT_CHAT_HISTORY = [
 
 # track visited directories for exit display
 VISITED_DIRECTORIES = []
+HISTORY_MODIFIED = False
 
 
 def format_visited_directories(directories):
@@ -250,7 +251,7 @@ def title_print(selected_model):
 
 
 def chatbot(selected_model, print_title=True, filepath=None, content_string=None):
-    global CURRENT_CHAT_HISTORY
+    global CURRENT_CHAT_HISTORY, HISTORY_MODIFIED
 
     output_is_piped = not sys.stdout.isatty()
     reasoning_model = utils.is_slow_model(selected_model)
@@ -383,6 +384,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
                     num_removed = original_length - len(CURRENT_CHAT_HISTORY)
                     if num_removed > 0:
+                        HISTORY_MODIFIED = True
                         chat_word = "chat" if num_removed == 1 else "chats"
                         print(
                             colors.red(
@@ -597,6 +599,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
 
                     CURRENT_CHAT_HISTORY.clear()
                     CURRENT_CHAT_HISTORY.extend(chat_msgs)
+                    HISTORY_MODIFIED = False
 
                     messages.clear()
                     if not reasoning_model:
@@ -695,6 +698,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                                     "model": selected_model,
                                 }
                             )
+                            HISTORY_MODIFIED = True
                         message = tool_result
                         exist_early_due_to_tool_calling_config = not tool_call_output[
                             "continue"
@@ -937,6 +941,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                                 "model": selected_model,
                             }
                         )
+                        HISTORY_MODIFIED = True
                     continue
                 except (KeyboardInterrupt, EOFError):
                     print()
@@ -1008,6 +1013,7 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             "model": selected_model,
                         }
                     )
+                    HISTORY_MODIFIED = True
                 except (KeyboardInterrupt, EOFError, SystemExit):
                     pass
 
@@ -1101,13 +1107,14 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
             break
 
         CURRENT_CHAT_HISTORY.append(obj_chat_history)
+        HISTORY_MODIFIED = True
 
         if single_response:
             break
 
 
 def cli():
-    global CURRENT_CHAT_HISTORY
+    global CURRENT_CHAT_HISTORY, HISTORY_MODIFIED
 
     save_chat_state = True
     args = None
@@ -1289,6 +1296,7 @@ def cli():
 
                     CURRENT_CHAT_HISTORY.clear()
                     CURRENT_CHAT_HISTORY.extend(chat_history)
+                    HISTORY_MODIFIED = False
                     if not CURRENT_CHAT_HISTORY:
                         CURRENT_CHAT_HISTORY.append(
                             {
@@ -1724,6 +1732,7 @@ def cli():
             and save_chat_state == True
             and len(CURRENT_CHAT_HISTORY) > 1
             and os.path.exists(config.LOCAL_CHA_CONFIG_HISTORY_DIR)
+            and HISTORY_MODIFIED
         ):
             from datetime import datetime, timezone
             from importlib.metadata import version
