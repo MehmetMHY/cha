@@ -464,13 +464,17 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     new_selected_model = platforms.list_models()
                     if new_selected_model:
                         selected_model = new_selected_model
-                        print(colors.magenta(f"Switched to model: {selected_model}"))
+                        print(
+                            f"{colors.magenta(config.CHA_CURRENT_PLATFORM_NAME)} {colors.yellow(selected_model)}"
+                        )
                         reasoning_model = utils.is_slow_model(selected_model)
 
                 else:
                     # NOTE: unsafe but faster direct model switching
                     selected_model = parts[1].strip()
-                    print(colors.magenta(f"Switched to model: {selected_model}"))
+                    print(
+                        f"{colors.magenta(config.CHA_CURRENT_PLATFORM_NAME)} {colors.yellow(selected_model)}"
+                    )
                     reasoning_model = utils.is_slow_model(selected_model)
 
                 continue
@@ -495,9 +499,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             reasoning_model = utils.is_slow_model(selected_model)
 
                             print(
-                                colors.magenta(f"Switched to platform: {platform_name}")
+                                f"{colors.magenta(platform_name)} {colors.yellow(selected_model)}"
                             )
-                            print(colors.magenta(f"Using model: {selected_model}"))
                         else:
                             print(colors.red("No platform selected"))
                     except Exception as e:
@@ -533,9 +536,8 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                             reasoning_model = utils.is_slow_model(selected_model)
 
                             print(
-                                colors.magenta(f"Switched to platform: {platform_name}")
+                                f"{colors.magenta(platform_name)} {colors.yellow(selected_model)}"
                             )
-                            print(colors.magenta(f"Using model: {selected_model}"))
                         else:
                             print(colors.red("Failed to switch platform"))
                     except Exception as e:

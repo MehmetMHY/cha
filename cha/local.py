@@ -4,7 +4,6 @@ import importlib
 import signal
 import json
 import os
-import re
 
 from cha import config, colors
 

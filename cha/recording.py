@@ -1,5 +1,4 @@
 import tempfile
-import time
 import uuid
 import os
 
