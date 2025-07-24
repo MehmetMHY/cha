@@ -13,8 +13,6 @@ def lazy_tool(module_path, class_name):
 # system prompt
 INITIAL_PROMPT = """
 You are a helpful assistant powered by Cha who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details.
-
-Always return any code or file output in a Markdown code fence, with syntax ```<language or filetype>\n...``` so it can be parsed automatically. Only do this when needed, no need to do this for responses just code segments and/or when directly asked to do so from the user.
 """.strip()
 
 # editor system prompt
