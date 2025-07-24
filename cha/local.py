@@ -192,15 +192,8 @@ def browse_and_select_history_file(exact_mode=False):
         if not json_files:
             return None
 
-        rg_command = [
-            "rg",
-            "--line-number",
-            "--color=always",
-            "",
-            "--glob",
-            "*.json",
-            history_dir,
-        ]
+        # Sort files by modification time (newest first)
+        json_files.sort(key=os.path.getmtime, reverse=True)
 
         header_text = "{} | [Shift↑/↓] [ESC] [ENTER]".format(
             "EXACT (use 'query' for literal)" if exact_mode else "FUZZY"
@@ -208,10 +201,9 @@ def browse_and_select_history_file(exact_mode=False):
         fzf_command = [
             "fzf",
             "--ansi",
-            "--delimiter",
-            ":",
+            "--no-sort",
             "--preview",
-            "jq -r '.chat[] | \"User: \\(.user)\\n\\(.bot)\\n\"' {1} | bat --color=always --style=numbers --pager=never",
+            "jq -r '.chat[] | \"User: \\(.user)\\n\\(.bot)\\n\"' {} | bat --color=always --style=numbers --pager=never",
             "--preview-window=right,60%,wrap",
             "--header",
             header_text,
@@ -219,19 +211,15 @@ def browse_and_select_history_file(exact_mode=False):
         if exact_mode:
             fzf_command.append("--exact")
 
-        rg_process = subprocess.run(
-            rg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-        )
-        if rg_process.returncode != 0 and rg_process.returncode != 1:
-            return None
+        fzf_input = "\n".join(json_files)
+        fzf_result = utils.run_fzf_ssh_safe(fzf_command, fzf_input)
 
-        fzf_result = utils.run_fzf_ssh_safe(fzf_command, rg_process.stdout)
         if not fzf_result:
             return None
 
         selected_line = fzf_result.strip()
         if selected_line:
-            selected_path = selected_line.split(":", 1)[0]
+            selected_path = selected_line
 
     except (subprocess.CalledProcessError, KeyboardInterrupt):
         return None
