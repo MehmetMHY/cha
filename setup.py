@@ -31,7 +31,7 @@ setup(
         "sounddevice==0.5.2",
         "scipy==1.16.0",
     ],
-    python_requires=">=3.9.2",
+    python_requires=">=3.11",
     entry_points={
         "console_scripts": ["cha = cha.main:cli"],
     },

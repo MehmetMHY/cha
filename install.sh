@@ -124,8 +124,11 @@ create_venv() {
 	python3 -m venv "$VENV_DIR"
 	source "$VENV_DIR/bin/activate"
 
-	log "Upgrading pip"
-	python -m pip install --upgrade pip --quiet
+	log "Purging pip cache"
+	python -m pip cache purge
+
+	log "Upgrading pip, setuptools, and wheel"
+	python -m pip install --upgrade pip setuptools wheel --quiet
 
 	log "Installing cha"
 	pip install -e . --quiet
