@@ -37,14 +37,14 @@ Cha takes a fundamentally different approach from autonomous AI coding CLIs like
 
 ### Key Differences
 
-| Aspect                    | Cha                              | Agentic CLIs (Claude Code, etc.)       |
-| ------------------------- | -------------------------------- | -------------------------------------- |
-| **Control**               | Total user control at every step | Automated workflow decisions           |
-| **Background Processing** | No background AI workers         | Smart agents make autonomous decisions |
-| **Context Management**    | Explicit user-controlled context | AI-managed context and file handling   |
-| **Cost**                  | $1-20/month for daily active use | $10-200+/month for similar usage       |
-| **Editing**               | No surprise edits, user-guided   | Autonomous code modifications          |
-| **Use Case**              | Deep involvement, cost control   | Rapid prototyping, delegation          |
+| Aspect                    | Cha                              | Agentic CLIs (Claude Code, etc.)         |
+| ------------------------- | -------------------------------- | ---------------------------------------- |
+| **Control**               | Total user control at every step | Automated workflow decisions             |
+| **Background Processing** | No background AI workers         | Smart agents make autonomous decisions   |
+| **Context Management**    | Explicit user-controlled context | AI-managed context and file handling     |
+| **Cost**                  | $1-20/month for daily active use | $10 to $200+ per month for similar usage |
+| **Editing**               | No surprise edits, user-guided   | Autonomous code modifications            |
+| **Use Case**              | Deep involvement, cost control   | Rapid prototyping, delegation            |
 
 ### When to Choose Cha
 
@@ -284,6 +284,7 @@ The codedump feature allows you to package your codebase or specific files/direc
 - `cha --codedump=all` or `cha -d all` - Include everything automatically (respects .gitignore)
 - `cha --codedump=stdout` or `cha -d stdout` - Print output to stdout instead of saving to file
 - `cha --codedump=all,stdout` or `cha -d all,stdout` - Include everything and print to stdout
+- `cha --codedump=compress` or `cha -d compress` - Interactive mode with content compression
 
 ##### Specific Includes
 
@@ -326,6 +327,12 @@ cha -d "include:src/,stdout"
 
 # include patterns and save to file (default)
 cha -d "include:src/**/*.py,*.md"
+
+# include specific files with compression
+cha -d "include:src/main.py,config.py,compress"
+
+# include all with compression and stdout output
+cha -d "all,compress,stdout"
 ```
 
 **Complex Real-World Examples:**
@@ -589,7 +596,7 @@ options:
   -p [PLATFORM], --platform [PLATFORM]
                         Switch platform (interactive: !p)
   -d [CODE_DUMP], --codedump [CODE_DUMP]
-                        Codedump a directory (interactive: !d). Options: all, stdout, include:path1,path2 or combine: include:src/,stdout
+                        Codedump a directory (interactive: !d). Options: all, stdout, compress, include:path1,path2 or combine: include:src/,stdout
   -e, --export          Export code blocks from the last response (interactive: !e)
   -x SHELL_COMMAND, --shell SHELL_COMMAND
                         Execute a shell command (interactive: !x)

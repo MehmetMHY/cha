@@ -905,11 +905,26 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     if "/" not in str(dir_path):
                         dir_path = None
                     try:
-                        report = codedump.code_dump(dir_full_path=dir_path)
+                        report, token_count = codedump.code_dump(
+                            dir_full_path=dir_path, quiet=True
+                        )
                     except SystemExit:
-                        report = None
+                        report, token_count = None, 0
                         pass
                     if report != None:
+                        print(colors.magenta(f"{token_count} Total Tokens"))
+                        compress_input = utils.safe_input(
+                            colors.yellow("Compress (y/N)? ")
+                        )
+                        if compress_input.lower() == "y":
+                            report = utils.simple_context_compression(
+                                report, remove_comments=True
+                            )
+                            compressed_tokens = utils.count_tokens(
+                                report, selected_model
+                            )
+                            print(colors.magenta(f"{compressed_tokens} Total Tokens"))
+
                         messages.append({"role": "user", "content": report})
                         CURRENT_CHAT_HISTORY.append(
                             {
@@ -1146,7 +1161,7 @@ def cli():
             dest="code_dump",
             nargs="?",
             const=True,
-            help="Codedump a directory (interactive: !d). Options: all, stdout, include:path1,path2 or combine: include:src/,stdout",
+            help="Codedump a directory (interactive: !d). Options: all, stdout, compress, include:path1,path2 or combine: include:src/,stdout",
         )
         parser.add_argument(
             "-e",
@@ -1367,85 +1382,74 @@ def cli():
         if args.code_dump:
             from cha import codedump
 
-            if args.code_dump == True:
+            if args.code_dump is True:
                 codedump.code_dump(save_file_to_current_dir=True)
             else:
                 arg_str = str(args.code_dump)
                 auto_include_all = False
                 output_to_stdout = False
+                compress_output = False
                 specific_includes = None
 
-                # parse include: syntax first
+                options = [opt.strip() for opt in arg_str.split(",") if opt.strip()]
+
                 if "include:" in arg_str:
-                    # find the include: part
-                    parts = arg_str.split("include:", 1)
-                    if len(parts) == 2:
-                        # split the include paths and other options
-                        include_and_rest = parts[1]
+                    # complex parsing for include:
+                    include_parts = arg_str.split("include:", 1)
+                    prefix_opts = [
+                        p.strip()
+                        for p in include_parts[0].split(",")
+                        if p.strip() and p != "include:"
+                    ]
+                    # the rest is include paths and possibly other options
+                    include_str = include_parts[1]
 
-                        # check if there are other options after include paths
-                        # we'll look for standalone options like ",stdout" or ",all"
-                        remaining_options = []
-                        include_paths_str = include_and_rest
+                    # find where include paths end and other options begin
+                    # this is tricky, so we assume options are single words at the end
+                    possible_opts = ["all", "stdout", "compress"]
+                    found_opts = []
+                    path_part = include_str
+                    for opt in possible_opts:
+                        if path_part.endswith(f",{opt}"):
+                            found_opts.append(opt)
+                            path_part = path_part[: -(len(opt) + 1)]
 
-                        # extract standalone options from the end
-                        if include_and_rest.endswith(",stdout"):
-                            output_to_stdout = True
-                            include_paths_str = include_and_rest[
-                                :-7
-                            ]  # remove ",stdout"
-                        elif include_and_rest.endswith(",all"):
-                            auto_include_all = True
-                            include_paths_str = include_and_rest[:-4]  # remove ",all"
-                        elif include_and_rest.endswith(
-                            ",stdout,all"
-                        ) or include_and_rest.endswith(",all,stdout"):
-                            output_to_stdout = True
-                            auto_include_all = True
-                            if include_and_rest.endswith(",stdout,all"):
-                                include_paths_str = include_and_rest[:-11]
-                            else:
-                                include_paths_str = include_and_rest[:-11]
+                    specific_includes = [
+                        p.strip() for p in path_part.split(",") if p.strip()
+                    ]
+                    options = prefix_opts + found_opts
+                else:
+                    # simple parsing
+                    options = [opt.strip() for opt in arg_str.split(",") if opt.strip()]
 
-                        if include_paths_str:
-                            specific_includes = [
-                                p.strip()
-                                for p in include_paths_str.split(",")
-                                if p.strip()
-                            ]
+                auto_include_all = "all" in options
+                output_to_stdout = "stdout" in options
+                compress_output = "compress" in options
 
-                        # also check the part before "include:"
-                        prefix_options = (
-                            parts[0].rstrip(",").split(",")
-                            if parts[0].rstrip(",")
-                            else []
+                # call codedump to get the content
+                content, token_count = codedump.code_dump(
+                    output_to_stdout=True,  # always get content back
+                    auto_include_all=auto_include_all,
+                    specific_includes=specific_includes,
+                )
+
+                if content:
+                    if compress_output:
+                        content = utils.simple_context_compression(
+                            content, remove_comments=True
                         )
-                        for opt in prefix_options:
-                            opt = opt.strip()
-                            if opt == "all":
-                                auto_include_all = True
-                            elif opt == "stdout":
-                                output_to_stdout = True
-                else:
-                    # original parsing for backward compatibility
-                    options = arg_str.split(",")
-                    auto_include_all = "all" in options
-                    output_to_stdout = "stdout" in options
+                        compressed_tokens = utils.count_tokens(content, args.model)
+                        if sys.stdout.isatty():
+                            print(colors.magenta(f"{compressed_tokens} Total Tokens"))
 
-                if output_to_stdout:
-                    result = codedump.code_dump(
-                        output_to_stdout=True,
-                        auto_include_all=auto_include_all,
-                        specific_includes=specific_includes,
-                    )
-                    if result:
-                        print(result)
-                else:
-                    codedump.code_dump(
-                        save_file_to_current_dir=True,
-                        auto_include_all=auto_include_all,
-                        specific_includes=specific_includes,
-                    )
+                    if output_to_stdout:
+                        print(content)
+                    else:
+                        # save to file if not printing to stdout
+                        file_name = f"code_dump_{int(time.time())}.txt"
+                        with open(file_name, "w", encoding="utf-8") as file:
+                            file.write(content)
+                        print(colors.green(f"Exported to {file_name}"))
             return
 
         if args.ocr != None:

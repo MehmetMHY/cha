@@ -368,7 +368,7 @@ def extract_code(
         rel_paths = get_all_files_with_ignore(root_path)
     if not rel_paths:
         print(colors.red("No files found!"))
-        return None
+        return None, 0
     files_dict = {}
     for rel in rel_paths:
         abs_path = os.path.join(root_path, rel)
@@ -378,7 +378,7 @@ def extract_code(
                 files_dict[abs_path] = content
     if not files_dict:
         print(colors.red("No text files found!"))
-        return None
+        return None, 0
 
     if specific_includes:
         # use specific includes mode
@@ -389,28 +389,25 @@ def extract_code(
 
         if not selected_files:
             print(colors.red("No files matched the specified include patterns!"))
-            return None
+            return None, 0
     elif auto_include_all:
         selected_files = set(files_dict.keys())
     else:
         selected_files = interactive_selection(root_path, files_dict, include_mode)
         if selected_files is None:
-            return None
+            return None, 0
 
     output_text = generate_text_output(
         root_path, files_dict, selected_files, include_mode
     )
     if output_text is None:
-        return None
+        return None, 0
 
     token_count = utils.count_tokens(
         output_text, config.DEFAULT_SEARCH_BIG_MODEL, False
     )
 
-    print(colors.yellow(f"{dir_path}"))
-    print(colors.magenta(f"{token_count} Total Tokens"))
-
-    return output_text
+    return output_text, token_count
 
 
 def code_dump(
@@ -419,13 +416,14 @@ def code_dump(
     auto_include_all=False,
     output_to_stdout=False,
     specific_includes=None,
+    quiet=False,
 ):
     try:
         dir_path = os.getcwd()
         if dir_full_path != None:
             if not os.path.isdir(dir_full_path):
                 print(colors.red(f"Directory {dir_full_path} does not exist!"))
-                return None
+                return None, 0
             dir_path = dir_full_path
 
         if specific_includes:
@@ -449,31 +447,38 @@ def code_dump(
                 sys.exit(0)
             include_mode = selected_mode == "Include"
 
-        content = extract_code(
+        content, token_count = extract_code(
             dir_path, include_mode, auto_include_all, specific_includes
         )
 
-        if content == None:
-            return None
+        if content is None:
+            return None, 0
+
+        if not quiet:
+            print(colors.yellow(f"{dir_path}"))
+            print(colors.magenta(f"{token_count} Total Tokens"))
 
         if output_to_stdout:
-            return content
+            return content, token_count
 
         if save_file_to_current_dir:
             file_name = f"code_dump_{int(time.time())}.txt"
             with open(file_name, "w") as file:
                 file.write(content)
             print(colors.green(f"Exported to {file_name}"))
-            return
+            return None, token_count
 
-        return utils.rls(
-            text=f"""
+        return (
+            utils.rls(
+                text=f"""
             =====[CODE-DUMP STARTS]=====
             {content}
             ======[CODE-DUMP ENDS]======
             """,
-            fast_mode=True,
+                fast_mode=True,
+            ),
+            token_count,
         )
     except Exception as e:
         print(colors.red(f"{e}"))
-        return None
+        return None, 0

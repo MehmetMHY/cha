@@ -864,3 +864,78 @@ def rls(text: str, fast_mode: bool = False) -> str:
             output += "\n"
 
     return output.strip()
+
+
+def simple_context_compression(text, remove_comments=False):
+    # if requested, remove comments first
+    if remove_comments:
+        # remove single-line comments that start at the beginning of a line.
+        # this is safer than removing multi-line comments, which can contain important info.
+        lines = text.splitlines()
+        cleaned_lines = []
+        for line in lines:
+            # we check the lowercased version to catch all cases
+            if not re.match(r"^\s*(#|//|--|;)", line.lower()):
+                cleaned_lines.append(line)
+        text = "\n".join(cleaned_lines)
+
+    # remove non-printable characters, but keep tabs and newlines
+    text = "".join(c for c in text if c.isprintable() or c in "\n\t")
+
+    # remove all emojis
+    emoji_pattern = re.compile(
+        "["
+        "\U0001f600-\U0001f64f"  # emoticons
+        "\U0001f300-\U0001f5ff"  # symbols & pictographs
+        "\U0001f680-\U0001f6ff"  # transport & map symbols
+        "\U0001f1e0-\U0001f1ff"  # flags (iOS)
+        "\U00002702-\U000027b0"
+        "\U000024c2-\U0001f251"
+        "]+",
+        flags=re.UNICODE,
+    )
+    text = emoji_pattern.sub(r"", text)
+
+    # collapse multiple newlines into a single newline globally
+    text = re.sub(r"[\r\n]+", "\n", text)
+
+    lines = text.splitlines()
+    processed_lines = []
+    seen = set()
+
+    for line in lines:
+        # check for url before lowercasing to preserve case-sensitive urls
+        if "http://" in line or "https://" in line:
+            line_to_process = line
+        else:
+            line_to_process = line.lower()
+
+        # separate indentation from the line's content
+        lstripped_line = line_to_process.lstrip()
+        indentation = line_to_process[: len(line_to_process) - len(lstripped_line)]
+        content = lstripped_line.rstrip()
+
+        # skip empty lines
+        if not content:
+            continue
+
+        # for indentation, replace multiple tabs with a single tab to preserve structure
+        indentation = re.sub(r"\t+", "\t", indentation)
+
+        # for content, replace multiple whitespace characters with a single space
+        content = re.sub(r"\s+", " ", content)
+
+        final_line = indentation + content
+
+        # remove duplicate lines that are identical after processing
+        if final_line not in seen:
+            processed_lines.append(final_line)
+            seen.add(final_line)
+
+    text = "\n".join(processed_lines)
+
+    # compress runs of 4 or more identical characters down to 3 (e.g., "----" -> "---")
+    # this avoids changing things like the "===" operator in javascript.
+    text = re.sub(r"(.)\1{3,}", r"\1\1\1", text)
+
+    return text
