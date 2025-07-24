@@ -1236,6 +1236,13 @@ def cli():
             help="Initialize cha config directory",
         )
         parser.add_argument(
+            "-c",
+            "--continue",
+            action="store_true",
+            dest="continue_chat",
+            help="Continue from the last chat session.",
+        )
+        parser.add_argument(
             "-P",
             "--private",
             action="store_true",
@@ -1262,6 +1269,54 @@ def cli():
         )
 
         args = parser.parse_args()
+
+        if args.continue_chat:
+            history_dir = config.LOCAL_CHA_CONFIG_HISTORY_DIR
+            if not os.path.isdir(history_dir):
+                print(colors.yellow("History directory not found. Cannot continue."))
+                return
+
+            try:
+                json_files = [
+                    f
+                    for f in os.listdir(history_dir)
+                    if f.startswith("cha_hs_") and f.endswith(".json")
+                ]
+                if not json_files:
+                    print(colors.red("No chat history found"))
+                    return
+
+                latest_file = max(
+                    json_files,
+                    key=lambda f: int(re.search(r"cha_hs_(\d+)\.json", f).group(1)),
+                )
+                history_file_path = os.path.join(history_dir, latest_file)
+
+                with open(history_file_path, "r", encoding="utf-8") as f:
+                    history_data = json.load(f)
+
+                chat_history = None
+                if isinstance(history_data, dict) and "chat" in history_data:
+                    chat_history = history_data["chat"]
+                elif isinstance(history_data, list):
+                    chat_history = history_data
+
+                if chat_history is None or not isinstance(chat_history, list):
+                    raise Exception(
+                        f"Invalid history format in {os.path.basename(history_file_path)}"
+                    )
+
+                CURRENT_CHAT_HISTORY.clear()
+                CURRENT_CHAT_HISTORY.extend(chat_history)
+                HISTORY_MODIFIED = False
+
+                from cha import local
+
+                local.print_history_browse_and_select_history_file(CURRENT_CHAT_HISTORY)
+
+            except Exception as e:
+                print(colors.red(f"Error loading latest chat history: {e}"))
+                return
 
         if args.load_history_file:
             history_file_path = args.load_history_file

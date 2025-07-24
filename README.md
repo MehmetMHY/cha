@@ -477,6 +477,7 @@ The interactive editor allows you to edit files with AI assistance. You can star
 
 #### History Search and Management
 
+- `cha --continue` or `cha -c` - Resume the most recent conversation.
 - `cha -hs [exact]` - Search and load previous chats. Fuzzy search is the default.
 - `cha --load-history <file_path>` or `cha -lh <file_path>` - Load a specific chat history file.
 - `cha` then type `!hs [exact]` during interactive mode to load a previous chat. Fuzzy search is the default.
@@ -609,6 +610,7 @@ options:
   -ct, --tokens         Count tokens for the input
   -ocr OCR, --ocr OCR   Extract text from a file using OCR
   -i, --init            Initialize cha config directory
+  -c, --continue        Continue from the last chat session.
   -P, --private         Enable private mode (no history saved)
   -V, --version         Show version information
   -lh LOAD_HISTORY_FILE, --load-history LOAD_HISTORY_FILE
