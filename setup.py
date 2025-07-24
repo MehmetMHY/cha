@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.22.8",
+    version="0.22.9",
     packages=find_packages(),
     license="MIT",
-    description="A simple cli tool that simplifies interactions with AI models, offering features like chat, web scraping, and answer search. It supports multiple platforms and file types, enhancing productivity for all.",
+    description="A lightweight CLI tool for terminal-based AI interactions across multiple platforms (OpenAI, Anthropic, Google, etc) with full user control",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
@@ -16,7 +16,7 @@ setup(
         "youtube-comment-downloader==0.1.76",
         "PyMuPDF==1.26.3",
         "tiktoken==0.9.0",
-        "ddgs==9.4.2",
+        "ddgs==9.4.3",
         "python-docx==1.2.0",
         "openpyxl==3.1.5",
         "chardet==5.2.0",

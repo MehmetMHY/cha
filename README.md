@@ -20,6 +20,7 @@
 - [Development](#development)
 - [Platform Compatibility](#other-platforms-compatibility)
 - [Local Config](#local-config-optional)
+- [Additional Documentation](#additional-documentation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -29,7 +30,7 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 
 ## Vision
 
-Cha is a lightweight, focused CLI tool that provides direct terminal access to powerful AI models. Like Vim's philosophy of simplicity and versatility, Cha delivers essential functionality without overwhelming complexity. It integrates seamlessly into developer workflows, minimizing context switching and making AI interactions efficient and straightforward.
+Cha is a lightweight, focused CLI tool that provides direct terminal access to powerful AI models. Like Vim's philosophy of simplicity and versatility, Cha delivers essential functionality without overwhelming complexity while giving users full control over their AI interactions through transparency and explicit context management. It integrates seamlessly into developer workflows, minimizing context switching and empowering individuals to guide AI on their own terms with a flexible, user-driven experience without automated decisions or hidden costs.
 
 ## Cha vs CLIs like Claude Code (July 2025)
 
@@ -37,14 +38,14 @@ Cha takes a fundamentally different approach from autonomous AI coding CLIs like
 
 ### Key Differences
 
-| Aspect                    | Cha                              | Agentic CLIs (Claude Code, etc.)         |
-| ------------------------- | -------------------------------- | ---------------------------------------- |
-| **Control**               | Total user control at every step | Automated workflow decisions             |
-| **Background Processing** | No background AI workers         | Smart agents make autonomous decisions   |
-| **Context Management**    | Explicit user-controlled context | AI-managed context and file handling     |
-| **Cost**                  | $1-20/month for daily active use | $10 to $200+ per month for similar usage |
-| **Editing**               | No surprise edits, user-guided   | Autonomous code modifications            |
-| **Use Case**              | Deep involvement, cost control   | Rapid prototyping, delegation            |
+| Aspect                    | Cha                                      | Agentic CLIs (Claude Code, Gemini etc.)  |
+| ------------------------- | ---------------------------------------- | ---------------------------------------- |
+| **Control**               | Total user control at every step         | Automated workflow decisions             |
+| **Background Processing** | No background AI workers                 | Smart agents make autonomous decisions   |
+| **Context Management**    | Explicit user-controlled context         | AI managed context and file handling     |
+| **Cost**                  | $1 to $20 per month for daily active use | $10 to $200+ per month for similar usage |
+| **Editing**               | No surprise edits, user guided           | Autonomous code modifications            |
+| **Use Case**              | Deep involvement, cost control           | Rapid prototyping, delegation            |
 
 ### When to Choose Cha
 
@@ -59,7 +60,9 @@ Cha takes a fundamentally different approach from autonomous AI coding CLIs like
 - **Preference for AI automation** and delegation
 - **Speed over cost** considerations
 
-**Pro Tip**: Many developers use both tools side by side—Cha for cost-effective daily tasks and precise control, and agentic tools when speed and automation are priorities.
+### Recommendations
+
+There is no silver bullet when it comes to a tool. No tool is perfect and can account for every case scenario in their area/field. That same applies to Cha. Cha's great for cost-effective daily tasks and precise control while tools like Claude Code and Gemini CLI are great when the goal is to do more complex coding tasks across multiple files and environments, with the focus on fast development and automation. Use Cha when you want to reduce cost of using AI tools, choose agentic tools when you need rapid iteration and don't mind delegating control, and consider starting with Cha to learn AI interaction patterns before exploring agentic tools as your needs evolve.
 
 ## Features
 
@@ -81,7 +84,7 @@ Cha takes a fundamentally different approach from autonomous AI coding CLIs like
 - **Integrated Shell Access**: Execute shell commands directly within Cha's environment using `!x` (interactive shell) or `!x <command>` (run specific commands), enhancing workflow efficiency by providing immediate terminal access.
 - **Auto URL Detection & Scraping**: Enable or disable automatic URL detection and content scraping with a toggle.
 - **`fzf` for Selection**: Use `fzf` for interactive selection when searching chat history, traversing local files, or using the codedump feature.
-- **Streamlined File Navigation**: Two modes for file selection - simple mode (`!l`) for quick selection in current directory, and advanced mode (`!f`) with full directory traversal, direct path support (`cd dirname`, `cd ..`), clean interface, and efficient file selection using `fzf`.
+- **Streamlined File Navigation**: Two modes for file selection: simple mode (`!l`) for quick selection in current directory, and advanced mode (`!f`) with full directory traversal, direct path support (`cd dirname`, `cd ..`), clean interface, and efficient file selection using `fzf`.
 - **Dynamic Directory Navigation**: Navigate and change Cha's current directory mid-chat using `!n`. Supports direct path navigation (`!n /path/to/directory`) or interactive fzf-based navigation starting from your home directory. Track directory history and select final destination from visited directories.
 - **Chat History Management**: Save, load, and search through your past conversations.
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
@@ -212,10 +215,10 @@ Cha requires an OpenAI API key at minimum. You can obtain one from the [OpenAI P
 Create a `.env` file in your project directory or set environment variables directly:
 
 ```bash
-# required - openai api key
+# required openai api key
 export OPENAI_API_KEY="sk-your-openai-api-key-here"
 
-# optional - additional platform keys
+# optional additional platform keys
 export ANTHROPIC_API_KEY="your-anthropic-key"
 export GROQ_API_KEY="your-groq-key"
 export DEEPSEEK_API_KEY="your-deepseek-key"
@@ -687,6 +690,20 @@ cha --private (-P)
 ```
 
 Using this option will ensure your chat session is NOT saved locally. Think of it like Google Chrome's Incognito Mode but for Cha!
+
+## Additional Documentation
+
+For specific features and advanced configurations, refer to these additional documentation files:
+
+- **[Local Configuration & External Tools](./assets/local/README.md)**: Complete guide for setting up local configurations, creating custom external tools, and extending Cha's functionality with user-defined tools.
+
+- **[macOS App Setup](./assets/macos/README.md)**: Instructions for creating a macOS `.app` launcher that opens Cha in a Kitty terminal with your environment preloaded.
+
+- **[SearXNG Integration](./assets/sxng/README.md)**: Setup guide for using SearXNG, a self-hostable meta-search engine, as an alternative to DuckDuckGo for web search features.
+
+- **[Development Utilities](./assets/utils/README.md)**: Collection of utility scripts for testing, monitoring usage statistics, checking setup, and development maintenance.
+
+- **[Weather Tool Example](./assets/local/tools/weather/README.md)**: Example external tool implementation that demonstrates how to create custom tools for Cha using the wttr.in weather API.
 
 ### SearXNG Search Engine Integration (Optional)
 
