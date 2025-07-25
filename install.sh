@@ -3,7 +3,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VENV_DIR="$SCRIPT_DIR/venv"
+CHA_HOME="$HOME/.cha"
+VENV_DIR="$CHA_HOME/venv"
 
 if [[ -z "$SCRIPT_DIR" ]]; then
 	echo -e "\033[91mERROR: Could not determine script directory\033[0m" >&2
@@ -105,10 +106,10 @@ install_dependencies() {
 }
 
 create_venv() {
-	log "Creating Python virtual environment"
+	log "Creating Python virtual environment in $VENV_DIR"
+	mkdir -p "$CHA_HOME"
 
 	if [[ -d "$VENV_DIR" ]]; then
-		echo
 		echo -e "\033[93mExisting venv/ found: $VENV_DIR\033[0m"
 		echo -n -e "\033[91mRemove it and continue? (y/N): \033[0m"
 		read -r response
@@ -118,50 +119,88 @@ create_venv() {
 		else
 			log "Keeping existing virtual environment"
 		fi
-		echo
 	fi
 
 	python3 -m venv "$VENV_DIR"
-	source "$VENV_DIR/bin/activate"
 
 	log "Purging pip cache"
-	python -m pip cache purge
+	"$VENV_DIR/bin/python" -m pip cache purge
 
 	log "Upgrading pip, setuptools, and wheel"
-	python -m pip install --upgrade pip setuptools wheel --quiet
+	"$VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel --quiet
 
 	log "Installing cha"
-	pip install -e . --quiet
+	"$VENV_DIR/bin/pip" install -e . --quiet
 }
 
 run_checkup() {
 	log "Running dependency check"
-	echo
 	cd "$SCRIPT_DIR"
-	python3 assets/utils/checkup.py
+	"$VENV_DIR/bin/python" assets/utils/checkup.py
+}
+
+create_symlink() {
+	log "Creating symlink for 'cha' in /usr/local/bin"
+	local target_dir="/usr/local/bin"
+	local symlink_path="$target_dir/cha"
+	local source_path="$VENV_DIR/bin/cha"
+
+	if [[ ! -d "$target_dir" ]]; then
+		log "Directory $target_dir does not exist. Creating it with sudo."
+		sudo mkdir -p "$target_dir"
+		if [[ $? -ne 0 ]]; then
+			error "Failed to create $target_dir. Please create it manually and re-run the script."
+		fi
+	fi
+
+	if [[ -w "$target_dir" ]]; then
+		ln -sf "$source_path" "$symlink_path"
+		log "Symlink created: $symlink_path -> $source_path"
+	else
+		log "Attempting to create symlink with sudo..."
+		sudo ln -sf "$source_path" "$symlink_path"
+		if [[ $? -ne 0 ]]; then
+			error "Failed to create symlink. Please try creating it manually: sudo ln -sf \"$source_path\" \"$symlink_path\""
+		fi
+		log "Symlink created with sudo: $symlink_path -> $source_path"
+	fi
 }
 
 print_success() {
 	echo
 	echo -e "\033[92m🎉 Cha installation complete!\033[0m"
 	echo
-	echo -e "\033[93mNext steps:\033[0m"
-	echo -e "  \033[96m1.\033[0m Add to PATH: \033[90mexport PATH=\"$VENV_DIR/bin:\$PATH\"\033[0m"
-	echo -e "  \033[96m2.\033[0m Add to shell profile for permanent use (~/.bashrc, ~/.zshrc)"
-	echo -e "  \033[96m3.\033[0m Or run directly: \033[90m$VENV_DIR/bin/cha\033[0m"
+	echo -e "Cha and its virtual environment are installed in: \033[90m$CHA_HOME\033[0m"
+	echo -e "A symlink has been created at /usr/local/bin/cha, so you can run 'cha' from anywhere."
 	echo
-	echo -e "\033[93mFor current session:\033[0m"
-	echo -e "  \033[90mexport PATH=\"$VENV_DIR/bin:\$PATH\"\033[0m"
+	echo -e "\033[93mImportant:\033[0m"
+	echo -e "Make sure '/usr/local/bin' is in your \$PATH."
+	echo -e "You can check by running: \033[90mecho \$PATH\033[0m"
+	echo
+	echo -e "To get started, simply type:"
+	echo -e "  \033[96mcha\033[0m"
+	echo
+	echo -e "You can now safely remove the cloned repository directory if you wish."
+}
+
+check_git_and_pull() {
+	if ! command -v git >/dev/null 2>&1; then
+		error "Git is required to run the installation script. Please install it first."
+	fi
+	log "Pulling latest changes from git..."
+	git pull
 }
 
 main() {
 	log "Starting Cha installation"
 	log "Script directory: $SCRIPT_DIR"
 
+	check_git_and_pull
 	check_python
 	install_dependencies
 	create_venv
 	run_checkup
+	create_symlink
 	print_success
 }
 

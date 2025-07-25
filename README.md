@@ -133,11 +133,9 @@ sudo pacman -S fzf ripgrep bat ffmpeg openbsd-netcat
 
 ### Installation
 
-You can install Cha using one of the following methods
+#### Recommended Method: `install.sh`
 
-#### Using install.sh (Recommended)
-
-Clone the repository and run the installation script:
+The most reliable way to get up and running is with the `install.sh` script. It provides a clean, self-contained installation that won't interfere with other Python projects or system packages.
 
 ```bash
 git clone https://github.com/MehmetMHY/cha.git
@@ -145,7 +143,19 @@ cd cha
 ./install.sh
 ```
 
-This creates a local virtual environment, checks if all dependencies are setup correctly, and provides instructions for adding Cha to your PATH.
+The script automates the entire setup process:
+
+1.  **Dependency Check**: Verifies and helps install required command-line tools: `ffmpeg`, `fzf`, `bat`, `ripgrep`, and `netcat`.
+2.  **Self-Contained Environment**: Creates a dedicated directory at `$HOME/.cha` to house the Python virtual environment and all dependencies, ensuring a clean, isolated setup.
+3.  **Cha Installation**: Installs the `cha` package within its private virtual environment.
+4.  **System-Wide Access**: Creates a symbolic link at `/usr/local/bin/cha`, making the `cha` command accessible from anywhere in your terminal.
+5.  **Verification**: Runs a final checkup to confirm that everything is configured correctly.
+
+After the script completes, you can start using `cha` immediately. The original cloned repository can be safely removed to save space, as the installation is entirely self-contained. However, keeping the repository makes updates simple.
+
+### Alternative Installation Methods
+
+If you prefer a different approach, the following options are available. Note that with these methods, you are responsible for managing dependencies and the Python environment.
 
 #### Pip
 
@@ -173,36 +183,45 @@ uv pip install "git+https://github.com/MehmetMHY/cha.git"
 
 #### Manually
 
-1. **Clone the Repository**:
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/MehmetMHY/cha.git
+    cd cha
+    ```
+2.  **Install the Package**:
+    ```bash
+    pip3 install --upgrade .
+    ```
+3.  **Install other dependencies**:
+    Make sure you have `ffmpeg`, `fzf`, `ripgrep`, and `bat` installed. You can find installation instructions in the [Dependencies](#dependencies) section.
 
-   ```bash
-   git clone https://github.com/MehmetMHY/cha.git
-   cd cha
-   ```
+### Updating and Uninstalling
 
-2. **Install the Package**:
+#### Recommended Method (`install.sh`)
 
-   ```bash
-   pip3 install --upgrade .
-   ```
+- **To Update**: If you kept the original cloned repository, updating is easy. Navigate to the directory, pull the latest changes, and re-run the installation script.
+  ```bash
+  cd /path/to/your/cha-repository
+  git pull
+  ./install.sh
+  ```
+- **To Uninstall**: The process is straightforward. Just remove the installation directory and the symbolic link.
+  ```bash
+  rm -rf "$HOME/.cha"
+  # for some setups, you may need to run the next command with sudo
+  rm /usr/local/bin/cha
+  ```
 
-3. **Install other dependencies**:
+#### Alternative Methods
 
-   ```bash
-   # checkout docs for installing here: https://ffmpeg.org/
-   brew install ffmpeg
-
-   # checkout docs for installing here: https://github.com/junegunn/fzf
-   brew install fzf
-
-   # required for history search functionality (!r)
-   # checkout docs for installing here: https://github.com/BurntSushi/ripgrep
-   brew install ripgrep
-
-   # required for history search preview functionality (!r)
-   # checkout docs for installing here: https://github.com/sharkdp/bat
-   brew install bat
-   ```
+- **To Update**:
+  - **Pip**: `pip install --upgrade git+https://github.com/MehmetMHY/cha.git`
+  - **Pipx**: `pipx upgrade cha`
+  - **Uv**: `uv pip install --upgrade "git+https://github.com/MehmetMHY/cha.git"`
+- **To Uninstall**:
+  - **Pip**: `pip uninstall cha`
+  - **Pipx**: `pipx uninstall cha`
+  - **Uv**: `uv pip uninstall cha`
 
 ### Configuration
 
@@ -222,6 +241,9 @@ export OPENAI_API_KEY="sk-your-openai-api-key-here"
 export ANTHROPIC_API_KEY="your-anthropic-key"
 export GROQ_API_KEY="your-groq-key"
 export DEEPSEEK_API_KEY="your-deepseek-key"
+export TOGETHER_API_KEY="your-together-ai-key"
+export GEMINI_API_KEY="your-gemini-key"
+export XAI_API_KEY="your-xai-key"
 ```
 
 #### 3. Apply Configuration
@@ -240,17 +262,9 @@ echo 'export OPENAI_API_KEY="your-key-here"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
-#### 4. Verify Setup
+### Verify Setup
 
-Run the built-in checkup to verify your configuration:
-
-```bash
-python3 ./assets/utils/checkup.py
-```
-
-### Final Steps
-
-After installation and configuration, verify your setup with the built-in checkup script:
+The `install.sh` script runs a verification check automatically. For manual installations, you can run the checkup script from the cloned directory to ensure your environment and API keys are configured correctly:
 
 ```bash
 python3 ./assets/utils/checkup.py
@@ -258,7 +272,7 @@ python3 ./assets/utils/checkup.py
 
 > **Note**: Optional checkups can be ignored as they're not required for core functionality.
 
-Once verification is complete, start using Cha:
+Once your setup is configured and verified, you can start using Cha:
 
 ```bash
 cha
