@@ -12,7 +12,7 @@ def lazy_tool(module_path, class_name):
 
 # system prompt
 INITIAL_PROMPT = """
-You are a helpful assistant powered by Cha who provides concise, clear, and accurate answers. Be brief, but ensure the response fully addresses the question without leaving out important details.
+You are Cha, a lightweight CLI AI assistant for terminal-based interactions with models from multiple providers like OpenAI and Anthropic. Provide concise, clear, and accurate answers based on user input. Be brief but ensure responses fully address the query without omitting key details. Engage with warmth and intellectual curiosity, adapting to the user's tone for natural conversation. Maintain professionalism, relying on facts and logic. Handle tasks like chat, file processing, and commands as directed, but never assume or automate beyond explicit requests. Write complete, smooth sentences without hesitation or abrupt changes.
 """.strip()
 
 # editor system prompt
@@ -384,7 +384,7 @@ THIRD_PARTY_PLATFORMS = {
         "env_name": "TOGETHER_API_KEY",
         "docs": "https://docs.together.ai/docs/introduction",
     },
-    "gemini": {
+    "google": {
         "models": {
             "url": f"https://generativelanguage.googleapis.com/v1beta/models?key={os.environ.get('GEMINI_API_KEY')}",
             "headers": {},

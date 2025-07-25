@@ -287,10 +287,26 @@ def extract_code_blocks(text, file_start_str="", force_single_file=False):
 
 
 def is_slow_model(model_name):
-    if config.BY_PASS_SLOW_MODEL_DETECTION == True:
-        return False
-    else:
-        return re.match(r"^o\d+", model_name) is not None
+    try:
+        if config.BY_PASS_SLOW_MODEL_DETECTION:
+            return False
+    except:
+        pass
+
+    # NOTE: last updated on July 25, 2025
+    patterns = [
+        r"^o\d+",
+        r"^gemini-\d+\.\d+-pro.*",
+        r"^deepseek-reasoner$",
+        r"^grok-4.*",
+        r"^claude-opus-4.*",
+    ]
+
+    for pat in patterns:
+        if re.match(pat, model_name):
+            return True
+
+    return False
 
 
 def count_tokens(text, model_name, fast_mode=False, language=None, rounding=1.25):
