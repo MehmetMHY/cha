@@ -107,7 +107,7 @@ install_dependencies() {
 
 create_venv() {
 	log "Creating Python virtual environment in $VENV_DIR"
-	mkdir -p "$CHA_HOME"
+	mkdir -p "$CHA_HOME" || error "Failed to create directory $CHA_HOME"
 
 	if [[ -d "$VENV_DIR" ]]; then
 		echo -e "\033[93mExisting venv/ found: $VENV_DIR\033[0m"
@@ -121,22 +121,22 @@ create_venv() {
 		fi
 	fi
 
-	python3 -m venv "$VENV_DIR"
+	python3 -m venv "$VENV_DIR" || error "Failed to create virtual environment"
 
 	log "Purging pip cache"
-	"$VENV_DIR/bin/python" -m pip cache purge
+	"$VENV_DIR/bin/python" -m pip cache purge || error "Failed to purge pip cache"
 
 	log "Upgrading pip, setuptools, and wheel"
-	"$VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel --quiet
+	"$VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel --quiet || error "Failed to upgrade pip components"
 
 	log "Installing cha"
-	"$VENV_DIR/bin/pip" install -e . --quiet
+	"$VENV_DIR/bin/pip" install -e . --quiet || error "Failed to install cha package"
 }
 
 run_checkup() {
 	log "Running dependency check"
-	cd "$SCRIPT_DIR"
-	"$VENV_DIR/bin/python" assets/utils/checkup.py
+	cd "$SCRIPT_DIR" || error "Failed to change to script directory"
+	"$VENV_DIR/bin/python" assets/utils/checkup.py || error "Dependency check failed"
 }
 
 create_symlink() {
@@ -188,7 +188,7 @@ check_git_and_pull() {
 		error "Git is required to run the installation script. Please install it first."
 	fi
 	log "Pulling latest changes from git..."
-	git pull
+	git pull || error "Failed to pull latest changes from git"
 }
 
 main() {

@@ -1,7 +1,7 @@
 # Cha
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![GitHub stars](https://img.shields.io/github/stars/MehmetMHY/cha.svg)](https://github.com/MehmetMHY/cha/stargazers)
 
 [![Demo GIF](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)](https://www.youtube.com/watch?v=7zG8iFZjKtM)
@@ -62,17 +62,17 @@ Cha takes a fundamentally different approach from autonomous AI coding CLIs like
 
 ### Recommendations
 
-There is no silver bullet when it comes to a tool. No tool is perfect and can account for every case scenario in their area/field. That same applies to Cha. Cha's great for cost-effective daily tasks and precise control while tools like Claude Code and Gemini CLI are great when the goal is to do more complex coding tasks across multiple files and environments, with the focus on fast development and automation. Use Cha when you want to reduce cost of using AI tools, choose agentic tools when you need rapid iteration and don't mind delegating control, and consider starting with Cha to learn AI interaction patterns before exploring agentic tools as your needs evolve.
+There is no silver bullet when it comes to a tool. No tool is perfect and can account for every case scenario in their area/field. That same applies to Cha. Cha is great for cost-effective daily tasks and precise control while tools like Claude Code and Gemini CLI are great when the goal is to do more complex coding tasks across multiple files and environments, with the focus on fast development and automation. Use Cha when you want to reduce cost of using AI tools, choose agentic tools when you need rapid iteration and do not mind delegating control, and consider starting with Cha to learn AI interaction patterns before exploring agentic tools as your needs evolve.
 
 ## Features
 
-- **CLI Chat Interface**: Communicate with OpenAI's models via commands `cha`.
+- **CLI Chat Interface**: Communicate with AI models via the `cha` command.
 - **Interactive & Non-interactive Modes**: Interact with models via chat interface, command-line arguments, or file input.
 - **Multi-line Input Mode**: Simplifies complex input directly into the CLI. Type `\` to toggle multi-line mode, then `\` again to send.
 - **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done through an argument or in interactive mode.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
 - **Voice Recording**: Record voice prompts and have them automatically transcribed to text using OpenAI's Whisper API or local whisper (set `TEXT_TO_SPEECH_MODEL = "local"` in config). Use `!r` in interactive mode or `cha -r` from command line.
-- **Web Search**: Quick web search (`!s`) and deep answer search (`!w`) similar to Perplexity AI's solution.
+- **Web Search**: Quick web search (`!s`) and deep answer search (`!w`) similar to Perplexity's solution.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
 - **Platform Flexibility**: Switch between different AI platform providers offering OpenAI-compatible APIs using the `--platform` argument.
@@ -596,7 +596,7 @@ Cha also supports and accepts additional parameters. Here is the help page for r
 
 ```txt
 usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]] [-e] [-x SHELL_COMMAND] [-hs [{fuzzy,exact}]] [-r] [-v [EDITOR]] [-sm] [-ct]
-           [-ocr OCR] [-i] [-P] [-V] [-lh LOAD_HISTORY_FILE]
+           [-ocr OCR] [-i] [-c] [-P] [-V] [-lh LOAD_HISTORY_FILE]
            [string ...]
 
 A command-line tool for interacting with AI models from multiple providers.
