@@ -25,7 +25,6 @@ check_python() {
 		error "Python 3 is required but not installed"
 	fi
 
-	# check pip is available
 	if ! python3 -m pip --version >/dev/null 2>&1; then
 		error "pip is required but not available"
 	fi
@@ -66,6 +65,10 @@ install_dependencies() {
 		fi
 	done
 
+	if [[ "$os" == "linux" ]] && ! command -v espeak-ng >/dev/null 2>&1; then
+		missing_deps+=("espeak-ng")
+	fi
+
 	if [[ ${#missing_deps[@]} -eq 0 ]]; then
 		log "All dependencies already installed"
 		return
@@ -83,20 +86,25 @@ install_dependencies() {
 		;;
 	"linux")
 		if command -v apt-get >/dev/null 2>&1; then
-			sudo apt-get update -qq
+			apt-get update -qq
 			for dep in "${missing_deps[@]}"; do
 				log "Installing $dep"
-				sudo apt-get install -y "$dep"
+				apt-get install -y "$dep"
 			done
 		elif command -v pacman >/dev/null 2>&1; then
 			for dep in "${missing_deps[@]}"; do
 				log "Installing $dep"
-				sudo pacman -Sy --noconfirm "$dep"
+				pacman -Sy --noconfirm "$dep"
 			done
 		elif command -v dnf >/dev/null 2>&1; then
 			for dep in "${missing_deps[@]}"; do
 				log "Installing $dep"
-				sudo dnf install -y "$dep"
+				dnf install -y "$dep"
+			done
+		elif command -v yum >/dev/null 2>&1; then
+			for dep in "${missing_deps[@]}"; do
+				log "Installing $dep"
+				yum install -y "$dep"
 			done
 		else
 			error "Unsupported package manager. Please install manually: ${missing_deps[*]}"

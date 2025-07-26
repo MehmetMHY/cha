@@ -73,6 +73,7 @@ There is no silver bullet when it comes to a tool. No tool is perfect and can ac
 - **Text-Editor Input Mode**: Use your system's terminal-based text editor for inputting your prompt, allowing easier input of complex and long prompts. This can be done through an argument or in interactive mode.
 - **Web and YouTube Scraping**: Extract YouTube video transcripts, web PDFs, and general web content.
 - **Voice Recording**: Record voice prompts and have them automatically transcribed to text using OpenAI's Whisper API or local whisper (set `TEXT_TO_SPEECH_MODEL = "local"` in config). Use `!r` in interactive mode or `cha -r` from command line.
+- **Voice Output**: Read out the AI's response using a voice. Use `!o` in interactive mode or `cha --voice` from command line.
 - **Web Search**: Quick web search (`!s`) and deep answer search (`!w`) similar to Perplexity's solution.
 - **Estimate Tokens**: Option to estimate the token count for a file, string, or piped content.
 - **Support for Multiple File Types**: Supports a variety of file types for input, including PDF, DOCX, XLSX, and common image formats, enabling seamless integration and processing of different kinds of content.
@@ -407,6 +408,11 @@ The `include:` syntax provides precise control when you know exactly what you wa
   # records voice, transcribes to text, and sends to ai model
   ```
 
+#### Voice Output
+
+- `cha --voice "<prompt>"`
+- In interactive mode, type `!o` to read out the last response using a voice.
+
 #### Answer Search
 
 - `cha -a`
@@ -596,8 +602,8 @@ This command automatically generates intelligent commit messages by analyzing yo
 Cha also supports and accepts additional parameters. Here is the help page for reference:
 
 ```txt
-usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]] [-e] [-x SHELL_COMMAND] [-hs [{fuzzy,exact}]] [-r] [-v [EDITOR]] [-sm] [-ct]
-           [-ocr OCR] [-i] [-c] [-P] [-V] [-lh LOAD_HISTORY_FILE]
+usage: cha [-h] [-l FILE] [-a] [-t] [-m MODEL] [-p [PLATFORM]] [-d [CODE_DUMP]] [-e] [-x SHELL_COMMAND] [-hs [{fuzzy,exact}]] [-r] [--voice] [-v [EDITOR]]
+           [-sm] [-ct] [-ocr OCR] [-i] [-c] [-P] [-V] [-lh LOAD_HISTORY_FILE]
            [string ...]
 
 A command-line tool for interacting with AI models from multiple providers.
@@ -622,6 +628,7 @@ options:
   -hs [{fuzzy,exact}], --history [{fuzzy,exact}]
                         Search history. 'fuzzy' (default), 'exact' for exact. (interactive: !hs)
   -r, --record          Record voice prompt (interactive: !r)
+  --voice               Read out the response from the model using a voice.
   -v [EDITOR], --editor [EDITOR]
                         Run the interactive editor (interactive: !v)
   -sm, --select-model   Select a model from a list

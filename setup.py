@@ -30,6 +30,7 @@ setup(
         "PyYAML==6.0.2",
         "sounddevice==0.5.2",
         "scipy==1.16.0",
+        "lingua-language-detector==2.1.1",
     ],
     python_requires=">=3.11",
     entry_points={

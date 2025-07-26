@@ -114,6 +114,9 @@ def get_help_options():
     help_options.append(f"{config.RUN_QUICK_SEARCH_FEATURE} - Quick web search")
     help_options.append(f"{config.RUN_ANSWER_FEATURE} - Deep answer search")
     help_options.append(f"{config.RECORD_AUDIO_ALIAS} - Record voice prompt")
+    help_options.append(
+        f"{config.VOICE_OUTPUT_ALIAS} - Read out the last response using a voice"
+    )
     help_options.append(f"{config.TEXT_EDITOR_INPUT_MODE} - Text-editor input mode")
     help_options.append(
         f"{config.SWITCH_MODEL_TEXT} - Switch between models during a session"
@@ -568,6 +571,26 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 except Exception as e:
                     print(colors.red(f"Recording failed: {e}"))
                     continue
+
+            elif message.strip() == config.VOICE_OUTPUT_ALIAS:
+                from cha import voice
+
+                last_bot_response = None
+                for i in range(len(CURRENT_CHAT_HISTORY) - 1, -1, -1):
+                    if CURRENT_CHAT_HISTORY[i].get("bot"):
+                        last_bot_response = CURRENT_CHAT_HISTORY[i]["bot"]
+                        break
+                if last_bot_response:
+                    loading.start_loading("Speaking", "circles")
+                    try:
+                        voice.voice_tool(last_bot_response)
+                    except Exception as e:
+                        print(colors.red(f"Voice output failed: {e}"))
+                    finally:
+                        loading.stop_loading()
+                else:
+                    print(colors.yellow("No previous bot response to read."))
+                continue
 
             elif os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR) and (
                 message.strip().lower() == config.LOAD_HISTORY_TRIGGER
@@ -1202,6 +1225,12 @@ def cli():
             help="Record voice prompt (interactive: !r)",
         )
         parser.add_argument(
+            "--voice",
+            action="store_true",
+            dest="voice_output",
+            help="Read out the response from the model using a voice",
+        )
+        parser.add_argument(
             "-v",
             "--editor",
             dest="editor",
@@ -1748,6 +1777,22 @@ def cli():
             chatbot(selected_model, title_print_value, filepath=args.file)
         else:
             chatbot(selected_model=selected_model, print_title=title_print_value)
+
+        if (
+            args.voice_output
+            and CURRENT_CHAT_HISTORY
+            and CURRENT_CHAT_HISTORY[-1].get("bot")
+        ):
+            from cha import voice
+
+            loading.start_loading("Speaking", "circles")
+            try:
+                voice.voice_tool(CURRENT_CHAT_HISTORY[-1]["bot"])
+            except Exception as e:
+                if sys.stdout.isatty():
+                    print(colors.red(f"Voice output failed: {e}"))
+            finally:
+                loading.stop_loading()
 
         # handle export logic only if export flag is set and it wasn't an interactive session
         if args.export_parsed_text and input_mode != "interactive":
