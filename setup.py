@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.22.11",
+    version="0.22.12",
     packages=find_packages(),
     license="MIT",
     description="A lightweight CLI tool for terminal-based AI interactions across multiple platforms (Ollama, OpenAI, Anthropic, Google, etc) with full user control",

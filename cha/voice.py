@@ -122,12 +122,9 @@ def voice_tool(text):
         else:
             espeak_installed = run_command("espeak-ng --version")
             if not espeak_installed or len(espeak_installed.strip()) == 0:
-                print(colors.red("espeak-ng is required but not installed."))
-                print(colors.yellow("Installation options:"))
-                print(colors.cyan("- macOS (alternative): brew install espeak"))
                 print(
-                    colors.cyan(
-                        "- Linux: See installation guide at https://github.com/espeak-ng/espeak-ng/blob/master/docs/guide.md#installation"
+                    colors.red(
+                        "The espeak-ng text-to-speech engine package is not installed. See installation guide at: https://github.com/espeak-ng/espeak-ng/"
                     )
                 )
                 return
@@ -135,12 +132,3 @@ def voice_tool(text):
                 process_espeak_voice(detector, text)
     except Exception:
         print(colors.red("Speech processing failed"))
-
-
-if __name__ == "__main__":
-    text = input("Prompt: ")
-    start_time = time.time()
-    voice_tool(text)
-    runtime = round(time.time() - start_time, 2)
-    wpm = round(len(text.strip().split(" ")) / (runtime / 60), 2)
-    print(f"Runtime: {runtime} seconds ({wpm} WPM)")

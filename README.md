@@ -703,6 +703,23 @@ By default, this is turned off, so there's no need to create any local files for
 cha -i
 ```
 
+### External Tools and Dependencies
+
+If you installed Cha using the `install.sh` script and want to create custom external tools that require third-party Python packages, you'll need to install those packages in Cha's virtual environment. Since the install script creates an isolated environment at `$HOME/.cha/venv`, any external packages your tools need should be installed there:
+
+```bash
+# activate Cha's virtual environment
+source "$HOME/.cha/venv/bin/activate"
+
+# install your tool's dependencies
+pip install requests beautifulsoup4 numpy  # example packages
+
+# deactivate when done
+deactivate
+```
+
+This only applies if you used the `install.sh` method. If you installed Cha via pip, pipx, or manually in your own environment, your external tools will automatically have access to packages installed in that same environment.
+
 For more details, check out the documentation in [docs](./assets/local/README.md) and the example files in [assets/local/](./assets/local/).
 
 If you have enabled the **save chat history locally** feature after configuring the local setup, but want to start a chat session that is not saved, you can use the following argument:
