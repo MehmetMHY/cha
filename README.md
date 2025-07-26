@@ -21,6 +21,7 @@
 - [Platform Compatibility](#other-platforms-compatibility)
 - [Local Config](#local-config-optional)
 - [Additional Documentation](#additional-documentation)
+- [Future Architecture](#future-architecture-july-2025)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -736,6 +737,16 @@ Cha can use [SearXNG](https://searxng.github.io/), an open-source meta-search en
 3. Now start using `cha` and you will see that the SearXNG engine will be used instead of DuckDuckGo.
 
 If not enabled, Cha continues to use DuckDuckGo by default.
+
+## Future Architecture (July 2025)
+
+As Cha grows, we are exploring a hybrid architecture that balances performance, maintainability, and user experience. We have already implemented a simple, lightweight Go version in the [ch](https://github.com/MehmetMHY/ch) project, which shows over 10x faster startup time compared to the current Python version of Cha from local testing. The planned architecture comprises two main components: a lightweight Go CLI running locally and a containerized daemon responsible for heavy dependencies and services.
+
+The CLI would handle user interactions, terminal-based AI queries, file navigation, interactive editing, and codedump functionality entirely in Go, enabling it to operate without Docker. The daemon container would contain the Python Cha codebase, language models such as Whisper and Ollama, web scraping utilities, search engine services like SearXNG, and media processing tools like ffmpeg.
+
+This design ensures that common, file-related operations and user interface tasks execute quickly and natively on the host, while resource-intensive processing and model inference are offloaded to the container. The approach improves cross-platform compatibility, allows incremental migration of functions to the daemon, supports remote daemon deployment, and preserves local workflows such as history management and editing.
+
+We believe in building Cha with the community. If you have thoughts on this architectural direction, experience with similar hybrid designs, or ideas for implementation, join the discussion on [GitHub Discussions](https://github.com/MehmetMHY/cha/discussions) or open an issue with the "roadmap" label.
 
 ## Contributing
 

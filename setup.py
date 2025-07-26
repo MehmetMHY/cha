@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.22.10",
+    version="0.22.11",
     packages=find_packages(),
     license="MIT",
-    description="A lightweight CLI tool for terminal-based AI interactions across multiple platforms (OpenAI, Anthropic, Google, etc) with full user control",
+    description="A lightweight CLI tool for terminal-based AI interactions across multiple platforms (Ollama, OpenAI, Anthropic, Google, etc) with full user control",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
