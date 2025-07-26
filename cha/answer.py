@@ -161,7 +161,7 @@ def search_engine(
         with DDGS() as ddgs:
             search_results_ddg = list(
                 ddgs.text(
-                    keywords=search_input,
+                    query=search_input,
                     max_results=count,
                     region=region,
                     safesearch=safesearch,
@@ -192,6 +192,9 @@ def quick_search(user_input, min_search_result=3):
             safesearch="off",
             timelimit=None,
         )
+
+        if isinstance(results, dict) and "error" in results:
+            return None
 
         urls = []
         for result in results:
@@ -237,7 +240,7 @@ def quick_search(user_input, min_search_result=3):
             Your answer should be clear, concise, and well-structured!
             """
         )
-    except:
+    except Exception as e:
         return None
 
 
