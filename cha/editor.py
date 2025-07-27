@@ -35,6 +35,7 @@ class InteractiveEditor:
         self.current_content = ""
         self.undo_stack = []
         self.history_file = os.path.join(tempfile.gettempdir(), ".cha_editor_history")
+        self.history_modified = False
 
     def run(self):
         try:
@@ -68,6 +69,7 @@ class InteractiveEditor:
                 except (KeyboardInterrupt, EOFError):
                     loading.stop_loading()
                     print()
+                    self._quit()
                     break
                 except SystemExit:
                     break
@@ -357,6 +359,18 @@ class InteractiveEditor:
             if self.current_content != new_content:
                 self.undo_stack.append(self.current_content)
                 self.current_content = new_content
+                import time
+
+                self.chat_history.append(
+                    {
+                        "time": time.time(),
+                        "user": request,
+                        "bot": f"I have updated the file `{self.file_path}` with the following content:\n```\n{self.current_content}\n```",
+                        "platform": config.CHA_CURRENT_PLATFORM_NAME,
+                        "model": self.model_name,
+                    }
+                )
+                self.history_modified = True
                 self._show_diff()
             else:
                 print(colors.yellow("No changes were generated"))
@@ -673,3 +687,4 @@ def run_editor(client, model_name, file_path=None, chat_history=None):
         client, model_name, file_path=file_path, chat_history=chat_history
     )
     editor.run()
+    return editor.history_modified

@@ -434,12 +434,34 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 try:
                     from cha import editor
 
-                    editor.run_editor(
+                    history_updated = editor.run_editor(
                         client=get_current_chat_client(),
                         model_name=selected_model,
                         file_path=editor_message,
                         chat_history=CURRENT_CHAT_HISTORY,
                     )
+                    if history_updated:
+                        HISTORY_MODIFIED = True
+                        messages.clear()
+                        if not reasoning_model:
+                            if CURRENT_CHAT_HISTORY and CURRENT_CHAT_HISTORY[0].get(
+                                "user"
+                            ):
+                                messages.append(
+                                    {
+                                        "role": "user",
+                                        "content": CURRENT_CHAT_HISTORY[0]["user"],
+                                    }
+                                )
+                        for item in CURRENT_CHAT_HISTORY[1:]:
+                            if item.get("user"):
+                                messages.append(
+                                    {"role": "user", "content": item["user"]}
+                                )
+                            if item.get("bot"):
+                                messages.append(
+                                    {"role": "assistant", "content": item["bot"]}
+                                )
                 except (KeyboardInterrupt, EOFError):
                     continue
                 except SystemExit:
