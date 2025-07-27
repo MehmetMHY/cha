@@ -2,12 +2,12 @@
 
 set -euo pipefail
 
-# --- Configuration ---
+# configuration
 CHA_HOME="$HOME/.cha"
 VENV_DIR="$CHA_HOME/venv"
 REPO_URL="https://github.com/MehmetMHY/cha.git"
 
-# --- Helper Functions ---
+# helper functions
 log() {
 	echo -e "\033[96m$1\033[0m"
 }
@@ -17,7 +17,7 @@ error() {
 	exit 1
 }
 
-# --- Prerequisite Checks ---
+# prerequisite checks
 check_python() {
 	if ! command -v python3 >/dev/null 2>&1; then
 		error "Python 3 is required but not installed"
@@ -122,7 +122,7 @@ install_dependencies() {
 	esac
 }
 
-# --- Core Installation Logic ---
+# core installation logic
 create_venv() {
 	log "Creating Python virtual environment in $VENV_DIR"
 	mkdir -p "$CHA_HOME" || error "Failed to create directory $CHA_HOME"
@@ -231,9 +231,9 @@ _install_cha_from_repo() {
 	print_success
 }
 
-# --- Main Execution ---
+# main execution
 main() {
-	# Check if running from a local git repo of 'cha'
+	# check if running from a local git repo of 'cha'
 	if [ -f "setup.py" ] && [ -d "cha" ] && [ -d ".git" ]; then
 		log "Running installer from existing local repository."
 		check_git_and_pull

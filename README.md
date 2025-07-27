@@ -6,39 +6,9 @@
 
 [![Demo GIF](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
-## Quick Start
-
-Get up and running with Cha in just a minute.
-
-**1. Install**
-
-Run this command in your terminal. It handles everything for you. To update, just run it again.
-
-```bash
-curl -sSL https://raw.githubusercontent.com/MehmetMHY/cha/main/install.sh | bash
-```
-
-**2. Configure**
-
-You'll need to set an API key. For cloud models, get a key from a provider like [OpenAI](https://platform.openai.com/api-keys). For local models, you can use [Ollama](https://ollama.com/).
-
-```bash
-# For OpenAI, add this to your ~/.bashrc, ~/.zshrc, or ~/.profile and restart your shell
-export OPENAI_API_KEY="sk-your-openai-api-key-here"
-
-# For other platforms (including Ollama), see the configuration docs below.
-```
-
-**3. Run**
-
-That's it. Start chatting with Cha.
-
-```bash
-cha "What are the main features of the Rust programming language?"
-```
-
 ## Table of Contents
 
+- [Quick Start](#quick-start)
 - [Overview](#overview)
 - [Vision](#vision)
 - [Cha vs CLIs like Claude Code](#cha-vs-clis-like-claude-code-july-2025)
@@ -55,6 +25,39 @@ cha "What are the main features of the Rust programming language?"
 - [Future Architecture](#future-architecture-july-2025)
 - [Contributing](#contributing)
 - [License](#license)
+
+## Quick Start
+
+Get up and running with Cha in minutes. This streamlined process will have you chatting with AI models directly from your terminal.
+
+For a more comprehensive overview of Cha's features and capabilities, read through this README. If you prefer detailed installation options, see the [Getting Started](#getting-started) section.
+
+**1. Install**
+
+Run this single command in your terminal. It handles everything automatically, including dependency checks and environment setup. To update later, simply run the same command again.
+
+```bash
+curl -sSL https://raw.githubusercontent.com/MehmetMHY/cha/main/install.sh | bash
+```
+
+**2. Configure**
+
+Set up your API key for your preferred AI provider. For cloud models, get a key from [OpenAI](https://platform.openai.com/api-keys). For local models, consider using [Ollama](https://ollama.com/).
+
+```bash
+# For OpenAI, add this to your ~/.bashrc, ~/.zshrc, or ~/.profile and restart your shell
+export OPENAI_API_KEY="sk-your-openai-api-key-here"
+
+# For other platforms (including Ollama), see the configuration section below.
+```
+
+**3. Start Chatting**
+
+That's it. Begin your first conversation with Cha.
+
+```bash
+cha "What are the main features of the Rust programming language?"
+```
 
 ## Overview
 
