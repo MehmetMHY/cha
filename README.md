@@ -1,55 +1,60 @@
 # Cha
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![GitHub stars](https://img.shields.io/github/stars/MehmetMHY/cha.svg)](https://github.com/MehmetMHY/cha/stargazers)
+<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+<a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+"></a>
+<a href="https://github.com/MehmetMHY/cha/stargazers"><img src="https://img.shields.io/github/stars/MehmetMHY/cha" alt="GitHub stars"></a>
+<a href="https://github.com/MehmetMHY/cha/graphs/contributors"><img src="https://img.shields.io/github/contributors/MehmetMHY/cha" alt="Contributors"></a>
 
 [![Demo GIF](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
 ## Table of Contents
 
-- [Quick Start](#quick-start)
 - [Overview](#overview)
 - [Vision](#vision)
+- [Quick Start](#quick-start)
 - [Features](#features)
-- [Cha vs Claude Code](#cha-vs-claude-code-july-2025)
-- [Dependencies](#dependencies)
 - [Getting Started](#getting-started)
   - [Installation](#installation)
   - [Configuration](#configuration)
   - [Usage](#usage)
-- [Development](#development)
 - [Platform Compatibility](#other-platforms-compatibility)
+- [Development](#development)
 - [Local Config](#local-config-optional)
 - [Additional Documentation](#additional-documentation)
+- [Cha vs Claude Code](#cha-vs-claude-code-july-2025)
 - [Contributing](#contributing)
 - [License](#license)
 
+## Overview
+
+Cha is an open-source command-line tool that simplifies interactions with AI models from multiple providers including OpenAI, Anthropic, Groq, DeepSeek, Ollama, and more. It allows users to efficiently engage with powerful language models directly from their terminal, with the ability to switch between different AI platforms mid-conversation while maintaining full chat history.
+
+## Vision
+
+Cha is a lightweight, focused CLI tool that provides direct terminal access to powerful AI models. Like Vim's philosophy of simplicity and versatility, Cha delivers essential functionality without overwhelming complexity while giving users full control over their AI interactions through transparency and explicit context management. It integrates seamlessly into developer workflows, minimizing context switching and empowering individuals to guide AI on their own terms with a flexible, user-driven experience without automated decisions or hidden costs.
+
 ## Quick Start
 
-Get up and running with Cha in minutes. For detailed options, see the [Getting Started](#getting-started) section.
-
-**1. Install:**
+**Install:**
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/MehmetMHY/cha/main/install.sh | bash
 ```
 
-**2. Configure:** Set your API key from [OpenAI](https://platform.openai.com/api-keys) or use [Ollama](https://ollama.com/) for local models. See the [Configuration](#configuration) section for details.
+**Configure:**
 
-**3. Start Chatting:**
+```bash
+# set your openai api key or use ollama (https://ollama.com/) for local models
+export OPENAI_API_KEY="your-api-key-here"
+```
+
+**Start chatting:**
 
 ```bash
 cha "What are the main features of the Rust programming language?"
 ```
 
-## Overview
-
-Cha is an open-source command-line tool that simplifies interactions with AI models from multiple providers including OpenAI, Anthropic, Groq, DeepSeek, and more. It allows users to efficiently engage with powerful language models directly from their terminal, with the ability to switch between different AI platforms mid-conversation while maintaining full chat history.
-
-## Vision
-
-Cha is a lightweight, focused CLI tool that provides direct terminal access to powerful AI models. Like Vim's philosophy of simplicity and versatility, Cha delivers essential functionality without overwhelming complexity while giving users full control over their AI interactions through transparency and explicit context management. It integrates seamlessly into developer workflows, minimizing context switching and empowering individuals to guide AI on their own terms with a flexible, user-driven experience without automated decisions or hidden costs.
+For detailed installation options and configuration, see [Getting Started](#getting-started).
 
 ## Features
 
@@ -81,43 +86,13 @@ Cha is a lightweight, focused CLI tool that provides direct terminal access to p
 - **Seamless Pipe Output**: Automatically detects when output is piped to another command and suppresses all UI elements (colors, loading animations, status messages), making Cha perfect for use in shell pipelines and automation scripts.
 - **Cancel Message**: Cancel a message before sending it by ending it with `!.`.
 
-## Cha vs Claude Code (July 2025)
+## Getting Started
 
-Cha takes a fundamentally different approach from autonomous AI coding CLIs like [Claude Code CLI](https://github.com/anthropics/claude-code), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenAI Codex CLI](https://github.com/openai/codex).
-
-### Key Differences
-
-| Aspect                    | Cha                                      | Agentic CLIs (Claude Code, Gemini etc.)  |
-| ------------------------- | ---------------------------------------- | ---------------------------------------- |
-| **Control**               | Total user control at every step         | Automated workflow decisions             |
-| **Background Processing** | No background AI workers                 | Smart agents make autonomous decisions   |
-| **Context Management**    | Explicit user-controlled context         | AI managed context and file handling     |
-| **Cost**                  | $1 to $20 per month for daily active use | $10 to $200+ per month for similar usage |
-| **Editing**               | No surprise edits, user guided           | Autonomous code modifications            |
-| **Use Case**              | Deep involvement, cost control           | Rapid prototyping, delegation            |
-
-### When to Choose Cha
-
-- **Minimal cost** with full transparency
-- **Complete control** over every interaction
-- **Deep involvement** in your development process
-- **Explicit context management** for sensitive projects
-
-### When to Choose Agentic Tools
-
-- **Rapid prototyping** and fast iteration
-- **Preference for AI automation** and delegation
-- **Speed over cost** considerations
-
-### Recommendations
-
-There is no silver bullet when it comes to a tool. No tool is perfect and can account for every case scenario in their area/field. That same applies to Cha. Cha is great for cost-effective daily tasks and precise control while tools like Claude Code and Gemini CLI are great when the goal is to do more complex coding tasks across multiple files and environments, with the focus on fast development and automation. Use Cha when you want to reduce cost of using AI tools, choose agentic tools when you need rapid iteration and do not mind delegating control, and consider starting with Cha to learn AI interaction patterns before exploring agentic tools as your needs evolve.
-
-## Dependencies
+### Dependencies
 
 Cha relies on several external command-line tools for optimal functionality. The installation script handles most of these automatically.
 
-### Required Dependencies
+#### Required Dependencies
 
 | Tool                 | Purpose                                            | Installation                                                     |
 | -------------------- | -------------------------------------------------- | ---------------------------------------------------------------- |
@@ -795,6 +770,38 @@ Cha can use [SearXNG](https://searxng.github.io/), an open-source meta-search en
 3. Now start using `cha` and you will see that the SearXNG engine will be used instead of DuckDuckGo.
 
 If not enabled, Cha continues to use DuckDuckGo by default.
+
+## Cha vs Claude Code (July 2025)
+
+Cha takes a fundamentally different approach from autonomous AI coding CLIs like [Claude Code CLI](https://github.com/anthropics/claude-code), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenAI Codex CLI](https://github.com/openai/codex).
+
+### Key Differences
+
+| Aspect                    | Cha                                      | Agentic CLIs (Claude Code, Gemini etc.)  |
+| ------------------------- | ---------------------------------------- | ---------------------------------------- |
+| **Control**               | Total user control at every step         | Automated workflow decisions             |
+| **Background Processing** | No background AI workers                 | Smart agents make autonomous decisions   |
+| **Context Management**    | Explicit user-controlled context         | AI managed context and file handling     |
+| **Cost**                  | $1 to $20 per month for daily active use | $10 to $200+ per month for similar usage |
+| **Editing**               | No surprise edits, user guided           | Autonomous code modifications            |
+| **Use Case**              | Deep involvement, cost control           | Rapid prototyping, delegation            |
+
+### When to Choose Cha
+
+- **Minimal cost** with full transparency
+- **Complete control** over every interaction
+- **Deep involvement** in your development process
+- **Explicit context management** for sensitive projects
+
+### When to Choose Agentic Tools
+
+- **Rapid prototyping** and fast iteration
+- **Preference for AI automation** and delegation
+- **Speed over cost** considerations
+
+### Recommendations
+
+There is no silver bullet when it comes to a tool. No tool is perfect and can account for every case scenario in their area/field. That same applies to Cha. Cha is great for cost-effective daily tasks and precise control while tools like Claude Code and Gemini CLI are great when the goal is to do more complex coding tasks across multiple files and environments, with the focus on fast development and automation. Use Cha when you want to reduce cost of using AI tools, choose agentic tools when you need rapid iteration and do not mind delegating control, and consider starting with Cha to learn AI interaction patterns before exploring agentic tools as your needs evolve.
 
 ## Contributing
 
