@@ -340,9 +340,10 @@ class InteractiveEditor:
                     "content": context_info,
                 },
             ]
-            response = self.client.chat.completions.create(
-                model=self.model_name, messages=messages, temperature=0.1
-            )
+            api_params = {"model": self.model_name, "messages": messages}
+            if not utils.is_slow_model(self.model_name):
+                api_params["temperature"] = 0.1
+            response = self.client.chat.completions.create(**api_params)
             new_content = response.choices[0].message.content
             loading.stop_loading()
 
@@ -456,12 +457,15 @@ class InteractiveEditor:
                 },
             ]
 
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                temperature=0.1,
-                max_tokens=100,
-            )
+            api_params = {
+                "model": self.model_name,
+                "messages": messages,
+                "max_tokens": 100,
+            }
+            if not utils.is_slow_model(self.model_name):
+                api_params["temperature"] = 0.1
+
+            response = self.client.chat.completions.create(**api_params)
 
             generated_command = response.choices[0].message.content.strip()
             loading.stop_loading()
