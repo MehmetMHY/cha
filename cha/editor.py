@@ -153,25 +153,19 @@ class InteractiveEditor:
             return False
 
         if not os.path.exists(self.file_path):
+            self.original_content = ""
+            self.current_content = ""
+            print(colors.green(f"New file: {self.file_path}"))
+            file_was_created = True
+        else:
             try:
-                os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
-                with open(self.file_path, "w", encoding="utf-8") as f:
-                    f.write("")
-                print(colors.green(f"Created: {self.file_path}"))
-                file_was_created = True
-            except IOError as e:
-                print(colors.red(f"Failed to create file {e}"))
+                with open(self.file_path, "r", encoding="utf-8") as f:
+                    self.original_content = f.read()
+                self.current_content = self.original_content
+            except (IOError, UnicodeDecodeError) as e:
+                print(colors.red(f"Failed to read file: {e}"))
                 self.file_path = None
                 return False
-
-        try:
-            with open(self.file_path, "r", encoding="utf-8") as f:
-                self.original_content = f.read()
-            self.current_content = self.original_content
-        except (IOError, UnicodeDecodeError) as e:
-            print(colors.red(f"Failed to read file: {e}"))
-            self.file_path = None
-            return False
 
         return file_was_created
 
@@ -307,12 +301,13 @@ class InteractiveEditor:
         return True
 
     def _make_edit_request(self, request):
-        if self.original_content == self.current_content:
+        if self.original_content == self.current_content and os.path.exists(
+            self.file_path
+        ):
             try:
                 with open(self.file_path, "r", encoding="utf-8") as f:
                     disk_content = f.read()
                 if disk_content != self.original_content:
-                    print(colors.yellow("File changed on disk. Reloading."))
                     self.original_content = disk_content
                     self.current_content = disk_content
             except (IOError, UnicodeDecodeError) as e:
@@ -407,6 +402,9 @@ class InteractiveEditor:
             print(colors.yellow("No changes to save"))
             return
         try:
+            dir_name = os.path.dirname(self.file_path)
+            if dir_name:
+                os.makedirs(dir_name, exist_ok=True)
             with open(self.file_path, "w", encoding="utf-8") as f:
                 f.write(self.current_content)
             self.original_content = self.current_content
@@ -424,6 +422,12 @@ class InteractiveEditor:
         self._show_diff()
 
     def _view_content(self):
+        if not os.path.exists(self.file_path):
+            print(
+                colors.yellow("File must be saved before viewing. Use 's' or 'save'.")
+            )
+            return
+
         if self.original_content != self.current_content:
             try:
                 prompt = colors.red("Save before viewing (y/N)? ")
