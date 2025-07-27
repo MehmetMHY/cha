@@ -665,7 +665,7 @@ The `assets/` directory contains supplementary materials, tools, and examples to
 - **`assets/local/`**: Resources for setting up local configurations and custom external tools. It includes an example `weather` tool to demonstrate how you can extend Cha's capabilities.
 - **`assets/macos/`**: A simple setup to create a macOS `.app` launcher for Cha using AppleScript, designed to open Cha in a Kitty terminal session.
 - **`assets/sxng/`**: Scripts and documentation for integrating SearXNG, a self-hostable meta-search engine, as an alternative to DuckDuckGo for web-related features.
-- **`assets/utils/`**: A collection of utility scripts for development and maintenance, including a `checkup.py` script to verify your setup, `quantify.py` to analyze usage stats and costs, and `update.py` to help manage package versions.
+- **`assets/utils/`**: A collection of utility scripts for development and maintenance, including a `checkup.py` script to verify your setup and `update.py` to help manage package versions.
 
 ## Other Platform(s) Compatibility
 
