@@ -6,6 +6,37 @@
 
 [![Demo GIF](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
+## Quick Start
+
+Get up and running with Cha in just a minute.
+
+**1. Install**
+
+Run this command in your terminal. It handles everything for you. To update, just run it again.
+
+```bash
+curl -sSL https://raw.githubusercontent.com/MehmetMHY/cha/main/install.sh | bash
+```
+
+**2. Configure**
+
+You'll need to set an API key. For cloud models, get a key from a provider like [OpenAI](https://platform.openai.com/api-keys). For local models, you can use [Ollama](https://ollama.com/).
+
+```bash
+# For OpenAI, add this to your ~/.bashrc, ~/.zshrc, or ~/.profile and restart your shell
+export OPENAI_API_KEY="sk-your-openai-api-key-here"
+
+# For other platforms (including Ollama), see the configuration docs below.
+```
+
+**3. Run**
+
+That's it. Start chatting with Cha.
+
+```bash
+cha "What are the main features of the Rust programming language?"
+```
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -135,9 +166,21 @@ sudo pacman -S fzf ripgrep bat ffmpeg openbsd-netcat
 
 ### Installation
 
-#### Recommended Method: `install.sh`
+#### Recommended Method: One-Command Install
 
-The most reliable way to get up and running is with the `install.sh` script. It provides a clean, self-contained installation that won't interfere with other Python projects or system packages.
+The most reliable way to get up and running is with our one-command installer. It provides a clean, self-contained installation that won't interfere with other Python projects or system packages.
+
+Open your terminal and run the following command:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/MehmetMHY/cha/main/install.sh | bash
+```
+
+The script automates the entire setup process, including checking for dependencies, creating a dedicated environment, and making the `cha` command accessible system-wide. To update, simply run the command again.
+
+#### Manual Installation (from Git)
+
+If you prefer to clone the repository manually, you can still use the installation script. This is also a good option if you want to contribute to development.
 
 ```bash
 git clone https://github.com/MehmetMHY/cha.git
@@ -145,15 +188,7 @@ cd cha
 ./install.sh
 ```
 
-The script automates the entire setup process:
-
-1.  **Dependency Check**: Verifies and helps install required command-line tools: `ffmpeg`, `fzf`, `bat`, `ripgrep`, and `netcat`.
-2.  **Self-Contained Environment**: Creates a dedicated directory at `$HOME/.cha` to house the Python virtual environment and all dependencies, ensuring a clean, isolated setup.
-3.  **Cha Installation**: Installs the `cha` package within its private virtual environment.
-4.  **System-Wide Access**: Creates a symbolic link at `/usr/local/bin/cha`, making the `cha` command accessible from anywhere in your terminal.
-5.  **Verification**: Runs a final checkup to confirm that everything is configured correctly.
-
-After the script completes, you can start using `cha` immediately. The original cloned repository can be safely removed to save space, as the installation is entirely self-contained. However, keeping the repository makes updates simple.
+Running the script from the cloned repository will automatically pull the latest changes and update your installation.
 
 ### Alternative Installation Methods
 
@@ -199,20 +234,32 @@ uv pip install "git+https://github.com/MehmetMHY/cha.git"
 
 ### Updating and Uninstalling
 
-#### Recommended Method (`install.sh`)
+#### Updating
 
-- **To Update**: If you kept the original cloned repository, updating is easy. Navigate to the directory, pull the latest changes, and re-run the installation script.
-  ```bash
-  cd /path/to/your/cha-repository
-  git pull
-  ./install.sh
-  ```
-- **To Uninstall**: The process is straightforward. Just remove the installation directory and the symbolic link.
-  ```bash
-  rm -rf "$HOME/.cha"
-  # for some setups, you may need to run the next command with sudo
-  rm /usr/local/bin/cha
-  ```
+To update `cha` to the latest version, simply run the installation command again:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/MehmetMHY/cha/main/install.sh | bash
+```
+
+The script will safely update your existing installation.
+
+If you installed manually from a git clone, you can update by running the script from within your local repository directory:
+
+```bash
+# cd /path/to/your/cha-repository
+./install.sh
+```
+
+#### Uninstalling
+
+The process is straightforward. Just remove the installation directory and the symbolic link.
+
+```bash
+rm -rf "$HOME/.cha"
+# for some setups, you may need to run the next command with sudo
+rm /usr/local/bin/cha
+```
 
 #### Alternative Methods
 

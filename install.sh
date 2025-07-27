@@ -2,15 +2,12 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# --- Configuration ---
 CHA_HOME="$HOME/.cha"
 VENV_DIR="$CHA_HOME/venv"
+REPO_URL="https://github.com/MehmetMHY/cha.git"
 
-if [[ -z "$SCRIPT_DIR" ]]; then
-	echo -e "\033[91mERROR: Could not determine script directory\033[0m" >&2
-	exit 1
-fi
-
+# --- Helper Functions ---
 log() {
 	echo -e "\033[96m$1\033[0m"
 }
@@ -20,6 +17,7 @@ error() {
 	exit 1
 }
 
+# --- Prerequisite Checks ---
 check_python() {
 	if ! command -v python3 >/dev/null 2>&1; then
 		error "Python 3 is required but not installed"
@@ -50,7 +48,7 @@ install_dependencies() {
 	local os
 	os=$(detect_os)
 
-	log "Installing system dependencies for $os"
+	log "Checking system dependencies for $os"
 
 	local deps=("ffmpeg" "fzf" "bat" "ripgrep" "netcat")
 	local missing_deps=()
@@ -74,77 +72,92 @@ install_dependencies() {
 		return
 	fi
 
+	log "The following dependencies are missing: ${missing_deps[*]}"
+	echo -n -e "\033[93mDo you want to install them? (y/N): \033[0m"
+	read -r response
+	if [[ ! "$response" =~ ^[Yy]$ ]]; then
+		error "Installation aborted. Please install dependencies manually."
+	fi
+
 	case "$os" in
 	"macos")
 		if ! command -v brew >/dev/null 2>&1; then
-			error "Homebrew is required on macOS. Install from https://brew.sh/"
+			error "Homebrew is required on macOS to install dependencies. Install from https://brew.sh/"
 		fi
 		for dep in "${missing_deps[@]}"; do
-			log "Installing $dep"
+			log "Installing $dep with Homebrew..."
 			brew install "$dep"
 		done
 		;;
 	"linux")
-		if command -v apt-get >/dev/null 2>&1; then
-			apt-get update -qq
-			for dep in "${missing_deps[@]}"; do
-				log "Installing $dep"
-				apt-get install -y "$dep"
-			done
-		elif command -v pacman >/dev/null 2>&1; then
-			for dep in "${missing_deps[@]}"; do
-				log "Installing $dep"
-				pacman -Sy --noconfirm "$dep"
-			done
-		elif command -v dnf >/dev/null 2>&1; then
-			for dep in "${missing_deps[@]}"; do
-				log "Installing $dep"
-				dnf install -y "$dep"
-			done
-		elif command -v yum >/dev/null 2>&1; then
-			for dep in "${missing_deps[@]}"; do
-				log "Installing $dep"
-				yum install -y "$dep"
-			done
+		if command -v sudo >/dev/null 2>&1; then
+			if command -v apt-get >/dev/null 2>&1; then
+				sudo apt-get update -qq
+				for dep in "${missing_deps[@]}"; do
+					log "Installing $dep with apt-get..."
+					sudo apt-get install -y "$dep"
+				done
+			elif command -v pacman >/dev/null 2>&1; then
+				for dep in "${missing_deps[@]}"; do
+					log "Installing $dep with pacman..."
+					sudo pacman -Sy --noconfirm "$dep"
+				done
+			elif command -v dnf >/dev/null 2>&1; then
+				for dep in "${missing_deps[@]}"; do
+					log "Installing $dep with dnf..."
+					sudo dnf install -y "$dep"
+				done
+			elif command -v yum >/dev/null 2>&1; then
+				for dep in "${missing_deps[@]}"; do
+					log "Installing $dep with yum..."
+					sudo yum install -y "$dep"
+				done
+			else
+				error "Unsupported package manager. Please install manually: ${missing_deps[*]}"
+			fi
 		else
-			error "Unsupported package manager. Please install manually: ${missing_deps[*]}"
+			error "sudo is required to install dependencies on Linux. Please install it first."
 		fi
 		;;
 	esac
 }
 
+# --- Core Installation Logic ---
 create_venv() {
 	log "Creating Python virtual environment in $VENV_DIR"
 	mkdir -p "$CHA_HOME" || error "Failed to create directory $CHA_HOME"
 
 	if [[ -d "$VENV_DIR" ]]; then
-		echo -e "\033[93mExisting venv/ found: $VENV_DIR\033[0m"
-		echo -n -e "\033[91mRemove it and continue? (y/N): \033[0m"
+		echo -e "\033[93mAn existing Cha installation was found.\033[0m"
+		echo -n -e "\033[91mDo you want to remove it and reinstall/update? (y/N): \033[0m"
 		read -r response
 		if [[ "$response" =~ ^[Yy]$ ]]; then
-			log "Removing existing virtual environment"
+			log "Removing existing virtual environment..."
 			rm -rf "$VENV_DIR"
 		else
-			log "Keeping existing virtual environment"
+			log "Update aborted. Keeping existing installation."
+			exit 0
 		fi
 	fi
 
 	python3 -m venv "$VENV_DIR" || error "Failed to create virtual environment"
 
-	log "Purging pip cache"
-	"$VENV_DIR/bin/python" -m pip cache purge || error "Failed to purge pip cache"
+	log "Purging pip cache..."
+	"$VENV_DIR/bin/python" -m pip cache purge >/dev/null 2>&1 || log "Could not purge pip cache, continuing..."
 
-	log "Upgrading pip, setuptools, and wheel"
+	log "Upgrading pip, setuptools, and wheel..."
 	"$VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel --quiet || error "Failed to upgrade pip components"
 
-	log "Installing cha"
-	"$VENV_DIR/bin/pip" install -e . --quiet || error "Failed to install cha package"
+	log "Installing cha package..."
+	"$VENV_DIR/bin/pip" install . --quiet || error "Failed to install cha package"
 }
 
 run_checkup() {
-	log "Running dependency check"
-	cd "$SCRIPT_DIR" || error "Failed to change to script directory"
-	"$VENV_DIR/bin/python" assets/utils/checkup.py || error "Dependency check failed"
+	log "Running dependency checkup..."
+	if [ ! -f "assets/utils/checkup.py" ]; then
+		error "checkup.py script not found. Installation might be corrupted."
+	fi
+	"$VENV_DIR/bin/python" assets/utils/checkup.py || error "Dependency checkup failed"
 }
 
 create_symlink() {
@@ -155,7 +168,11 @@ create_symlink() {
 
 	if [[ ! -d "$target_dir" ]]; then
 		log "Directory $target_dir does not exist. Creating it with sudo."
-		sudo mkdir -p "$target_dir"
+		if command -v sudo >/dev/null 2>&1; then
+			sudo mkdir -p "$target_dir"
+		else
+			error "sudo is required to create $target_dir. Please create it manually and re-run."
+		fi
 		if [[ $? -ne 0 ]]; then
 			error "Failed to create $target_dir. Please create it manually and re-run the script."
 		fi
@@ -166,7 +183,11 @@ create_symlink() {
 		log "Symlink created: $symlink_path -> $source_path"
 	else
 		log "Attempting to create symlink with sudo..."
-		sudo ln -sf "$source_path" "$symlink_path"
+		if command -v sudo >/dev/null 2>&1; then
+			sudo ln -sf "$source_path" "$symlink_path"
+		else
+			error "sudo is required to create symlink in $target_dir. Please create it manually."
+		fi
 		if [[ $? -ne 0 ]]; then
 			error "Failed to create symlink. Please try creating it manually: sudo ln -sf \"$source_path\" \"$symlink_path\""
 		fi
@@ -176,7 +197,7 @@ create_symlink() {
 
 print_success() {
 	echo
-	echo -e "\033[92m🎉 Cha installation complete!\033[0m"
+	echo -e "\033[92m🎉 Cha installation/update complete!\033[0m"
 	echo
 	echo -e "Cha and its virtual environment are installed in: \033[90m$CHA_HOME\033[0m"
 	echo -e "A symlink has been created at /usr/local/bin/cha, so you can run 'cha' from anywhere."
@@ -184,11 +205,12 @@ print_success() {
 	echo -e "\033[93mImportant:\033[0m"
 	echo -e "Make sure '/usr/local/bin' is in your \$PATH."
 	echo -e "You can check by running: \033[90mecho \$PATH\033[0m"
+	echo -e "You may need to restart your terminal session for changes to take effect."
 	echo
 	echo -e "To get started, simply type:"
 	echo -e "  \033[96mcha\033[0m"
 	echo
-	echo -e "You can now safely remove the cloned repository directory if you wish."
+	echo -e "If you installed via curl/wget, the cloned repository has been removed."
 }
 
 check_git_and_pull() {
@@ -199,17 +221,43 @@ check_git_and_pull() {
 	git pull || error "Failed to pull latest changes from git"
 }
 
-main() {
-	log "Starting Cha installation"
-	log "Script directory: $SCRIPT_DIR"
-
-	check_git_and_pull
+_install_cha_from_repo() {
+	log "Starting Cha installation process from local repository..."
 	check_python
 	install_dependencies
 	create_venv
 	run_checkup
 	create_symlink
 	print_success
+}
+
+# --- Main Execution ---
+main() {
+	# Check if running from a local git repo of 'cha'
+	if [ -f "setup.py" ] && [ -d "cha" ] && [ -d ".git" ]; then
+		log "Running installer from existing local repository."
+		check_git_and_pull
+		_install_cha_from_repo
+	else
+		log "Welcome to the Cha installer!"
+		log "This script will download and install Cha on your system."
+
+		if ! command -v git >/dev/null 2>&1; then
+			error "Git is required to run this installer. Please install it first."
+		fi
+
+		local temp_dir
+		temp_dir=$(mktemp -d 2>/dev/null || mktemp -d -t 'cha-install')
+		# shellcheck disable=SC2064
+		trap "log 'Cleaning up temporary files...'; rm -rf '$temp_dir'" EXIT
+
+		log "Cloning Cha repository into a temporary directory..."
+		git clone --depth 1 "$REPO_URL" "$temp_dir" || error "Failed to clone the repository."
+
+		cd "$temp_dir" || error "Failed to enter the temporary directory."
+
+		_install_cha_from_repo
+	fi
 }
 
 main "$@"
