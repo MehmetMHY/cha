@@ -11,8 +11,8 @@
 - [Quick Start](#quick-start)
 - [Overview](#overview)
 - [Vision](#vision)
-- [Cha vs CLIs like Claude Code](#cha-vs-clis-like-claude-code-july-2025)
 - [Features](#features)
+- [Cha vs Claude Code](#cha-vs-claude-code-july-2025)
 - [Dependencies](#dependencies)
 - [Getting Started](#getting-started)
   - [Installation](#installation)
@@ -22,38 +22,22 @@
 - [Platform Compatibility](#other-platforms-compatibility)
 - [Local Config](#local-config-optional)
 - [Additional Documentation](#additional-documentation)
-- [Future Architecture](#future-architecture-july-2025)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Quick Start
 
-Get up and running with Cha in minutes. This streamlined process will have you chatting with AI models directly from your terminal.
+Get up and running with Cha in minutes. For detailed options, see the [Getting Started](#getting-started) section.
 
-For a more comprehensive overview of Cha's features and capabilities, read through this README. If you prefer detailed installation options, see the [Getting Started](#getting-started) section.
-
-**1. Install**
-
-Run this single command in your terminal. It handles everything automatically, including dependency checks and environment setup. To update later, simply run the same command again.
+**1. Install:**
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/MehmetMHY/cha/main/install.sh | bash
 ```
 
-**2. Configure**
+**2. Configure:** Set your API key from [OpenAI](https://platform.openai.com/api-keys) or use [Ollama](https://ollama.com/) for local models. See the [Configuration](#configuration) section for details.
 
-Set up your API key for your preferred AI provider. For cloud models, get a key from [OpenAI](https://platform.openai.com/api-keys). For local models, consider using [Ollama](https://ollama.com/).
-
-```bash
-# For OpenAI, add this to your ~/.bashrc, ~/.zshrc, or ~/.profile and restart your shell
-export OPENAI_API_KEY="sk-your-openai-api-key-here"
-
-# For other platforms (including Ollama), see the configuration section below.
-```
-
-**3. Start Chatting**
-
-That's it. Begin your first conversation with Cha.
+**3. Start Chatting:**
 
 ```bash
 cha "What are the main features of the Rust programming language?"
@@ -66,38 +50,6 @@ Cha is an open-source command-line tool that simplifies interactions with AI mod
 ## Vision
 
 Cha is a lightweight, focused CLI tool that provides direct terminal access to powerful AI models. Like Vim's philosophy of simplicity and versatility, Cha delivers essential functionality without overwhelming complexity while giving users full control over their AI interactions through transparency and explicit context management. It integrates seamlessly into developer workflows, minimizing context switching and empowering individuals to guide AI on their own terms with a flexible, user-driven experience without automated decisions or hidden costs.
-
-## Cha vs CLIs like Claude Code (July 2025)
-
-Cha takes a fundamentally different approach from autonomous AI coding CLIs like [Claude Code CLI](https://github.com/anthropics/claude-code), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenAI Codex CLI](https://github.com/openai/codex).
-
-### Key Differences
-
-| Aspect                    | Cha                                      | Agentic CLIs (Claude Code, Gemini etc.)  |
-| ------------------------- | ---------------------------------------- | ---------------------------------------- |
-| **Control**               | Total user control at every step         | Automated workflow decisions             |
-| **Background Processing** | No background AI workers                 | Smart agents make autonomous decisions   |
-| **Context Management**    | Explicit user-controlled context         | AI managed context and file handling     |
-| **Cost**                  | $1 to $20 per month for daily active use | $10 to $200+ per month for similar usage |
-| **Editing**               | No surprise edits, user guided           | Autonomous code modifications            |
-| **Use Case**              | Deep involvement, cost control           | Rapid prototyping, delegation            |
-
-### When to Choose Cha
-
-- **Minimal cost** with full transparency
-- **Complete control** over every interaction
-- **Deep involvement** in your development process
-- **Explicit context management** for sensitive projects
-
-### When to Choose Agentic Tools
-
-- **Rapid prototyping** and fast iteration
-- **Preference for AI automation** and delegation
-- **Speed over cost** considerations
-
-### Recommendations
-
-There is no silver bullet when it comes to a tool. No tool is perfect and can account for every case scenario in their area/field. That same applies to Cha. Cha is great for cost-effective daily tasks and precise control while tools like Claude Code and Gemini CLI are great when the goal is to do more complex coding tasks across multiple files and environments, with the focus on fast development and automation. Use Cha when you want to reduce cost of using AI tools, choose agentic tools when you need rapid iteration and do not mind delegating control, and consider starting with Cha to learn AI interaction patterns before exploring agentic tools as your needs evolve.
 
 ## Features
 
@@ -128,6 +80,38 @@ There is no silver bullet when it comes to a tool. No tool is perfect and can ac
 - **Export Chat History**: Export chat history using `!e` with interactive fzf selection. Choose from individual chats, all chats as text, or complete history as JSON. The interface shows chat previews sorted by newest to oldest, with `[ALL]` and `[ALL JSON]` options for bulk exports.
 - **Seamless Pipe Output**: Automatically detects when output is piped to another command and suppresses all UI elements (colors, loading animations, status messages), making Cha perfect for use in shell pipelines and automation scripts.
 - **Cancel Message**: Cancel a message before sending it by ending it with `!.`.
+
+## Cha vs Claude Code (July 2025)
+
+Cha takes a fundamentally different approach from autonomous AI coding CLIs like [Claude Code CLI](https://github.com/anthropics/claude-code), [Gemini CLI](https://github.com/google-gemini/gemini-cli), and [OpenAI Codex CLI](https://github.com/openai/codex).
+
+### Key Differences
+
+| Aspect                    | Cha                                      | Agentic CLIs (Claude Code, Gemini etc.)  |
+| ------------------------- | ---------------------------------------- | ---------------------------------------- |
+| **Control**               | Total user control at every step         | Automated workflow decisions             |
+| **Background Processing** | No background AI workers                 | Smart agents make autonomous decisions   |
+| **Context Management**    | Explicit user-controlled context         | AI managed context and file handling     |
+| **Cost**                  | $1 to $20 per month for daily active use | $10 to $200+ per month for similar usage |
+| **Editing**               | No surprise edits, user guided           | Autonomous code modifications            |
+| **Use Case**              | Deep involvement, cost control           | Rapid prototyping, delegation            |
+
+### When to Choose Cha
+
+- **Minimal cost** with full transparency
+- **Complete control** over every interaction
+- **Deep involvement** in your development process
+- **Explicit context management** for sensitive projects
+
+### When to Choose Agentic Tools
+
+- **Rapid prototyping** and fast iteration
+- **Preference for AI automation** and delegation
+- **Speed over cost** considerations
+
+### Recommendations
+
+There is no silver bullet when it comes to a tool. No tool is perfect and can account for every case scenario in their area/field. That same applies to Cha. Cha is great for cost-effective daily tasks and precise control while tools like Claude Code and Gemini CLI are great when the goal is to do more complex coding tasks across multiple files and environments, with the focus on fast development and automation. Use Cha when you want to reduce cost of using AI tools, choose agentic tools when you need rapid iteration and do not mind delegating control, and consider starting with Cha to learn AI interaction patterns before exploring agentic tools as your needs evolve.
 
 ## Dependencies
 
@@ -811,16 +795,6 @@ Cha can use [SearXNG](https://searxng.github.io/), an open-source meta-search en
 3. Now start using `cha` and you will see that the SearXNG engine will be used instead of DuckDuckGo.
 
 If not enabled, Cha continues to use DuckDuckGo by default.
-
-## Future Architecture (July 2025)
-
-As Cha grows, we are exploring a hybrid architecture that balances performance, maintainability, and user experience. We have already implemented a simple, lightweight Go version in the [ch](https://github.com/MehmetMHY/ch) project, which shows over 10x faster startup time compared to the current Python version of Cha from local testing. The planned architecture comprises two main components: a lightweight Go CLI running locally and a containerized daemon responsible for heavy dependencies and services.
-
-The CLI would handle user interactions, terminal-based AI queries, file navigation, interactive editing, and codedump functionality entirely in Go, enabling it to operate without Docker. The daemon container would contain the Python Cha codebase, language models such as Whisper and Ollama, web scraping utilities, search engine services like SearXNG, and media processing tools like ffmpeg.
-
-This design ensures that common, file-related operations and user interface tasks execute quickly and natively on the host, while resource-intensive processing and model inference are offloaded to the container. The approach improves cross-platform compatibility, allows incremental migration of functions to the daemon, supports remote daemon deployment, and preserves local workflows such as history management and editing.
-
-We believe in building Cha with the community. If you have thoughts on this architectural direction, experience with similar hybrid designs, or ideas for implementation, join the discussion on [GitHub Discussions](https://github.com/MehmetMHY/cha/discussions) or open an issue with the "roadmap" label.
 
 ## Contributing
 
