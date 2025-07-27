@@ -911,6 +911,16 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 )
                 if message != None:
                     messages.append({"role": "user", "content": message})
+                    CURRENT_CHAT_HISTORY.append(
+                        {
+                            "time": time.time(),
+                            "user": message,
+                            "bot": "",
+                            "platform": config.CHA_CURRENT_PLATFORM_NAME,
+                            "model": selected_model,
+                        }
+                    )
+                    HISTORY_MODIFIED = True
                 continue
 
             # prompt user to load files (advanced mode)
@@ -922,6 +932,16 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                 )
                 if message != None:
                     messages.append({"role": "user", "content": message})
+                    CURRENT_CHAT_HISTORY.append(
+                        {
+                            "time": time.time(),
+                            "user": message,
+                            "bot": "",
+                            "platform": config.CHA_CURRENT_PLATFORM_NAME,
+                            "model": selected_model,
+                        }
+                    )
+                    HISTORY_MODIFIED = True
                 continue
 
             if message.startswith(config.USE_CODE_DUMP):

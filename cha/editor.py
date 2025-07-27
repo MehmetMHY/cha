@@ -307,16 +307,20 @@ class InteractiveEditor:
         return True
 
     def _make_edit_request(self, request):
-        try:
-            with open(self.file_path, "r", encoding="utf-8") as f:
-                self.current_content = f.read()
-        except (IOError, UnicodeDecodeError) as e:
-            print(colors.red(f"Failed to read file: {e}"))
-            return
+        if self.original_content == self.current_content:
+            try:
+                with open(self.file_path, "r", encoding="utf-8") as f:
+                    disk_content = f.read()
+                if disk_content != self.original_content:
+                    print(colors.yellow("File changed on disk. Reloading."))
+                    self.original_content = disk_content
+                    self.current_content = disk_content
+            except (IOError, UnicodeDecodeError) as e:
+                print(colors.red(f"Failed to re-read file: {e}"))
+                return
 
         loading.start_loading("processing request")
         try:
-            # build context with execution history if available
             context_info = f"file path: {self.file_path}\n\noriginal content:\n```\n{self.current_content}\n```"
 
             if self.chat_history and len(self.chat_history) > 1:
@@ -331,9 +335,7 @@ class InteractiveEditor:
 
             if hasattr(self, "execution_history") and self.execution_history:
                 context_info += f"\n\nrecent execution history:\n"
-                for i, execution in enumerate(
-                    self.execution_history[-3:], 1
-                ):  # last 3 executions
+                for i, execution in enumerate(self.execution_history[-3:], 1):
                     context_info += (
                         f"{i}. {execution['timestamp']}: {execution['context']}\n"
                     )
