@@ -307,6 +307,13 @@ class InteractiveEditor:
         return True
 
     def _make_edit_request(self, request):
+        try:
+            with open(self.file_path, "r", encoding="utf-8") as f:
+                self.current_content = f.read()
+        except (IOError, UnicodeDecodeError) as e:
+            print(colors.red(f"Failed to read file: {e}"))
+            return
+
         loading.start_loading("processing request")
         try:
             # build context with execution history if available
