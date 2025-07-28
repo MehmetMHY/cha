@@ -392,6 +392,31 @@ def write_json(path, data):
         json.dump(data, file, indent=4)
 
 
+def copy_to_clipboard(text):
+    platform = sys.platform
+    try:
+        if platform == "darwin":
+            process = subprocess.Popen(
+                "pbcopy", stdin=subprocess.PIPE, text=True, encoding="utf-8"
+            )
+            process.communicate(input=text)
+        elif platform.startswith("linux"):
+            process = subprocess.Popen(
+                ["xclip", "-selection", "clipboard"],
+                stdin=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+            )
+            process.communicate(input=text)
+        elif platform == "win32":
+            subprocess.run("clip", input=text, text=True, check=True)
+        else:
+            return False
+        return True
+    except:
+        return False
+
+
 def open_file_in_editor(file_path):
     terminals = copy.deepcopy(config.SUPPORTED_TERMINAL_IDES)
     if config.PREFERRED_TERMINAL_IDE:

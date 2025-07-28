@@ -83,6 +83,7 @@ For detailed installation options and configuration, see [Getting Started](#gett
 - **Local Configuration**: Customize Cha's behavior through local configuration files.
 - **Interactive File Editor**: Edit files with AI assistance using `!v`. Select files, make AI-powered edits, view diffs, and access a shell for testing. Inside the editor, use `help` or `h` to see a full list of commands, including `diff` (`d`), `save` (`s`), `undo` (`u`), running shell commands (`!x`), and using your terminal editor for long prompts (`!t`).
 - **Export Chat History**: Export chat history using `!e` with interactive fzf selection. Choose from individual chats, all chats as text, or complete history as JSON. The interface shows chat previews sorted by newest to oldest, with `[ALL]` and `[ALL JSON]` options for bulk exports.
+- **Copy to Clipboard**: Copy one or more chat responses to the clipboard using `!y`. Select responses with `fzf`, edit them in your terminal editor, and the final content is copied for easy pasting.
 - **Seamless Pipe Output**: Automatically detects when output is piped to another command and suppresses all UI elements (colors, loading animations, status messages), making Cha perfect for use in shell pipelines and automation scripts.
 - **Cancel Message**: Cancel a message before sending it by ending it with `!.`.
 

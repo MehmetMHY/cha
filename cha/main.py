@@ -1,6 +1,7 @@
 import subprocess
 import traceback
 import argparse
+import tempfile
 import time
 import uuid
 import json
@@ -117,6 +118,9 @@ def get_help_options():
     help_options.append(
         f"{config.VOICE_OUTPUT_ALIAS} - Read out the last response using a voice"
     )
+    help_options.append(
+        f"{config.COPY_TO_CLIPBOARD_ALIAS} - Copy chat responses to clipboard"
+    )
     help_options.append(f"{config.TEXT_EDITOR_INPUT_MODE} - Text-editor input mode")
     help_options.append(
         f"{config.SWITCH_MODEL_TEXT} - Switch between models during a session"
@@ -165,6 +169,108 @@ def get_help_options():
             help_options.append(f"{alias} - {about}")
 
     return help_options
+
+
+def handle_clipboard_copy(chat_history, divider_text="---"):
+    if len(chat_history) <= 1:
+        return
+
+    try:
+        responses_map = {}
+        fzf_items = []
+
+        for i, msg in enumerate(chat_history[1:], 1):
+            if msg.get("bot"):
+                user_prompt = msg.get("user", "").replace("\n", " ").strip()
+                user_prompt = re.sub(r"\s+", " ", user_prompt)
+                if len(user_prompt) > 50:
+                    user_prompt = user_prompt[:47] + "..."
+
+                bot_response_summary = msg.get("bot", "").replace("\n", " ").strip()
+                bot_response_summary = re.sub(r"\s+", " ", bot_response_summary)
+                if len(bot_response_summary) > 80:
+                    bot_response_summary = bot_response_summary[:77] + "..."
+
+                fzf_items.append(f"[{i}] {user_prompt} -> {bot_response_summary}")
+                responses_map[i] = msg.get("bot")
+
+        if not responses_map:
+            return
+
+        selected_contents = []
+        if len(responses_map) == 1:
+            selected_contents = list(responses_map.values())
+        else:
+            fzf_options = [config.HELP_ALL_ALIAS] + fzf_items[::-1]
+            selected_output = utils.run_fzf_ssh_safe(
+                [
+                    "fzf",
+                    "--reverse",
+                    "--height=50%",
+                    "--border",
+                    "--multi",
+                    "--prompt=Select responses to copy (TAB to multi-select, ENTER to confirm): ",
+                ],
+                "\n".join(fzf_options),
+            )
+
+            if not selected_output:
+                return
+
+            selected_items = selected_output.split("\n")
+            if any(config.HELP_ALL_ALIAS in item for item in selected_items):
+                selected_contents = [
+                    msg.get("bot") for msg in chat_history[1:] if msg.get("bot")
+                ]
+            else:
+                selected_indices = []
+                for line in selected_items:
+                    if line.strip():
+                        index_match = re.match(r"\[(\d+)\]", line)
+                        if index_match:
+                            selected_indices.append(int(index_match.group(1)))
+
+                if not selected_indices:
+                    return
+
+                selected_indices.sort()
+                for index in selected_indices:
+                    if index in responses_map:
+                        selected_contents.append(responses_map[index])
+
+        if not selected_contents:
+            return
+
+        full_text_to_copy = f"\n\n{divider_text}\n\n".join(selected_contents)
+
+        with tempfile.NamedTemporaryFile(
+            mode="w+",
+            delete=False,
+            suffix=".txt",
+            encoding="utf-8",
+        ) as tmpfile:
+            tmpfile.write(full_text_to_copy)
+            tmpfile_name = tmpfile.name
+
+        utils.open_file_in_editor(tmpfile_name)
+
+        with open(tmpfile_name, "r", encoding="utf-8") as tmpfile:
+            edited_content = tmpfile.read()
+
+        os.remove(tmpfile_name)
+
+        if edited_content.strip():
+            if utils.copy_to_clipboard(edited_content):
+                print(colors.yellow("Copied to clipboard"))
+            else:
+                print(colors.red("Failed to copy to clipboard"))
+    except (subprocess.CalledProcessError, subprocess.SubprocessError):
+        pass
+    except Exception as e:
+        if config.CHA_DEBUG_MODE:
+            print(colors.red(f"Error during copy: {traceback.format_exc()}"))
+        else:
+            print(colors.red(f"Error during copy: {e}"))
 
 
 def interactive_help(selected_model):
@@ -611,7 +717,11 @@ def chatbot(selected_model, print_title=True, filepath=None, content_string=None
                     finally:
                         loading.stop_loading()
                 else:
-                    print(colors.yellow("No previous bot response to read."))
+                    print(colors.yellow("No previous bot response to read"))
+                continue
+
+            elif message.strip() == config.COPY_TO_CLIPBOARD_ALIAS:
+                handle_clipboard_copy(CURRENT_CHAT_HISTORY)
                 continue
 
             elif os.path.isdir(config.LOCAL_CHA_CONFIG_HISTORY_DIR) and (
@@ -1186,7 +1296,7 @@ def cli():
 
     try:
         parser = argparse.ArgumentParser(
-            description="A command-line tool for interacting with AI models from multiple providers.",
+            description="A command-line tool for interacting with AI models from multiple providers",
             add_help=False,
         )
         parser.add_argument(
@@ -1194,7 +1304,7 @@ def cli():
             "--help",
             action="help",
             default=argparse.SUPPRESS,
-            help="Show this help message and exit.",
+            help="Show this help message and exit",
         )
         parser.add_argument(
             "-l",
@@ -1311,7 +1421,7 @@ def cli():
             "--continue",
             action="store_true",
             dest="continue_chat",
-            help="Continue from the last chat session.",
+            help="Continue from the last chat session",
         )
         parser.add_argument(
             "-P",
@@ -1331,7 +1441,7 @@ def cli():
             "-lh",
             "--load-history",
             dest="load_history_file",
-            help="Load a chat history from a file.",
+            help="Load a chat history from a file",
         )
         parser.add_argument(
             "string",
@@ -1344,7 +1454,7 @@ def cli():
         if args.continue_chat:
             history_dir = config.LOCAL_CHA_CONFIG_HISTORY_DIR
             if not os.path.isdir(history_dir):
-                print(colors.yellow("History directory not found. Cannot continue."))
+                print(colors.yellow("History directory not found. Cannot continue"))
                 return
 
             try:
@@ -1417,7 +1527,7 @@ def cli():
                         isinstance(item, dict) for item in chat_history
                     ):
                         raise ValueError(
-                            "Invalid history format: must be a list of objects."
+                            "Invalid history format: must be a list of objects"
                         )
 
                     CURRENT_CHAT_HISTORY.clear()
@@ -1441,7 +1551,7 @@ def cli():
                         CURRENT_CHAT_HISTORY
                     )
                 else:
-                    raise ValueError("Invalid history format.")
+                    raise ValueError("Invalid history format")
             except (json.JSONDecodeError, ValueError) as e:
                 print(
                     colors.red(
@@ -1703,7 +1813,7 @@ def cli():
 
                 if not API_KEY_NAME or not BASE_URL_VALUE:
                     raise Exception(
-                        "Missing API key or base URL for the selected platform."
+                        "Missing API key or base URL for the selected platform"
                     )
 
                 API_KEY_VALUE = os.environ.get(API_KEY_NAME, API_KEY_NAME)
