@@ -279,7 +279,7 @@ source ~/.zshrc
 The `install.sh` script runs a verification check automatically. For manual installations, you can run the checkup script from the cloned directory to ensure your environment and API keys are configured correctly:
 
 ```bash
-python3 ./assets/utils/checkup.py
+python3 ./assets/dev_tools/checkup.py
 ```
 
 > **Note**: Optional checkups can be ignored as they're not required for core functionality.
@@ -672,10 +672,10 @@ For those interested in contributing or experimenting with Cha:
 
 The `assets/` directory contains supplementary materials, tools, and examples to enhance Cha's functionality. Here's a quick rundown:
 
-- **`assets/local/`**: Resources for setting up local configurations and custom external tools. It includes an example `weather` tool to demonstrate how you can extend Cha's capabilities.
-- **`assets/macos/`**: A simple setup to create a macOS `.app` launcher for Cha using AppleScript, designed to open Cha in a Kitty terminal session.
-- **`assets/sxng/`**: Scripts and documentation for integrating SearXNG, a self-hostable meta-search engine, as an alternative to DuckDuckGo for web-related features.
-- **`assets/utils/`**: A collection of utility scripts for development and maintenance, including a `checkup.py` script to verify your setup and `update.py` to help manage package versions.
+- **`assets/local_config/`**: Resources for setting up local configurations and custom external tools. It includes an example `weather` tool to demonstrate how you can extend Cha's capabilities.
+- **`assets/macos_app/`**: A simple setup to create a macOS `.app` launcher for Cha using AppleScript, designed to open Cha in a Kitty terminal session.
+- **`assets/sxng_search/`**: Scripts and documentation for integrating SearXNG, a self-hostable meta-search engine, as an alternative to DuckDuckGo for web-related features.
+- **`assets/dev_tools/`**: A collection of utility scripts for development and maintenance, including a `checkup.py` script to verify your setup and `update.py` to help manage package versions.
 
 ## Other Platform(s) Compatibility
 
@@ -730,7 +730,7 @@ deactivate
 
 This only applies if you used the `install.sh` method. If you installed Cha via pip, pipx, or manually in your own environment, your external tools will automatically have access to packages installed in that same environment.
 
-For more details, check out the documentation in [docs](./assets/local/README.md) and the example files in [assets/local/](./assets/local/).
+For more details, check out the documentation in [docs](./assets/local_config/README.md) and the example files in [assets/local_config/](./assets/local_config/).
 
 If you have enabled the **save chat history locally** feature after configuring the local setup, but want to start a chat session that is not saved, you can use the following argument:
 
@@ -744,21 +744,21 @@ Using this option will ensure your chat session is NOT saved locally. Think of i
 
 For specific features and advanced configurations, refer to these additional documentation files:
 
-- **[Local Configuration & External Tools](./assets/local/README.md)**: Complete guide for setting up local configurations, creating custom external tools, and extending Cha's functionality with user-defined tools.
+- **[Local Configuration & External Tools](./assets/local_config/README.md)**: Complete guide for setting up local configurations, creating custom external tools, and extending Cha's functionality with user-defined tools.
 
-- **[macOS App Setup](./assets/macos/README.md)**: Instructions for creating a macOS `.app` launcher that opens Cha in a Kitty terminal with your environment preloaded.
+- **[macOS App Setup](./assets/macos_app/README.md)**: Instructions for creating a macOS `.app` launcher that opens Cha in a Kitty terminal with your environment preloaded.
 
-- **[SearXNG Integration](./assets/sxng/README.md)**: Setup guide for using SearXNG, a self-hostable meta-search engine, as an alternative to DuckDuckGo for web search features.
+- **[SearXNG Integration](./assets/sxng_search/README.md)**: Setup guide for using SearXNG, a self-hostable meta-search engine, as an alternative to DuckDuckGo for web search features.
 
-- **[Development Utilities](./assets/utils/README.md)**: Collection of utility scripts for testing, monitoring usage statistics, checking setup, and development maintenance.
+- **[Development Utilities](./assets/dev_tools/README.md)**: Collection of utility scripts for testing, monitoring usage statistics, checking setup, and development maintenance.
 
-- **[Weather Tool Example](./assets/local/tools/weather/README.md)**: Example external tool implementation that demonstrates how to create custom tools for Cha using the wttr.in weather API.
+- **[Weather Tool Example](./assets/local_config/tools/weather/README.md)**: Example external tool implementation that demonstrates how to create custom tools for Cha using the wttr.in weather API.
 
 ### SearXNG Search Engine Integration (Optional)
 
 Cha can use [SearXNG](https://searxng.github.io/), an open-source meta-search engine you can self-host, for all web and answer search features. This is completely optional but recommended for heavy users or those who want full control. To enable SearXNG in Cha:
 
-1. Follow the setup instructions in [`assets/sxng/README.md`](assets/sxng/README.md) (includes a one-command Docker setup and a Python usage example).
+1. Follow the setup instructions in [`assets/sxng_search/README.md`](assets/sxng_search/README.md) (includes a one-command Docker setup and a Python usage example).
 2. Set the following in your `$HOME/.cha/config.py`:
 
    ```bash
@@ -826,7 +826,7 @@ cd cha
 pip install -e .
 
 # run the checkup to verify your setup
-python3 assets/utils/checkup.py
+python3 assets/dev_tools/checkup.py
 ```
 
 ### Code Standards

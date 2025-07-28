@@ -19,7 +19,7 @@ This project provides a simple MacOS `.app` that launches [Cha](https://github.c
 
 - [MacOS](https://en.wikipedia.org/wiki/MacOS)
 - [Kitty terminal](https://sw.kovidgoyal.net/kitty/) installed
-- [pyenv](https://github.com/pyenv/pyenv) for Python version management.
+- [Cha](https://github.com/MehmetMHY/cha) installed (recommended: use the install.sh script)
 - An [OpenAI API key](https://openai.com/api/) or run [Ollama](https://ollama.com/) locally.
 
 ## Setup Instructions
@@ -28,15 +28,17 @@ This project provides a simple MacOS `.app` that launches [Cha](https://github.c
 
 Download and install Kitty from [its website](https://sw.kovidgoyal.net/kitty/). Make sure it's in your `/Applications` folder.
 
-### 2. Install and Configure `pyenv`
+### 2. Install Cha
 
-If you don't have `pyenv`, install it by following the official instructions at [https://github.com/pyenv/pyenv](https://github.com/pyenv/pyenv). This is the recommended way to manage Python environments for Cha.
+Install Cha using the recommended one-command installer:
 
-### 3. Install Cha
+```bash
+curl -sSL https://raw.githubusercontent.com/MehmetMHY/cha/main/install.sh | bash
+```
 
-Once `pyenv` is set up, install Cha using it. Follow the instructions on the [Cha GitHub repo](https://github.com/MehmetMHY/cha) to install it correctly within a `pyenv` environment. This ensures `cha` is accessible at a path like `$HOME/.pyenv/shims/cha`.
+This creates a clean, self-contained installation that won't interfere with other Python projects. The script handles dependencies and makes the `cha` command accessible system-wide. For more installation options, see the [Cha GitHub repo](https://github.com/MehmetMHY/cha).
 
-### 4. Configure Environment and API Keys
+### 3. Configure Environment and API Keys
 
 Cha requires API keys to function. You need to provide either an OpenAI API key or have a local Ollama instance running.
 
@@ -50,13 +52,13 @@ Cha requires API keys to function. You need to provide either an OpenAI API key 
 
 For more detailed setup instructions regarding environment variables, please check out the main [Cha README](https://github.com/MehmetMHY/cha). This script will automatically source `~/.custom/.env` before running `cha`.
 
-### 5. Create the MacOS App
+### 4. Create the MacOS App
 
 - Open **Script Editor** on MacOS.
 - Load the included `cha.applescript` file.
 - Save it as a MacOS **Application** (File → Save → Format: Application).
 - Optional: Assign the included `icon.png` as the app icon by right-clicking the saved app, selecting "Get Info," and dragging `icon.png` onto the small icon in the top-left corner.
 
-### 6. Launch
+### 5. Launch
 
 Double-click your saved `.app` to open Kitty, load your environment, and run Cha.

@@ -59,10 +59,7 @@ Follow the prompt to enter your weather-related query, starting with `!weather`,
   ```shell
   pip install requests
   ```
-- The latest version of `cha` as specified in `requirements.txt`:
-  ```
-  git+ssh://git@github.com/MehmetMHY/cha.git@d9e5f8b8559e40abac1e40c588f8a69db9fb13da#egg=cha
-  ```
+- [Cha](https://github.com/MehmetMHY/cha/) installed and configured
 
 **Note:**
 

@@ -150,4 +150,8 @@ def update_setup():
 
 
 if __name__ == "__main__":
-    update_setup()
+    try:
+        update_setup()
+    except (KeyboardInterrupt, EOFError):
+        print()
+        sys.exit(0)

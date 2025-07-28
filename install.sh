@@ -154,10 +154,10 @@ create_venv() {
 
 run_checkup() {
 	log "Running dependency checkup..."
-	if [ ! -f "assets/utils/checkup.py" ]; then
+	if [ ! -f "assets/dev_tools/checkup.py" ]; then
 		error "checkup.py script not found. Installation might be corrupted."
 	fi
-	"$VENV_DIR/bin/python" assets/utils/checkup.py || error "Dependency checkup failed"
+	"$VENV_DIR/bin/python" assets/dev_tools/checkup.py || error "Dependency checkup failed"
 }
 
 create_symlink() {

@@ -1,2 +1,0 @@
--e git+ssh://git@github.com/MehmetMHY/cha.git@d9e5f8b8559e40abac1e40c588f8a69db9fb13da#egg=cha
-requests==2.32.3
