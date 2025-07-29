@@ -7,7 +7,7 @@
 
 [![Demo GIF](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
-🚀 Check out **[ch](https://github.com/MehmetMHY/ch)** for a lightweight and fast GoLang implementation of Cha with only the most essential features for a faster and lighter alternative to Cha.
+🚀 For users seeking a more lightweight solution, **[ch](https://github.com/MehmetMHY/ch)** provides a fast GoLang implementation of Cha's core functionality with essential features optimized for speed and minimal resource usage.
 
 ## Table of Contents
 
@@ -29,11 +29,11 @@
 
 ## Overview
 
-Cha is an open-source command-line tool that simplifies interactions with AI models from multiple providers including OpenAI, Anthropic, Groq, DeepSeek, Ollama, and more. It allows users to efficiently engage with powerful language models directly from their terminal, with the ability to switch between different AI platforms mid-conversation while maintaining full chat history.
+Cha is a comprehensive open-source command-line tool that provides advanced interactions with AI models from multiple providers including OpenAI, Anthropic, Groq, DeepSeek, Ollama, and more. It delivers a feature-rich experience for engaging with powerful language models directly from your terminal, offering sophisticated capabilities like platform switching mid-conversation, voice recording and playback, web scraping, file processing, and extensive chat history management.
 
 ## Vision
 
-Cha is a lightweight, focused CLI tool that provides direct terminal access to powerful AI models. Like Vim's philosophy of simplicity and versatility, Cha delivers essential functionality without overwhelming complexity while giving users full control over their AI interactions through transparency and explicit context management. It integrates seamlessly into developer workflows, minimizing context switching and empowering individuals to guide AI on their own terms with a flexible, user-driven experience without automated decisions or hidden costs.
+Cha is a powerful, feature-rich CLI tool that provides direct terminal access to advanced AI capabilities. While maintaining core principles of user control and transparency, Cha offers comprehensive functionality for professional workflows including voice processing, web integration, file manipulation, and sophisticated chat management. It integrates seamlessly into developer environments, minimizing context switching and empowering users to leverage AI's full potential through explicit control and flexible, user-driven interactions without automated decisions or hidden costs.
 
 ## Quick Start
 
@@ -103,7 +103,7 @@ Cha relies on several external command-line tools for optimal functionality. The
 | **`ripgrep` (`rg`)** | History search functionality                       | `brew install ripgrep` (macOS)<br>`apt install ripgrep` (Ubuntu) |
 | **`bat`**            | Syntax-highlighted previews                        | `brew install bat` (macOS)<br>`apt install bat` (Ubuntu)         |
 | **`netcat` (`nc`)**  | Network connectivity checks                        | Usually pre-installed                                            |
-| **`ffmpeg`**         | Voice recording and media processing               | `brew install ffmpeg` (macOS)<br>`apt install ffmpeg` (Ubuntu)   |
+| **`ffmpeg`**         | Voice recording, media processing, and yt-dlp      | `brew install ffmpeg` (macOS)<br>`apt install ffmpeg` (Ubuntu)   |
 
 ### Quick Install Commands
 

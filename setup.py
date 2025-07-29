@@ -5,7 +5,7 @@ setup(
     version="0.22.13",
     packages=find_packages(),
     license="MIT",
-    description="A lightweight CLI tool for terminal-based AI interactions across multiple platforms (Ollama, OpenAI, Anthropic, Google, etc) with full user control",
+    description="A simple but powerful CLI tool for terminal-based AI interactions across multiple platforms (Ollama, OpenAI, Anthropic, Google, etc) with full user control",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     install_requires=[
