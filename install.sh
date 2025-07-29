@@ -124,19 +124,26 @@ install_dependencies() {
 
 # core installation logic
 create_venv() {
-	log "Creating Python virtual environment in $VENV_DIR"
+	log "Creating/updating Python virtual environment in $VENV_DIR"
 	mkdir -p "$CHA_HOME" || error "Failed to create directory $CHA_HOME"
 
 	if [[ -d "$VENV_DIR" ]]; then
 		echo -e "\033[93mAn existing Cha installation was found.\033[0m"
-		echo -n -e "\033[91mDo you want to remove it and reinstall/update? (y/N): \033[0m"
+		echo -n -e "\033[93mWould you like to perform a fresh install (y) or update the current installation (N)? [y/N]: \033[0m"
 		read -r response
 		if [[ "$response" =~ ^[Yy]$ ]]; then
 			log "Removing existing virtual environment..."
 			rm -rf "$VENV_DIR"
 		else
-			log "Update aborted. Keeping existing installation."
-			exit 0
+			# if venv exists, update it.
+			log "Updating existing installation..."
+
+			log "Upgrading pip, setuptools, and wheel..."
+			"$VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel --quiet || error "Failed to upgrade pip components"
+
+			log "Updating cha package..."
+			"$VENV_DIR/bin/pip" install --upgrade . --quiet || error "Failed to update cha package"
+			return
 		fi
 	fi
 

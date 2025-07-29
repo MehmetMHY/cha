@@ -207,7 +207,10 @@ To update `cha` to the latest version, simply run the installation command again
 curl -sSL https://raw.githubusercontent.com/MehmetMHY/cha/main/install.sh | bash
 ```
 
-The script will safely update your existing installation.
+The script will detect your existing installation and prompt you to either:
+
+- **Update** (default): Preserves your virtual environment and updates the cha package
+- **Fresh install**: Removes the existing environment and performs a clean installation
 
 If you installed manually from a git clone, you can update by running the script from within your local repository directory:
 
