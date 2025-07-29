@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.22.13",
+    version="0.22.14",
     packages=find_packages(),
     license="MIT",
     description="A simple but powerful CLI tool for terminal-based AI interactions across multiple platforms (Ollama, OpenAI, Anthropic, Google, etc) with full user control",
@@ -29,7 +29,7 @@ setup(
         "mutagen==1.47.0",
         "PyYAML==6.0.2",
         "sounddevice==0.5.2",
-        "scipy==1.16.0",
+        "scipy==1.16.1",
         "lingua-language-detector==2.1.1",
     ],
     python_requires=">=3.11",

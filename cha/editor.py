@@ -432,6 +432,9 @@ class InteractiveEditor:
             print(colors.yellow("No changes to undo"))
             return
         self.current_content = self.undo_stack.pop()
+        if self.chat_history:
+            self.chat_history.pop()
+            self.history_modified = True
         print(colors.green("Last change undone"))
         self._show_diff()
 
@@ -678,7 +681,7 @@ class InteractiveEditor:
                 if save_changes == "y":
                     self._save_changes()
             except (KeyboardInterrupt, EOFError):
-                print(colors.yellow("\nQuitting without save..."))
+                print()
                 pass
 
 
