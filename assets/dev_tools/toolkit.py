@@ -9,10 +9,11 @@ import time
 import json
 import sys
 import os
+import multiprocessing
 
 
 def underline(text):
-    return f"\033[4m{text}\033[0m"
+    return f"\u001b[4m{text}\u001b[0m"
 
 
 def measure_startup_time(
@@ -312,11 +313,11 @@ def analyze_git_repository(project_path):
 
         print(f"First commit date:    {first_commit_date}")
         print(f"Latest commit date:   {latest_commit_date}")
-        print(f"Total commits:        \033[94m{total_commits}\033[0m")
+        print(f"Total commits:         \u001b[94m{total_commits}\u001b[0m")
         print(f"Total contributors:   {total_contributors}")
-        print(f"Total additions:      \033[92m{total_adds}\033[0m")
-        print(f"Total deletions:      \033[91m{total_deletes}\033[0m")
-        print(f"Total edits:          \033[93m{total_edits}\033[0m")
+        print(f"Total additions:       \u001b[92m{total_adds}\u001b[0m")
+        print(f"Total deletions:       \u001b[91m{total_deletes}\u001b[0m")
+        print(f"Total edits:           \u001b[93m{total_edits}\u001b[0m")
         print(f"Total files changed:  {total_files_changed}")
         print(f"Total branches:       {total_branches}")
         print(f"Total merge commits:  {total_merges}")
@@ -325,6 +326,156 @@ def analyze_git_repository(project_path):
         print(f"Error: {e}")
     finally:
         os.chdir(original_cwd)
+
+
+def get_size_in_mb(path):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(os.path.expanduser(path)):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            if os.path.isfile(fp):
+                total_size += os.path.getsize(fp)
+    return total_size / (1024 * 1024)
+
+
+def run_size_comparison():
+    start_time = time.time()
+    try:
+        cha_size = get_size_in_mb("~/.cha/venv/") + get_size_in_mb(
+            "~/.cache/whisper/tiny.pt"
+        )
+        ch_size = get_size_in_mb("~/.ch")
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+    if cha_size < ch_size:
+        ratio = ch_size / cha_size
+        ratio_str = f"cha is {ratio:.4f}x smaller than ch"
+    else:
+        ratio = cha_size / ch_size
+        ratio_str = f"ch is {ratio:.4f}x smaller than cha"
+    runtime = time.time() - start_time
+    print(f"cha size: {cha_size:.4f} MB")
+    print(f"ch size: {ch_size:.4f} MB")
+    print(f"{ratio_str}")
+    print(f"{runtime:.4f} seconds runtime")
+
+
+def _over_all_startup_time_compare(
+    command_path, prompt, shell, timeout, poll_interval, debug_mode, total_runs
+):
+    times = []
+    for i in range(total_runs):
+        try:
+            t = measure_startup_time(
+                command=command_path,
+                prompt=prompt,
+                shell=shell,
+                timeout=timeout,
+                poll_interval=poll_interval,
+            )
+            if t is None:
+                if debug_mode:
+                    print("Prompt not detected")
+            else:
+                if debug_mode:
+                    print(f"Startup time: {t:.4f} seconds")
+                times.append(t)
+        except TimeoutError as e:
+            if debug_mode:
+                print(e)
+    if times:
+        avg = sum(times) / len(times)
+        if debug_mode:
+            print(f"{total_runs} total runs for '{os.path.basename(command_path)}'")
+            print(f"Averaged {avg:.4f} seconds")
+        return avg
+    else:
+        if debug_mode:
+            print("No successful runs to average.")
+        return None
+
+
+def _run_measurement_compare(
+    command,
+    prompt,
+    shell,
+    timeout,
+    poll_interval,
+    return_dict,
+    key,
+    total_runs,
+    debug_mode,
+):
+    avg_time = _over_all_startup_time_compare(
+        command_path=command,
+        prompt=prompt,
+        shell=shell,
+        timeout=timeout,
+        poll_interval=poll_interval,
+        debug_mode=debug_mode,
+        total_runs=total_runs,
+    )
+    return_dict[key] = avg_time
+
+
+def run_startup_comparison():
+    total_runs = 100
+    prompt = "User:"
+    shell = "/bin/zsh"
+    timeout = 5
+    poll_interval = 0.01
+    debug_mode = False
+    start_time = time.time()
+    manager = multiprocessing.Manager()
+    return_dict = manager.dict()
+    p1 = multiprocessing.Process(
+        target=_run_measurement_compare,
+        args=(
+            "ch",
+            prompt,
+            shell,
+            timeout,
+            poll_interval,
+            return_dict,
+            "ch",
+            total_runs,
+            debug_mode,
+        ),
+    )
+    p2 = multiprocessing.Process(
+        target=_run_measurement_compare,
+        args=(
+            "cha",
+            prompt,
+            shell,
+            timeout,
+            poll_interval,
+            return_dict,
+            "cha",
+            total_runs,
+            debug_mode,
+        ),
+    )
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
+    ch_avg = return_dict.get("ch")
+    cha_avg = return_dict.get("cha")
+    if ch_avg is None or cha_avg is None:
+        sys.exit(1)
+    if ch_avg < cha_avg:
+        ratio = cha_avg / ch_avg if ch_avg > 0 else float("inf")
+        ratio_str = f"ch is {ratio:.4f}x faster then cha"
+    else:
+        ratio = ch_avg / cha_avg if cha_avg > 0 else float("inf")
+        ratio_str = f"cha is {ratio:.4f}x faster then ch"
+    runtime = time.time() - start_time
+    print(f"cha = {cha_avg:.4f} seconds ({total_runs} runs)")
+    print(f"ch = {ch_avg:.4f} seconds ({total_runs} runs)")
+    print(ratio_str)
+    print(f"{runtime:.4f} seconds runtime")
 
 
 def run_line_count():
@@ -432,20 +583,33 @@ if __name__ == "__main__":
             action="store_true",
             help="Run all tests (default if no specific test is selected)",
         )
+        parser.add_argument(
+            "--compare-sizes",
+            action="store_true",
+            help="Compare cha and ch installation sizes",
+        )
+        parser.add_argument(
+            "--compare-startups",
+            action="store_true",
+            help="Compare cha and ch startup times",
+        )
 
         args = parser.parse_args()
 
-        specific_tests = [args.lines, args.startup, args.deps, args.git, args.all]
+        specific_tests = [
+            args.lines,
+            args.startup,
+            args.deps,
+            args.git,
+            args.all,
+            args.compare_sizes,
+            args.compare_startups,
+        ]
         any_specific_test = any(specific_tests)
+
         if not any_specific_test:
             parser.print_help()
-        elif args.all or (
-            not args.lines
-            and not args.startup
-            and not args.deps
-            and not args.git
-            and args.all
-        ):
+        elif args.all:
             run_all_tests()
         else:
             if args.lines:
@@ -456,6 +620,10 @@ if __name__ == "__main__":
                 run_dependencies()
             if args.git:
                 run_git_stats()
+            if args.compare_sizes:
+                run_size_comparison()
+            if args.compare_startups:
+                run_startup_comparison()
 
     except (KeyboardInterrupt, EOFError):
         print()
