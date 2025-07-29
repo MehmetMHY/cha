@@ -377,7 +377,7 @@ THIRD_PARTY_PLATFORMS = {
         "env_name": "DEEP_SEEK_API_KEY",
         "docs": "https://api-docs.deepseek.com/",
     },
-    "together_ai": {
+    "together": {
         "models": {
             "url": "https://api.together.xyz/v1/models",
             "headers": {

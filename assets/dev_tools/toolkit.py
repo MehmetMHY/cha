@@ -1,15 +1,14 @@
 from collections import defaultdict
 from pathlib import Path
+import multiprocessing
 import subprocess
 import argparse
 import fnmatch
 import signal
 import select
 import time
-import json
 import sys
 import os
-import multiprocessing
 
 
 def underline(text):
@@ -627,5 +626,5 @@ if __name__ == "__main__":
 
     except (KeyboardInterrupt, EOFError):
         print()
-    except SystemExit:
+    except:
         pass
