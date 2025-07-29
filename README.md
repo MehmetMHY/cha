@@ -7,6 +7,8 @@
 
 [![Demo GIF](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
+🚀 Check out **Ch** [https://github.com/MehmetMHY/ch](https://github.com/MehmetMHY/ch), a minimal, high-performance GoLang version of Cha with only essential features for fast, lightweight AI CLI interactions.
+
 ## Table of Contents
 
 - [Overview](#overview)
