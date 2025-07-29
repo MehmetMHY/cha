@@ -431,13 +431,12 @@ def code_dump(
         elif auto_include_all:
             include_mode = True
         else:
-            mode_options = ["Exclude", "Include"]
+            mode_options = ["Exclude", "Include", "All"]
             fzf_input = "\n".join(mode_options)
 
             selected_mode = utils.run_fzf_ssh_safe(
                 [
                     "fzf",
-                    "--no-clear",
                     "--header",
                     "Select mode:",
                 ],
@@ -445,7 +444,12 @@ def code_dump(
             )
             if selected_mode is None:
                 sys.exit(0)
-            include_mode = selected_mode == "Include"
+
+            if selected_mode == "All":
+                auto_include_all = True
+                include_mode = True
+            else:
+                include_mode = selected_mode == "Include"
 
         content, token_count = extract_code(
             dir_path, include_mode, auto_include_all, specific_includes
