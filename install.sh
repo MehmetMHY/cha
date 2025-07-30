@@ -160,6 +160,12 @@ create_venv() {
 }
 
 run_checkup() {
+	echo -n -e "\033[93mDo you want to run the dependency checkup? [Y/n]: \033[0m"
+	read -r response
+	if [[ "$response" =~ ^[Nn]$ ]]; then
+		log "Skipping dependency checkup"
+		return
+	fi
 	log "Running dependency checkup..."
 	if [ ! -f "assets/dev_tools/checkup.py" ]; then
 		error "checkup.py script not found. Installation might be corrupted."
