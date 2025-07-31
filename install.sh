@@ -160,9 +160,9 @@ create_venv() {
 }
 
 run_checkup() {
-	echo -n -e "\033[93mDo you want to run the dependency checkup? [Y/n]: \033[0m"
+	echo -n -e "\033[93mDo you want to run the dependency checkup? [y/N]: \033[0m"
 	read -r response
-	if [[ "$response" =~ ^[Nn]$ ]]; then
+	if [[ ! "$response" =~ ^[Yy]$ ]]; then
 		log "Skipping dependency checkup"
 		return
 	fi

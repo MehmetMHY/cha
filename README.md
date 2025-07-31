@@ -281,7 +281,7 @@ source ~/.zshrc
 
 ### Verify Setup
 
-The `install.sh` script runs a verification check automatically. For manual installations, you can run the checkup script from the cloned directory to ensure your environment and API keys are configured correctly:
+The `install.sh` script will offer to run a verification check after installation. For manual installations, you can run the checkup script from the cloned directory to ensure your environment and API keys are configured correctly. **Running the checkup is highly recommended, especially for new users, as it's a great way to debug your setup.**
 
 ```bash
 python3 ./assets/dev_tools/checkup.py

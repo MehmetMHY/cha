@@ -117,6 +117,7 @@ class InteractiveEditor:
             fzf_process = utils.run_fzf_ssh_safe(
                 [
                     "fzf",
+                    "--exact",
                     "--reverse",
                     "--height=60%",
                     "--border",
