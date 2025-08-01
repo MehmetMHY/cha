@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="cha",
-    version="0.22.17",
+    version="0.22.18",
     packages=find_packages(),
     license="MIT",
     description="A simple but powerful CLI tool for terminal-based AI interactions across multiple platforms (Ollama, OpenAI, Anthropic, Google, etc) with full user control",
@@ -16,7 +16,7 @@ setup(
         "youtube-comment-downloader==0.1.76",
         "PyMuPDF==1.26.3",
         "tiktoken==0.9.0",
-        "ddgs==9.5.0",
+        "ddgs==9.5.1",
         "python-docx==1.2.0",
         "openpyxl==3.1.5",
         "chardet==5.2.0",
