@@ -6,7 +6,9 @@
 <a href="https://github.com/MehmetMHY/cha/graphs/contributors"><img src="https://img.shields.io/github/contributors/MehmetMHY/cha" alt="Contributors"></a>
 
 > ⚠️ **Deprecation Notice**  
-> As of **August 23, 2025**, `Cha` is no longer maintained. Its actively developed successor is **[Ch](https://github.com/MehmetMHY/ch)**, a faster, lightweight Go implementation offering the same core functionality. This repository remains as a historical reference and will receive no further updates. Please migrate to **Ch** for continued support, new features, and improvements.
+> As of **August 23, 2025**, `Cha` is no longer maintained. Its actively developed successor is **[Ch](https://github.com/MehmetMHY/ch)**, a faster, lightweight Go implementation offering the same core functionality. This repository remains as a historical reference and will receive no further updates. Please migrate to **[Ch](https://github.com/MehmetMHY/ch)** for continued support, new features, and improvements.
+
+<br>
 
 [![Demo GIF](https://github.com/user-attachments/assets/03eff35f-1489-49a8-9e3f-23723f1b1c1c)](https://www.youtube.com/watch?v=7zG8iFZjKtM)
 
