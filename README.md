@@ -5,9 +5,7 @@
 <a href="https://github.com/MehmetMHY/cha/stargazers"><img src="https://img.shields.io/github/stars/MehmetMHY/cha" alt="GitHub stars"></a>
 <a href="https://github.com/MehmetMHY/cha/graphs/contributors"><img src="https://img.shields.io/github/contributors/MehmetMHY/cha" alt="Contributors"></a>
 
-> ⚠️ **Deprecation Notice**  
->  
-> As of **August 23, 2025**, `Cha` is no longer maintained. Its actively developed successor is **[Ch](https://github.com/MehmetMHY/ch)**, a faster, lightweight Go implementation offering the same core functionality. This repository remains as a historical reference and will receive no further updates. Please migrate to **[Ch](https://github.com/MehmetMHY/ch)** for continued support, new features, and improvements.
+> ⚠️ **Deprecation Notice:** As of **August 23, 2025**, `Cha` is no longer maintained. Its actively developed successor is **[Ch](https://github.com/MehmetMHY/ch)**, a faster, lightweight Go implementation offering the same core functionality. This repository remains as a historical reference and will receive no further updates. Please migrate to **[Ch](https://github.com/MehmetMHY/ch)** for continued support, new features, and improvements.
 
 <br>
 
