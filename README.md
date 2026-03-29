@@ -7,7 +7,7 @@
 
 > ⚠️ **Deprecation Notice**
 >
-> As of **August 23, 2025**, `Cha` is no longer maintained. Its actively developed successor is **[Ch](https://github.com/MehmetMHY/ch)**, a faster, lightweight Go implementation offering the same core functionality. This repository remains as a historical reference and will receive no further updates. Please migrate to **[Ch](https://github.com/MehmetMHY/ch)** for continued support, new features, and improvements. To migrate your Cha chat history to Ch, see the [convert_cha_to_ch](./assets/cha_to_ch/) script.
+> As of **August 23, 2025**, `Cha` is no longer maintained. Its actively developed successor is **[Ch](https://github.com/MehmetMHY/ch)**, a faster, lightweight Go implementation offering the same core functionality. This repository remains as a historical reference and will receive no further updates. Please migrate to **[Ch](https://github.com/MehmetMHY/ch)** for continued support, new features, and improvements. To migrate your Cha chat history to Ch, use this [migration script](./assets/cha_to_ch/).
 
 <br>
 
