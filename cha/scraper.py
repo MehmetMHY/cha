@@ -253,16 +253,14 @@ def scraped_prompt(prompt):
     if htmls == {}:
         return prompt
 
-    return utils.rls(
-        f"""
+    return utils.rls(f"""
             Here is the content from the following url(s) in the form of a JSON:
             ```
             {htmls}
             ```
 
             Knowing this, can you answer the following prompt: {prompt}
-        """
-    )
+        """)
 
 
 def scrape_pdf_url(url):

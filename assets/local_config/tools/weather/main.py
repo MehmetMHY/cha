@@ -53,8 +53,7 @@ class UsersCurrentWeatherStats:
             utc_time_stamp = f"{datetime.now(timezone.utc)} UTC"
             local_weather_data = utils.get_request("https://wttr.in?format=j1")
             local_weather_data = local_weather_data.json()
-            return utils.rls(
-                f"""
+            return utils.rls(f"""
                 Today's Date is {utc_time_stamp}
 
                 The user's weather based off of their current location, using wttr.in, is the following:
@@ -75,8 +74,7 @@ class UsersCurrentWeatherStats:
                 ```
 
                 If there are not that many previous messages or your confused, just tell the user the their current weather stats.
-                """
-            )
+                """)
         except Exception as e:
             return None
 

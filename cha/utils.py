@@ -547,8 +547,7 @@ def load_most_files(
         except:
             llm_method = None
 
-        return rls(
-            f"""
+        return rls(f"""
             The LLM model "{model_name}" extracted the following from the image:
 
             ```
@@ -564,8 +563,7 @@ def load_most_files(
             Either methods are perfect, they both have their pros and cons. That is why,
             both methods were utilized and their outputs were presented. So place your,
             judgement based on both methods.
-            """
-        )
+            """)
 
     elif file_ext in config.SUPPORTED_PDF_FORMATS:
         import fitz
@@ -623,8 +621,7 @@ def load_most_files(
             return None
         if transcript.endswith("\n"):
             transcript = transcript[:-1]
-        return rls(
-            f"""
+        return rls(f"""
             Audio File's Name:
             ```
             {file_path}
@@ -639,8 +636,7 @@ def load_most_files(
             ```
             {transcript}
             ```
-            """
-        )
+            """)
 
     elif file_ext in config.SUPPORTED_VIDEO_FORMATS:
         content = extract_text_from_video(file_path)
@@ -661,16 +657,14 @@ def load_most_files(
 
 
 def act_as_ocr(client, filepath, prompt=None):
-    default_prompt = rls(
-        f"""
+    default_prompt = rls(f"""
         Analyze the provided image and perform the following tasks:
         1. Extract all visible text accurately, including any embedded or obscured text.
         2. Interpret the contextual meaning of the image by examining visual elements, symbols, and any implied narratives or themes.
         3. Identify relationships between the text and visual components, noting any cultural, historical, or emotional subtleties.
         Provide a comprehensive report combining literal text extraction with nuanced interpretations of the image's symbolic and contextual messages.
         Also note, that the file name is named "{filepath}" which might or might not provide more context of the image.
-        """
-    )
+        """)
     try:
         current_prompt = default_prompt
         if type(prompt) == None:

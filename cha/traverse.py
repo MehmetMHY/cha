@@ -107,8 +107,7 @@ def interactive_traverse_help():
 
 
 def print_help():
-    return utils.rls(
-        """
+    return utils.rls("""
         [c] cd       : Navigate directories using fzf (includes ".." to go back)
         [s] select   : Select multiple files/dirs in current directory (use TAB to multi-select)
         [u] unselect : Remove files from current selection (use TAB to multi-select)
@@ -117,8 +116,7 @@ def print_help():
         [v] view     : Open a file in text editor using terminal loading logic
         [h] help     : Show this help message
         [e] exit     : Exit the file selection interface
-        """
-    )
+        """)
 
 
 def run_fzf(items, prompt="", multi_select=False, header=""):

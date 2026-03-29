@@ -14,8 +14,7 @@ from cha import scraper, colors, utils, config, loading
 
 
 def create_mega_prompt(search_results, prompt):
-    return utils.rls(
-        f"""
+    return utils.rls(f"""
         For your answer, understand that today's date is: {datetime.now(timezone.utc).isoformat()}
 
         Here is some additional context that may be useful:
@@ -40,15 +39,13 @@ def create_mega_prompt(search_results, prompt):
         - [1] Author(s), "Article Title," *Journal Title*, vol. number, no. number, pp. pages, Month, Year. [Online]. Available: URL
 
         Make sure to clearly refer to each citation in the body of your response. Your answer should be clear, concise, and well-structured!
-        """
-    )
+        """)
 
 
 def generate_search_queries(
     client, user_prompt, model_name, min_results=config.DEFAULT_GEN_SEARCH_QUERY_COUNT
 ):
-    prompt = utils.rls(
-        f"""
+    prompt = utils.rls(f"""
         Today's date, in ISO 8601 format, is: {datetime.now(timezone.utc).isoformat()}.
 
         Your task is to generate at least {min_results} distinct search engine queries based on the user's prompt provided below:
@@ -63,8 +60,7 @@ def generate_search_queries(
 
         Example Format:
         - ["Query 1", "Query 2", "Query 3"]
-        """
-    )
+        """)
 
     if config.CHA_CURRENT_PLATFORM_NAME == "openai":
         # NOTE: this insures the output is always an array of strings as it should be
@@ -218,8 +214,7 @@ def quick_search(user_input, min_search_result=3):
                 content = str(description)
             output.append({"url": url, "content": content})
 
-        return utils.rls(
-            f"""
+        return utils.rls(f"""
             Here is the user's prompt/question:
             ```
             {user_input}
@@ -238,8 +233,7 @@ def quick_search(user_input, min_search_result=3):
             5. Present your final answer as plain text, without using Markdown-specific tags or formatting.
 
             Your answer should be clear, concise, and well-structured!
-            """
-        )
+            """)
     except Exception as e:
         return None
 
