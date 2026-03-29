@@ -7,7 +7,7 @@
 
 > ⚠️ **Deprecation Notice**
 >
-> As of **August 23, 2025**, `Cha` is no longer maintained. Its actively developed successor is **[Ch](https://github.com/MehmetMHY/ch)**, a faster, lightweight Go implementation offering the same core functionality. This repository remains as a historical reference and will receive no further updates. Please migrate to **[Ch](https://github.com/MehmetMHY/ch)** for continued support, new features, and improvements.
+> As of **August 23, 2025**, `Cha` is no longer maintained. Its actively developed successor is **[Ch](https://github.com/MehmetMHY/ch)**, a faster, lightweight Go implementation offering the same core functionality. This repository remains as a historical reference and will receive no further updates. Please migrate to **[Ch](https://github.com/MehmetMHY/ch)** for continued support, new features, and improvements. To migrate your Cha chat history to Ch, see the [convert_cha_to_ch](./assets/cha_to_ch/) script.
 
 <br>
 
@@ -486,7 +486,6 @@ The interactive editor allows you to edit files with AI assistance. You can star
 #### Platform Switching (-p) and Model Combined
 
 - `cha -p "<PLATFORM_OR_URL|API_KEY_ENV>" -m "<MODEL_NAME>"`
-
   - Examples:
     ```bash
     cha -p "https://api.deepseek.com|DEEP_SEEK_API_KEY" -m "deepseek-chat"
@@ -494,7 +493,6 @@ The interactive editor allows you to edit files with AI assistance. You can star
     ```
 
 - `cha -p`
-
   - Dynamic platform switching with no need for the user to provide a base URL and model name.
   - Manually select a platform and model; refer to `./cha/config.py` to see all supported platforms.
   - Examples:
@@ -503,7 +501,6 @@ The interactive editor allows you to edit files with AI assistance. You can star
     ```
 
 - `cha -p "<PLATFORM_NAME|OPTIONAL_MODEL_NAME>"`
-
   - Refer to `./cha/config.py` to see all supported platforms.
   - Here you can select a supported platform and a model on that platform in one line with no need for manually selecting a platform and/or model.
   - The model name is optional; you can just provide the platform name and manually select a model name. Or just provide both.

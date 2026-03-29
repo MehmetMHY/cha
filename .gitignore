@@ -207,7 +207,7 @@ Icon\r
 *.jpg
 *.jpeg
 *.srt
-cha_*
+cha_*.json
 code_dump_*
 .sandbox/
 export_*
