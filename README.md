@@ -1,5 +1,5 @@
 <div>
-<h3>⚠️ Deprecation Notice</h3>
+<h3>Deprecation Notice</h3>
 <p>As of <b>August 23, 2025</b>, <code>Cha</code> is no longer maintained. Its actively developed successor is <b><a href="https://github.com/MehmetMHY/ch">Ch</a></b>, a faster, lightweight Go implementation offering the same core functionality. This repository remains as a historical reference and will receive no further updates. Please migrate to <b><a href="https://github.com/MehmetMHY/ch">Ch</a></b> for continued support, new features, and improvements. To migrate your Cha chat history to Ch, use this <a href="./assets/cha_to_ch/">migration script</a>.</p>
 </div>
 
